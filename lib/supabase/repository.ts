@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import fs from "fs";
 import path from "path";
+import { Pool } from "pg";
 import type {
   AttendanceStatus,
   DashboardMetrics,
@@ -13,6 +14,16 @@ import { isSupabaseConfigured } from "./client";
 import { createServerSupabaseClient } from "./server";
 
 export { isSupabaseConfigured };
+
+export function isPostgresConfigured(): boolean {
+  const url =
+    process.env.POSTGRES_URL?.trim() || process.env.DATABASE_URL?.trim() || "";
+  return Boolean(
+    url &&
+      (url.startsWith("postgres://") || url.startsWith("postgresql://")) &&
+      !url.includes("your-project")
+  );
+}
 
 export function slugifyName(name: string): string {
   return name
@@ -184,11 +195,202 @@ const INITIAL_SEED_DATA: LocalDatabaseSchema = {
   ],
 };
 
-const LOCAL_DB_FILE = path.join(process.cwd(), ".data", "local-db.json");
+// ============================================================================
+// DIRECT POSTGRESQL POOL & AUTO-MIGRATION (VERCEL POSTGRES / PRISMA POSTGRES)
+// ============================================================================
 
-const globalForLocalDb = globalThis as unknown as {
+const globalForPg = globalThis as unknown as {
+  __weddingPgPool?: Pool;
+  __weddingPgInitPromise?: Promise<void>;
   __weddingLocalDb?: LocalDatabaseSchema;
 };
+
+function getPgPool(): Pool | null {
+  if (!isPostgresConfigured()) {
+    return null;
+  }
+
+  if (!globalForPg.__weddingPgPool) {
+    const connectionString =
+      process.env.POSTGRES_URL?.trim() || process.env.DATABASE_URL?.trim();
+    globalForPg.__weddingPgPool = new Pool({
+      connectionString,
+      max: 5,
+      ssl: { rejectUnauthorized: false },
+    });
+  }
+
+  return globalForPg.__weddingPgPool;
+}
+
+async function ensurePostgresSchema(): Promise<Pool | null> {
+  const pool = getPgPool();
+  if (!pool) {
+    return null;
+  }
+
+  if (!globalForPg.__weddingPgInitPromise) {
+    globalForPg.__weddingPgInitPromise = (async () => {
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS public.guests (
+          id UUID PRIMARY KEY,
+          name TEXT NOT NULL,
+          slug TEXT NOT NULL,
+          category TEXT NOT NULL DEFAULT 'Umum',
+          phone TEXT NOT NULL DEFAULT '',
+          max_pax INT NOT NULL DEFAULT 2,
+          invitation_sent BOOLEAN NOT NULL DEFAULT false,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        );
+        CREATE UNIQUE INDEX IF NOT EXISTS guests_name_normalized_uidx
+          ON public.guests (LOWER(TRIM(name)));
+        CREATE INDEX IF NOT EXISTS guests_slug_idx
+          ON public.guests (slug);
+
+        CREATE TABLE IF NOT EXISTS public.rsvps (
+          id UUID PRIMARY KEY,
+          guest_id UUID NOT NULL UNIQUE REFERENCES public.guests(id) ON DELETE CASCADE,
+          guest_name TEXT NOT NULL,
+          attendance_status TEXT NOT NULL CHECK (attendance_status IN ('hadir', 'tidak_hadir', 'ragu')),
+          pax INT NOT NULL DEFAULT 1,
+          notes TEXT,
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+          created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        );
+
+        CREATE TABLE IF NOT EXISTS public.wishes (
+          id UUID PRIMARY KEY,
+          guest_id UUID REFERENCES public.guests(id) ON DELETE SET NULL,
+          sender_name TEXT NOT NULL,
+          message TEXT NOT NULL,
+          attendance_badge TEXT,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        );
+      `);
+
+      const { rows } = await pool.query<{ count: string }>(
+        `SELECT COUNT(*)::text AS count FROM public.guests`
+      );
+      const guestCount = Number(rows[0]?.count ?? "0");
+
+      if (guestCount === 0) {
+        for (const g of INITIAL_SEED_DATA.guests) {
+          await pool.query(
+            `INSERT INTO public.guests (id, name, slug, category, phone, max_pax, invitation_sent, created_at)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+             ON CONFLICT DO NOTHING`,
+            [
+              g.id,
+              g.name,
+              g.slug,
+              g.category,
+              g.phone,
+              g.max_pax,
+              g.invitation_sent,
+              g.created_at,
+            ]
+          );
+        }
+        for (const r of INITIAL_SEED_DATA.rsvps) {
+          await pool.query(
+            `INSERT INTO public.rsvps (id, guest_id, guest_name, attendance_status, pax, notes, updated_at, created_at)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+             ON CONFLICT (guest_id) DO NOTHING`,
+            [
+              r.id,
+              r.guest_id,
+              r.guest_name,
+              r.attendance_status,
+              r.pax,
+              r.notes ?? null,
+              r.updated_at,
+              r.created_at,
+            ]
+          );
+        }
+        for (const w of INITIAL_SEED_DATA.wishes) {
+          await pool.query(
+            `INSERT INTO public.wishes (id, guest_id, sender_name, message, attendance_badge, created_at)
+             VALUES ($1, $2, $3, $4, $5, $6)
+             ON CONFLICT DO NOTHING`,
+            [
+              w.id,
+              w.guest_id ?? null,
+              w.sender_name,
+              w.message,
+              w.attendance_badge ?? null,
+              w.created_at,
+            ]
+          );
+        }
+      }
+    })().catch((err) => {
+      console.error("Postgres schema init error:", err);
+      globalForPg.__weddingPgInitPromise = undefined;
+    });
+  }
+
+  await globalForPg.__weddingPgInitPromise;
+  return pool;
+}
+
+function mapGuestRow(row: Record<string, unknown>): Guest {
+  return {
+    id: String(row.id),
+    name: String(row.name),
+    slug: String(row.slug),
+    category: (row.category as GuestCategory) || "Umum",
+    phone: String(row.phone ?? ""),
+    max_pax: Number(row.max_pax ?? 2),
+    invitation_sent: Boolean(row.invitation_sent),
+    created_at:
+      row.created_at instanceof Date
+        ? row.created_at.toISOString()
+        : String(row.created_at),
+  };
+}
+
+function mapRsvpRow(row: Record<string, unknown>): RsvpRecord {
+  return {
+    id: String(row.id),
+    guest_id: String(row.guest_id),
+    guest_name: String(row.guest_name),
+    attendance_status: row.attendance_status as AttendanceStatus,
+    pax: Number(row.pax ?? 0),
+    notes: row.notes != null ? String(row.notes) : null,
+    updated_at:
+      row.updated_at instanceof Date
+        ? row.updated_at.toISOString()
+        : String(row.updated_at),
+    created_at:
+      row.created_at instanceof Date
+        ? row.created_at.toISOString()
+        : String(row.created_at),
+  };
+}
+
+function mapWishRow(row: Record<string, unknown>): WishRecord {
+  return {
+    id: String(row.id),
+    guest_id: row.guest_id != null ? String(row.guest_id) : null,
+    sender_name: String(row.sender_name),
+    message: String(row.message),
+    attendance_badge:
+      row.attendance_badge != null
+        ? (row.attendance_badge as AttendanceStatus)
+        : null,
+    created_at:
+      row.created_at instanceof Date
+        ? row.created_at.toISOString()
+        : String(row.created_at),
+  };
+}
+
+// ============================================================================
+// LOCAL JSON FALLBACK
+// ============================================================================
+
+const LOCAL_DB_FILE = path.join(process.cwd(), ".data", "local-db.json");
 
 function cloneSeedData(): LocalDatabaseSchema {
   return {
@@ -208,28 +410,28 @@ function readLocalDb(): LocalDatabaseSchema {
         Array.isArray(parsed.rsvps) &&
         Array.isArray(parsed.wishes)
       ) {
-        globalForLocalDb.__weddingLocalDb = {
+        globalForPg.__weddingLocalDb = {
           guests: parsed.guests,
           rsvps: parsed.rsvps,
           wishes: parsed.wishes,
         };
-        return globalForLocalDb.__weddingLocalDb;
+        return globalForPg.__weddingLocalDb;
       }
     }
   } catch {
     // Ignore file read errors in serverless/read-only environments
   }
 
-  if (!globalForLocalDb.__weddingLocalDb) {
-    globalForLocalDb.__weddingLocalDb = cloneSeedData();
-    writeLocalDb(globalForLocalDb.__weddingLocalDb);
+  if (!globalForPg.__weddingLocalDb) {
+    globalForPg.__weddingLocalDb = cloneSeedData();
+    writeLocalDb(globalForPg.__weddingLocalDb);
   }
 
-  return globalForLocalDb.__weddingLocalDb;
+  return globalForPg.__weddingLocalDb;
 }
 
 function writeLocalDb(db: LocalDatabaseSchema): void {
-  globalForLocalDb.__weddingLocalDb = db;
+  globalForPg.__weddingLocalDb = db;
   try {
     const dir = path.dirname(LOCAL_DB_FILE);
     if (!fs.existsSync(dir)) {
@@ -257,6 +459,18 @@ export async function getGuests(): Promise<Guest[]> {
       if (!error && data) {
         return data as Guest[];
       }
+    }
+  }
+
+  const pool = await ensurePostgresSchema();
+  if (pool) {
+    try {
+      const { rows } = await pool.query(
+        `SELECT * FROM public.guests ORDER BY created_at DESC`
+      );
+      return rows.map(mapGuestRow);
+    } catch (err) {
+      console.error("Postgres getGuests error:", err);
     }
   }
 
@@ -296,6 +510,23 @@ export async function findGuestByName(name: string): Promise<Guest | null> {
     }
   }
 
+  const pool = await ensurePostgresSchema();
+  if (pool) {
+    try {
+      const { rows } = await pool.query(
+        `SELECT * FROM public.guests
+         WHERE LOWER(TRIM(name)) = $1 OR slug = $2
+         LIMIT 1`,
+        [normalizedName, normalizedSlug]
+      );
+      if (rows[0]) {
+        return mapGuestRow(rows[0]);
+      }
+    } catch (err) {
+      console.error("Postgres findGuestByName error:", err);
+    }
+  }
+
   const db = readLocalDb();
   const found = db.guests.find(
     (g) =>
@@ -323,6 +554,21 @@ export async function findGuestById(id: string): Promise<Guest | null> {
       if (!error && data) {
         return data as Guest;
       }
+    }
+  }
+
+  const pool = await ensurePostgresSchema();
+  if (pool) {
+    try {
+      const { rows } = await pool.query(
+        `SELECT * FROM public.guests WHERE id::text = $1 LIMIT 1`,
+        [trimmedId]
+      );
+      if (rows[0]) {
+        return mapGuestRow(rows[0]);
+      }
+    } catch (err) {
+      console.error("Postgres findGuestById error:", err);
     }
   }
 
@@ -359,6 +605,24 @@ export async function createGuest(input: {
       if (!error && data) {
         return data as Guest;
       }
+    }
+  }
+
+  const pool = await ensurePostgresSchema();
+  if (pool) {
+    try {
+      const newId = randomUUID();
+      const { rows } = await pool.query(
+        `INSERT INTO public.guests (id, name, slug, category, phone, max_pax, invitation_sent)
+         VALUES ($1, $2, $3, $4, $5, $6, false)
+         RETURNING *`,
+        [newId, cleanName, slug, input.category, cleanPhone, input.max_pax]
+      );
+      if (rows[0]) {
+        return mapGuestRow(rows[0]);
+      }
+    } catch (err) {
+      console.error("Postgres createGuest error:", err);
     }
   }
 
@@ -426,6 +690,41 @@ export async function updateGuest(
     }
   }
 
+  const pool = await ensurePostgresSchema();
+  if (pool) {
+    try {
+      const existing = await findGuestById(id);
+      if (!existing) {
+        return null;
+      }
+      const nextName = updates.name ?? existing.name;
+      const nextSlug = updates.slug ?? existing.slug;
+      const nextCategory = updates.category ?? existing.category;
+      const nextPhone = updates.phone ?? existing.phone;
+      const nextMaxPax = updates.max_pax ?? existing.max_pax;
+      const nextSent = updates.invitation_sent ?? existing.invitation_sent;
+
+      const { rows } = await pool.query(
+        `UPDATE public.guests
+         SET name = $1, slug = $2, category = $3, phone = $4, max_pax = $5, invitation_sent = $6
+         WHERE id::text = $7
+         RETURNING *`,
+        [nextName, nextSlug, nextCategory, nextPhone, nextMaxPax, nextSent, id]
+      );
+      if (updates.name) {
+        await pool.query(
+          `UPDATE public.rsvps SET guest_name = $1 WHERE guest_id::text = $2`,
+          [updates.name, id]
+        );
+      }
+      if (rows[0]) {
+        return mapGuestRow(rows[0]);
+      }
+    } catch (err) {
+      console.error("Postgres updateGuest error:", err);
+    }
+  }
+
   const db = readLocalDb();
   const index = db.guests.findIndex((g) => g.id === id);
   if (index === -1) {
@@ -456,6 +755,19 @@ export async function deleteGuest(id: string): Promise<boolean> {
       if (!error) {
         return true;
       }
+    }
+  }
+
+  const pool = await ensurePostgresSchema();
+  if (pool) {
+    try {
+      const result = await pool.query(
+        `DELETE FROM public.guests WHERE id::text = $1`,
+        [id]
+      );
+      return (result.rowCount ?? 0) > 0;
+    } catch (err) {
+      console.error("Postgres deleteGuest error:", err);
     }
   }
 
@@ -494,6 +806,18 @@ export async function getRsvps(): Promise<RsvpRecord[]> {
     }
   }
 
+  const pool = await ensurePostgresSchema();
+  if (pool) {
+    try {
+      const { rows } = await pool.query(
+        `SELECT * FROM public.rsvps ORDER BY updated_at DESC`
+      );
+      return rows.map(mapRsvpRow);
+    } catch (err) {
+      console.error("Postgres getRsvps error:", err);
+    }
+  }
+
   const db = readLocalDb();
   return [...db.rsvps].sort(
     (a, b) =>
@@ -520,6 +844,21 @@ export async function getRsvpByGuestId(
       if (!error && data) {
         return data as RsvpRecord;
       }
+    }
+  }
+
+  const pool = await ensurePostgresSchema();
+  if (pool) {
+    try {
+      const { rows } = await pool.query(
+        `SELECT * FROM public.rsvps WHERE guest_id::text = $1 LIMIT 1`,
+        [guestId]
+      );
+      if (rows[0]) {
+        return mapRsvpRow(rows[0]);
+      }
+    } catch (err) {
+      console.error("Postgres getRsvpByGuestId error:", err);
     }
   }
 
@@ -561,6 +900,39 @@ export async function upsertRsvp(input: {
       if (!error && data) {
         return data as RsvpRecord;
       }
+    }
+  }
+
+  const pool = await ensurePostgresSchema();
+  if (pool) {
+    try {
+      const newId = randomUUID();
+      const { rows } = await pool.query(
+        `INSERT INTO public.rsvps (id, guest_id, guest_name, attendance_status, pax, notes, updated_at, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $7)
+         ON CONFLICT (guest_id)
+         DO UPDATE SET
+           guest_name = EXCLUDED.guest_name,
+           attendance_status = EXCLUDED.attendance_status,
+           pax = EXCLUDED.pax,
+           notes = EXCLUDED.notes,
+           updated_at = EXCLUDED.updated_at
+         RETURNING *`,
+        [
+          newId,
+          input.guest_id,
+          input.guest_name,
+          input.attendance_status,
+          normalizedPax,
+          cleanNotes,
+          nowIso,
+        ]
+      );
+      if (rows[0]) {
+        return mapRsvpRow(rows[0]);
+      }
+    } catch (err) {
+      console.error("Postgres upsertRsvp error:", err);
     }
   }
 
@@ -618,6 +990,18 @@ export async function getWishes(): Promise<WishRecord[]> {
     }
   }
 
+  const pool = await ensurePostgresSchema();
+  if (pool) {
+    try {
+      const { rows } = await pool.query(
+        `SELECT * FROM public.wishes ORDER BY created_at DESC`
+      );
+      return rows.map(mapWishRow);
+    } catch (err) {
+      console.error("Postgres getWishes error:", err);
+    }
+  }
+
   const db = readLocalDb();
   return [...db.wishes].sort(
     (a, b) =>
@@ -653,6 +1037,31 @@ export async function createWish(input: {
     }
   }
 
+  const pool = await ensurePostgresSchema();
+  if (pool) {
+    try {
+      const newId = randomUUID();
+      const { rows } = await pool.query(
+        `INSERT INTO public.wishes (id, guest_id, sender_name, message, attendance_badge, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         RETURNING *`,
+        [
+          newId,
+          input.guest_id ?? null,
+          input.sender_name,
+          input.message,
+          input.attendance_badge ?? null,
+          nowIso,
+        ]
+      );
+      if (rows[0]) {
+        return mapWishRow(rows[0]);
+      }
+    } catch (err) {
+      console.error("Postgres createWish error:", err);
+    }
+  }
+
   const db = readLocalDb();
   const newWish: WishRecord = {
     id: randomUUID(),
@@ -676,6 +1085,19 @@ export async function deleteWish(id: string): Promise<boolean> {
       if (!error) {
         return true;
       }
+    }
+  }
+
+  const pool = await ensurePostgresSchema();
+  if (pool) {
+    try {
+      const result = await pool.query(
+        `DELETE FROM public.wishes WHERE id::text = $1`,
+        [id]
+      );
+      return (result.rowCount ?? 0) > 0;
+    } catch (err) {
+      console.error("Postgres deleteWish error:", err);
     }
   }
 
