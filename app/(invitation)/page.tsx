@@ -1,5 +1,5 @@
 import React from "react";
-import { Heart, Instagram, Sparkles } from "lucide-react";
+import { Instagram } from "lucide-react";
 import { WEDDING_CONFIG } from "@/lib/config/wedding-config";
 import {
   findGuestByName,
@@ -59,221 +59,243 @@ export default async function InvitationPage({
       guestCategory={registeredGuest?.category ?? null}
       isRegistered={Boolean(registeredGuest)}
     >
-      {/* 1. HERO SECTION */}
-      <section className="relative overflow-hidden border-b border-[#C5A059]/25 bg-gradient-to-b from-[#1C2B24] via-[#243830] to-[#1C2B24] px-4 py-24 text-center text-[#FAF7F2] sm:px-6 sm:py-32">
-        {/* Radial Botanical & Gold Ambience */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 overflow-hidden"
+      <main id="main-content">
+        {/* SECTION I: EDITORIAL FOLIO HERO & SACRED VERSE */}
+        <header className="relative overflow-hidden border-b border-[#C5A059]/35 bg-[#1C2B24] px-4 py-16 text-[#FAF7F2] sm:px-6 sm:py-24 lg:px-8">
+          <div className="mx-auto max-w-5xl">
+            {/* Top Editorial Index Bar */}
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#C5A059]/30 pb-4 text-[11px] uppercase tracking-[0.24em] text-[#E5D1A7]/85">
+              <span>I. Maklumat Pernikahan</span>
+              <span className="tabular-nums">
+                {WEDDING_CONFIG.couple.shortDate} • Jakarta Selatan
+              </span>
+            </div>
+
+            {/* Main Couple Typography Spread */}
+            <div className="py-12 text-center sm:py-16">
+              <p className="text-xs font-medium uppercase tracking-[0.3em] text-[#E5D1A7]">
+                Pernikahan Putra-Putri Kami
+              </p>
+
+              <h1 className="mt-4 font-serif-luxury text-6xl font-normal leading-[1.03] tracking-[-0.02em] text-[#FAF7F2] sm:text-7xl md:text-8xl">
+                {WEDDING_CONFIG.couple.groom.nickname}{" "}
+                <span className="font-serif-luxury italic text-[#C5A059]">
+                  &amp;
+                </span>{" "}
+                {WEDDING_CONFIG.couple.bride.nickname}
+              </h1>
+
+              <p className="mt-5 text-sm font-medium uppercase tracking-[0.26em] text-[#E5D1A7]">
+                {WEDDING_CONFIG.couple.weddingDateDisplay}
+              </p>
+            </div>
+
+            {/* Asymmetric Two-Column Sacred Verse Folio */}
+            <div className="grid grid-cols-1 gap-6 rounded-sm border border-[#C5A059]/40 bg-[#FAF7F2] p-6 text-[#222624] sm:p-10 lg:grid-cols-12 lg:items-center lg:gap-10">
+              <div className="border-b border-[#C5A059]/25 pb-5 lg:col-span-6 lg:border-b-0 lg:border-r lg:pb-0 lg:pr-8">
+                <p
+                  dir="rtl"
+                  lang="ar"
+                  className="font-serif-luxury text-right text-2xl leading-[2] text-[#1C2B24] sm:text-3xl"
+                >
+                  {WEDDING_CONFIG.quote.arabic}
+                </p>
+              </div>
+
+              <div className="lg:col-span-6 lg:pl-2">
+                <p className="text-xs leading-relaxed text-[#4A6358] sm:text-sm">
+                  &ldquo;{WEDDING_CONFIG.quote.translation}&rdquo;
+                </p>
+                <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#243830]">
+                  {WEDDING_CONFIG.quote.source}
+                </p>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* SECTION II: BRIDE & GROOM EDITORIAL PRINT SPREAD */}
+        <section
+          id="mempelai"
+          className="relative overflow-hidden border-b border-[#C5A059]/25 bg-[#FAF7F2] px-4 py-20 sm:px-6 lg:px-8"
         >
-          <div className="absolute left-1/2 top-0 h-[380px] w-[520px] -translate-x-1/2 rounded-full bg-[#C5A059]/15 blur-[120px]" />
-          <div className="absolute bottom-0 left-1/2 h-[320px] w-[420px] -translate-x-1/2 rounded-full bg-[#4A6358]/20 blur-[100px]" />
-        </div>
+          <div className="mx-auto max-w-5xl">
+            {/* Section Opening Index & Intro */}
+            <div className="grid grid-cols-1 gap-6 border-b border-[#C5A059]/30 pb-10 lg:grid-cols-12 lg:items-end">
+              <div className="lg:col-span-7">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#8A6825]">
+                  II. Mempelai yang Berbahagia
+                </p>
+                <h2 className="mt-2 font-serif-luxury text-4xl font-semibold leading-[1.1] text-[#1C2B24] sm:text-5xl">
+                  Assalamu&apos;alaikum Wr. Wb.
+                </h2>
+              </div>
+              <div className="lg:col-span-5">
+                <p className="text-sm leading-relaxed text-[#4A6358]">
+                  Maha Suci Allah yang telah menciptakan makhluk-Nya
+                  berpasang-pasangan. Perkenankanlah kami merangkaikan kasih
+                  sayang di antara putra-putri kami:
+                </p>
+              </div>
+            </div>
 
-        <div className="relative z-10 mx-auto max-w-3xl">
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#C5A059]/40 bg-[#FAF7F2]/10 px-4 py-1.5 text-[11px] uppercase tracking-[0.28em] text-[#E5D1A7]">
-            <Sparkles className="h-3.5 w-3.5 text-[#C5A059]" />
-            <span>The Wedding Of</span>
+            {/* Editorial Two-Column Portrait Ledger (Separated by Architectural Hairline) */}
+            <div className="mt-10 grid grid-cols-1 divide-y divide-[#C5A059]/30 rounded-sm border border-[#C5A059]/35 bg-[#FAF7F2] md:grid-cols-2 md:divide-x md:divide-y-0">
+              {/* Groom Column */}
+              <article className="flex flex-col justify-between p-7 sm:p-10">
+                <div>
+                  <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.22em] text-[#8A6825]">
+                    <span>01 / Mempelai Pria</span>
+                    <span>{WEDDING_CONFIG.couple.groom.childOrder}</span>
+                  </div>
+
+                  <div className="my-7 flex items-baseline gap-4 border-y border-[#C5A059]/20 py-6">
+                    <span
+                      aria-hidden="true"
+                      className="font-serif-luxury text-6xl font-normal italic leading-none text-[#C5A059] sm:text-7xl"
+                    >
+                      {WEDDING_CONFIG.couple.groom.nickname[0]}
+                    </span>
+                    <div>
+                      <h3 className="font-serif-luxury text-3xl font-semibold leading-tight text-[#1C2B24] sm:text-4xl">
+                        {WEDDING_CONFIG.couple.groom.fullName}
+                      </h3>
+                      <p className="mt-1 text-xs uppercase tracking-[0.18em] text-[#4A6358]">
+                        Panggilan: {WEDDING_CONFIG.couple.groom.nickname}
+                      </p>
+                    </div>
+                  </div>
+
+                  <dl className="space-y-1.5 text-sm text-[#222624]">
+                    <dt className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#4A6358]">
+                      Putra dari Pasangan
+                    </dt>
+                    <dd className="font-medium text-[#1C2B24]">
+                      {WEDDING_CONFIG.couple.groom.fatherName}
+                    </dd>
+                    <dd className="text-[#4A6358]">
+                      &amp; {WEDDING_CONFIG.couple.groom.motherName}
+                    </dd>
+                  </dl>
+                </div>
+
+                <div className="mt-8 border-t border-[#C5A059]/25 pt-4">
+                  <span className="inline-flex items-center gap-2 text-xs font-medium text-[#243830]">
+                    <Instagram className="h-3.5 w-3.5 text-[#8A6825]" />
+                    <span>{WEDDING_CONFIG.couple.groom.instagram}</span>
+                  </span>
+                </div>
+              </article>
+
+              {/* Bride Column */}
+              <article className="flex flex-col justify-between p-7 sm:p-10">
+                <div>
+                  <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.22em] text-[#8A6825]">
+                    <span>02 / Mempelai Wanita</span>
+                    <span>{WEDDING_CONFIG.couple.bride.childOrder}</span>
+                  </div>
+
+                  <div className="my-7 flex items-baseline gap-4 border-y border-[#C5A059]/20 py-6">
+                    <span
+                      aria-hidden="true"
+                      className="font-serif-luxury text-6xl font-normal italic leading-none text-[#C5A059] sm:text-7xl"
+                    >
+                      {WEDDING_CONFIG.couple.bride.nickname[0]}
+                    </span>
+                    <div>
+                      <h3 className="font-serif-luxury text-3xl font-semibold leading-tight text-[#1C2B24] sm:text-4xl">
+                        {WEDDING_CONFIG.couple.bride.fullName}
+                      </h3>
+                      <p className="mt-1 text-xs uppercase tracking-[0.18em] text-[#4A6358]">
+                        Panggilan: {WEDDING_CONFIG.couple.bride.nickname}
+                      </p>
+                    </div>
+                  </div>
+
+                  <dl className="space-y-1.5 text-sm text-[#222624]">
+                    <dt className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#4A6358]">
+                      Putri dari Pasangan
+                    </dt>
+                    <dd className="font-medium text-[#1C2B24]">
+                      {WEDDING_CONFIG.couple.bride.fatherName}
+                    </dd>
+                    <dd className="text-[#4A6358]">
+                      &amp; {WEDDING_CONFIG.couple.bride.motherName}
+                    </dd>
+                  </dl>
+                </div>
+
+                <div className="mt-8 border-t border-[#C5A059]/25 pt-4">
+                  <span className="inline-flex items-center gap-2 text-xs font-medium text-[#243830]">
+                    <Instagram className="h-3.5 w-3.5 text-[#8A6825]" />
+                    <span>{WEDDING_CONFIG.couple.bride.instagram}</span>
+                  </span>
+                </div>
+              </article>
+            </div>
           </div>
+        </section>
 
-          <h1 className="mt-6 font-serif-luxury text-6xl font-normal tracking-wide text-[#FAF7F2] sm:text-7xl md:text-8xl">
-            {WEDDING_CONFIG.couple.groom.nickname}{" "}
-            <span className="font-serif-luxury italic text-[#C5A059]">
-              &amp;
-            </span>{" "}
-            {WEDDING_CONFIG.couple.bride.nickname}
-          </h1>
+        {/* SECTION III: EVENT SCHEDULE & COUNTDOWN */}
+        <EventSchedule />
 
-          <p className="mt-5 text-sm font-medium uppercase tracking-[0.3em] text-[#E5D1A7]">
-            {WEDDING_CONFIG.couple.weddingDateDisplay}
-          </p>
+        {/* SECTION IV: STRICT INVITE-ONLY RSVP FORM */}
+        <RsvpForm
+          guestName={displayGuestName}
+          registeredGuest={registeredGuest}
+          initialRsvp={initialRsvp}
+        />
 
-          <div className="mx-auto mt-8 flex max-w-md items-center justify-center gap-4">
-            <span className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-[#C5A059]/60" />
-            <span className="font-serif-luxury text-lg italic text-[#E5D1A7]">
-              {WEDDING_CONFIG.couple.shortDate}
-            </span>
-            <span className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-[#C5A059]/60" />
-          </div>
+        {/* SECTION V: REALTIME & OPTIMISTIC WISH WALL */}
+        <WishWall
+          initialWishes={wishes}
+          defaultSenderName={displayGuestName}
+          registeredGuest={registeredGuest}
+        />
 
-          {/* Sacred Quote Card */}
-          <div className="mx-auto mt-12 max-w-2xl rounded-3xl border border-[#C5A059]/35 bg-[#FAF7F2]/95 p-7 text-[#222624] shadow-2xl sm:p-10">
-            <p
-              dir="rtl"
-              lang="ar"
-              className="font-serif-luxury text-2xl leading-loose text-[#1C2B24] sm:text-3xl"
-            >
-              {WEDDING_CONFIG.quote.arabic}
-            </p>
-            <p className="mt-4 text-xs italic leading-relaxed text-[#4A6358] sm:text-sm">
-              &ldquo;{WEDDING_CONFIG.quote.translation}&rdquo;
-            </p>
-            <p className="mt-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#243830]">
-              — {WEDDING_CONFIG.quote.source} —
-            </p>
-          </div>
-        </div>
-      </section>
+        {/* SECTION VI: DIGITAL ENVELOPE & QRIS GIFT SECTION */}
+        <GiftSection />
+      </main>
 
-      {/* 2. BRIDE & GROOM PROFILE SECTION */}
-      <section
-        id="mempelai"
-        className="relative overflow-hidden py-20 px-4 sm:px-6 lg:px-8"
-      >
+      {/* CLOSING COLOPHON FOOTER */}
+      <footer className="relative overflow-hidden border-t border-[#C5A059]/35 bg-[#1C2B24] px-4 pb-28 pt-16 text-[#FAF7F2] sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl">
-          <div className="text-center">
-            <span className="inline-flex items-center gap-2 rounded-full border border-[#C5A059]/40 bg-[#F2ECE1] px-4 py-1 text-[11px] font-medium uppercase tracking-[0.25em] text-[#243830]">
-              <Sparkles className="h-3.5 w-3.5 text-[#C5A059]" />
-              Assalamu&apos;alaikum Wr. Wb.
+          <div className="grid grid-cols-1 gap-8 border-b border-[#C5A059]/25 pb-12 lg:grid-cols-12 lg:items-end">
+            <div className="lg:col-span-7">
+              <p className="text-xs uppercase tracking-[0.26em] text-[#E5D1A7]">
+                Ungkapan Terima Kasih
+              </p>
+              <h2 className="mt-3 font-serif-luxury text-4xl font-normal text-[#FAF7F2] sm:text-5xl">
+                {WEDDING_CONFIG.couple.groom.nickname}{" "}
+                <span className="italic text-[#C5A059]">&amp;</span>{" "}
+                {WEDDING_CONFIG.couple.bride.nickname}
+              </h2>
+              <p className="mt-4 max-w-xl text-xs leading-relaxed text-[#FAF7F2]/80 sm:text-sm">
+                Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila
+                Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu
+                kepada kedua mempelai.
+              </p>
+            </div>
+
+            <div className="lg:col-span-5 lg:text-right">
+              <p className="font-serif-luxury text-xl italic text-[#E5D1A7]">
+                Wassalamu&apos;alaikum Warahmatullahi Wabarakatuh
+              </p>
+              <p className="mt-2 text-xs font-semibold tracking-[0.22em] text-[#C5A059]">
+                {WEDDING_CONFIG.couple.hashtag}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-6 flex flex-col justify-between gap-2 text-[11px] text-[#FAF7F2]/60 sm:flex-row sm:items-center">
+            <span>
+              Keluarga Besar {WEDDING_CONFIG.couple.groom.fatherName} &amp;{" "}
+              {WEDDING_CONFIG.couple.bride.fatherName}
             </span>
-
-            <h2 className="mt-4 font-serif-luxury text-4xl font-semibold text-[#1C2B24] sm:text-5xl">
-              Mempelai yang Berbahagia
-            </h2>
-
-            <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-[#4A6358]">
-              Maha Suci Allah yang telah menciptakan makhluk-Nya
-              berpasang-pasangan. Ya Allah, perkenankanlah kami merangkaikan
-              kasih sayang yang Kau ciptakan di antara putra-putri kami:
-            </p>
+            <span className="tabular-nums">
+              {WEDDING_CONFIG.couple.weddingDateDisplay}
+            </span>
           </div>
-
-          <div className="mt-14 grid grid-cols-1 items-stretch gap-8 md:grid-cols-11">
-            {/* Groom Card */}
-            <div className="flex flex-col items-center justify-between rounded-3xl border border-[#C5A059]/40 bg-[#FAF7F2] p-8 text-center shadow-[0_14px_40px_rgba(36,56,48,0.06)] md:col-span-5">
-              <div className="flex flex-col items-center">
-                {/* Botanical Monogram Portrait Frame */}
-                <div className="relative mb-6 flex h-32 w-32 items-center justify-center rounded-full border-2 border-[#C5A059] bg-gradient-to-b from-[#243830] to-[#1C2B24] shadow-lg">
-                  <span className="font-serif-luxury text-5xl font-semibold text-[#E5D1A7]">
-                    {WEDDING_CONFIG.couple.groom.nickname[0]}
-                  </span>
-                  <span className="absolute -bottom-2.5 rounded-full border border-[#C5A059]/50 bg-[#FAF7F2] px-3 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-[#243830]">
-                    The Groom
-                  </span>
-                </div>
-
-                <h3 className="font-serif-luxury text-3xl font-semibold text-[#1C2B24]">
-                  {WEDDING_CONFIG.couple.groom.fullName}
-                </h3>
-
-                <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#C5A059]">
-                  {WEDDING_CONFIG.couple.groom.childOrder} dari:
-                </p>
-
-                <p className="mt-1.5 text-sm leading-relaxed text-[#4A6358]">
-                  {WEDDING_CONFIG.couple.groom.fatherName}
-                  <br />
-                  &amp; {WEDDING_CONFIG.couple.groom.motherName}
-                </p>
-              </div>
-
-              <div className="mt-6 pt-4 border-t border-[#C5A059]/25 w-full flex justify-center">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-[#C5A059]/35 bg-[#F2ECE1] px-4 py-1.5 text-xs font-medium text-[#243830]">
-                  <Instagram className="h-3.5 w-3.5 text-[#C5A059]" />
-                  <span>{WEDDING_CONFIG.couple.groom.instagram}</span>
-                </span>
-              </div>
-            </div>
-
-            {/* Center Heart Divider */}
-            <div className="flex items-center justify-center md:col-span-1">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[#C5A059]/45 bg-[#243830] text-[#E5D1A7] shadow-md">
-                <Heart className="h-6 w-6 fill-[#C5A059] text-[#C5A059]" />
-              </div>
-            </div>
-
-            {/* Bride Card */}
-            <div className="flex flex-col items-center justify-between rounded-3xl border border-[#C5A059]/40 bg-[#FAF7F2] p-8 text-center shadow-[0_14px_40px_rgba(36,56,48,0.06)] md:col-span-5">
-              <div className="flex flex-col items-center">
-                {/* Botanical Monogram Portrait Frame */}
-                <div className="relative mb-6 flex h-32 w-32 items-center justify-center rounded-full border-2 border-[#C5A059] bg-gradient-to-b from-[#243830] to-[#1C2B24] shadow-lg">
-                  <span className="font-serif-luxury text-5xl font-semibold text-[#E5D1A7]">
-                    {WEDDING_CONFIG.couple.bride.nickname[0]}
-                  </span>
-                  <span className="absolute -bottom-2.5 rounded-full border border-[#C5A059]/50 bg-[#FAF7F2] px-3 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-[#243830]">
-                    The Bride
-                  </span>
-                </div>
-
-                <h3 className="font-serif-luxury text-3xl font-semibold text-[#1C2B24]">
-                  {WEDDING_CONFIG.couple.bride.fullName}
-                </h3>
-
-                <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#C5A059]">
-                  {WEDDING_CONFIG.couple.bride.childOrder} dari:
-                </p>
-
-                <p className="mt-1.5 text-sm leading-relaxed text-[#4A6358]">
-                  {WEDDING_CONFIG.couple.bride.fatherName}
-                  <br />
-                  &amp; {WEDDING_CONFIG.couple.bride.motherName}
-                </p>
-              </div>
-
-              <div className="mt-6 pt-4 border-t border-[#C5A059]/25 w-full flex justify-center">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-[#C5A059]/35 bg-[#F2ECE1] px-4 py-1.5 text-xs font-medium text-[#243830]">
-                  <Instagram className="h-3.5 w-3.5 text-[#C5A059]" />
-                  <span>{WEDDING_CONFIG.couple.bride.instagram}</span>
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. EVENT SCHEDULE & COUNTDOWN */}
-      <EventSchedule />
-
-      {/* 4. STRICT INVITE-ONLY RSVP FORM */}
-      <RsvpForm
-        guestName={displayGuestName}
-        registeredGuest={registeredGuest}
-        initialRsvp={initialRsvp}
-      />
-
-      {/* 5. REALTIME & OPTIMISTIC WISH WALL */}
-      <WishWall
-        initialWishes={wishes}
-        defaultSenderName={displayGuestName}
-        registeredGuest={registeredGuest}
-      />
-
-      {/* 6. DIGITAL ENVELOPE & QRIS GIFT SECTION */}
-      <GiftSection />
-
-      {/* 7. CLOSING THANK YOU & FOOTER */}
-      <footer className="relative overflow-hidden border-t border-[#C5A059]/35 bg-[#1C2B24] px-4 pb-28 pt-20 text-center text-[#FAF7F2] sm:px-6">
-        <div className="mx-auto max-w-2xl">
-          <p className="text-xs uppercase tracking-[0.28em] text-[#E5D1A7]">
-            Ungkapan Terima Kasih
-          </p>
-
-          <h2 className="mt-4 font-serif-luxury text-4xl font-normal text-[#FAF7F2] sm:text-5xl">
-            {WEDDING_CONFIG.couple.groom.nickname}{" "}
-            <span className="italic text-[#C5A059]">&amp;</span>{" "}
-            {WEDDING_CONFIG.couple.bride.nickname}
-          </h2>
-
-          <p className="mt-4 text-xs leading-relaxed text-[#FAF7F2]/80 sm:text-sm">
-            Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila
-            Bapak/Ibu/Saudara/i berkenan hadir untuk memberikan doa restu kepada
-            kedua mempelai. Atas kehadiran dan doa restunya, kami ucapkan terima
-            kasih.
-          </p>
-
-          <p className="mt-5 font-serif-luxury text-lg italic text-[#E5D1A7]">
-            Wassalamu&apos;alaikum Warahmatullahi Wabarakatuh
-          </p>
-
-          <div className="my-8 h-[1px] w-full bg-gradient-to-r from-transparent via-[#C5A059]/40 to-transparent" />
-
-          <p className="text-xs font-semibold tracking-[0.25em] text-[#C5A059]">
-            {WEDDING_CONFIG.couple.hashtag}
-          </p>
-          <p className="mt-2 text-[11px] text-[#FAF7F2]/50">
-            Luxury Botanical &amp; Warm Ivory Wedding Suite •{" "}
-            {WEDDING_CONFIG.couple.weddingDateDisplay}
-          </p>
         </div>
       </footer>
     </InvitationClientShell>

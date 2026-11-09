@@ -57,10 +57,10 @@ export const WEDDING_CONFIG = {
       title: "Akad Nikah",
       subtitle: "Ikrar Suci Pernikahan",
       dateDisplay: "Sabtu, 12 Desember 2026",
-      timeDisplay: "08.00 – 10.00 WIB",
+      timeDisplay: "08.00 - 10.00 WIB",
       startIso: "20261212T010000Z",
       endIso: "20261212T030000Z",
-      venueName: "Glasshouse Ballroom — The Dharmawangsa Jakarta",
+      venueName: "Glasshouse Ballroom, The Dharmawangsa Jakarta",
       venueAddress:
         "Jl. Brawijaya Raya No. 26, Kebayoran Baru, Jakarta Selatan 12160",
       googleMapsUrl:
@@ -74,10 +74,10 @@ export const WEDDING_CONFIG = {
       title: "Resepsi Pernikahan",
       subtitle: "Syukuran & Ramah Tamah",
       dateDisplay: "Sabtu, 12 Desember 2026",
-      timeDisplay: "11.00 – 14.00 WIB",
+      timeDisplay: "11.00 - 14.00 WIB",
       startIso: "20261212T040000Z",
       endIso: "20261212T070000Z",
-      venueName: "Grand Ballroom — The Dharmawangsa Jakarta",
+      venueName: "Grand Ballroom, The Dharmawangsa Jakarta",
       venueAddress:
         "Jl. Brawijaya Raya No. 26, Kebayoran Baru, Jakarta Selatan 12160",
       googleMapsUrl:
@@ -118,14 +118,14 @@ export const WEDDING_CONFIG = {
     },
   },
   audio: {
-    title: "Clair de Lune — Romantic Piano Suite",
+    title: "Clair de Lune, Romantic Piano Suite",
     artist: "Instrumental Chamber Ensemble",
     src: "/audio/wedding-theme.mp3",
   },
 } as const;
 
 export function buildGoogleCalendarUrl(event: WeddingEventDetail): string {
-  const title = `${event.title} — Pernikahan ${WEDDING_CONFIG.couple.groom.nickname} & ${WEDDING_CONFIG.couple.bride.nickname}`;
+  const title = `${event.title}: Pernikahan ${WEDDING_CONFIG.couple.groom.nickname} & ${WEDDING_CONFIG.couple.bride.nickname}`;
   const details = `Undangan Pernikahan ${WEDDING_CONFIG.couple.groom.fullName} & ${WEDDING_CONFIG.couple.bride.fullName}.\n\nAcara: ${event.title} (${event.timeDisplay})\nLokasi: ${event.venueName}, ${event.venueAddress}`;
   const params = new URLSearchParams({
     action: "TEMPLATE",
@@ -137,4 +137,3 @@ export function buildGoogleCalendarUrl(event: WeddingEventDetail): string {
 
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }
-

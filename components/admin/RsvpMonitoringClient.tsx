@@ -8,7 +8,6 @@ import {
   XCircle,
   HelpCircle,
   Clock,
-  Sparkles,
   UsersRound,
   X,
 } from "lucide-react";
@@ -39,7 +38,7 @@ interface CombinedRsvpRow {
 }
 
 function formatDateId(iso: string | null): string {
-  if (!iso) return "—";
+  if (!iso) return "-";
   try {
     return new Intl.DateTimeFormat("id-ID", {
       day: "numeric",
@@ -84,7 +83,6 @@ export default function RsvpMonitoringClient({
       };
     });
 
-    // Also include any RSVP records whose guest_id wasn't in guests list
     const guestIdSet = new Set(guests.map((g) => g.id));
     for (const r of rsvps) {
       if (!guestIdSet.has(r.guest_id)) {
@@ -206,97 +204,96 @@ export default function RsvpMonitoringClient({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-2xl border border-[#E5D1A7]/60 shadow-xs">
+      <div className="flex flex-col gap-4 rounded-sm border border-[#C5A059]/40 bg-white p-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#C5A059] mb-1">
-            <Sparkles className="w-3.5 h-3.5" />
-            Attendance &amp; Pax Tracker
-          </div>
-          <h1 className="font-serif-luxury text-2xl sm:text-3xl font-semibold text-[#243830]">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8A6825]">
+            Rekapitulasi Kehadiran &amp; Alokasi Kursi
+          </p>
+          <h1 className="mt-1 font-serif-luxury text-2xl font-semibold text-[#1C2B24] sm:text-3xl">
             Monitoring Konfirmasi RSVP
           </h1>
-          <p className="text-xs text-[#4A6358] mt-1">
+          <p className="mt-1 text-xs text-[#4A6358]">
             Pantau daftar kehadiran tamu, jumlah kursi (pax), serta ekspor
-            laporan untuk Wedding Organizer.
+            laporan untuk panitia resepsi.
           </p>
         </div>
 
         <button
           type="button"
           onClick={handleExportCsv}
-          className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#243830] hover:bg-[#1a2923] text-[#FAF7F2] text-xs font-semibold shadow-sm transition-all cursor-pointer shrink-0"
+          className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-sm bg-[#243830] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#FAF7F2] transition-colors hover:bg-[#1C2B24] tabular-nums"
         >
-          <Download className="w-4 h-4 text-[#C5A059]" />
-          Export CSV ({filteredRows.length} Baris)
+          <Download className="h-4 w-4 text-[#E5D1A7]" />
+          <span>Ekspor CSV ({filteredRows.length} Baris)</span>
         </button>
       </div>
 
       {/* Summary Counters */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-2xl border border-emerald-200/80 shadow-2xs">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="rounded-sm border border-emerald-200 bg-white p-5">
           <div className="flex items-center justify-between text-emerald-800">
             <span className="text-xs font-semibold uppercase tracking-wider">
               Konfirmasi Hadir
             </span>
-            <CheckCircle2 className="w-4 h-4" />
+            <CheckCircle2 className="h-4 w-4" />
           </div>
-          <p className="text-2xl font-bold text-emerald-900 mt-2">
+          <p className="mt-2 font-serif-luxury text-3xl font-bold text-emerald-950 tabular-nums">
             {counters.hadirCount} Tamu
           </p>
-          <p className="text-xs text-emerald-700 mt-1 flex items-center gap-1 font-medium">
-            <UsersRound className="w-3.5 h-3.5" />
-            Total Estimasi: {counters.confirmedPax} Pax
+          <p className="mt-1 flex items-center gap-1 text-xs font-medium text-emerald-800 tabular-nums">
+            <UsersRound className="h-3.5 w-3.5" />
+            <span>Total Estimasi: {counters.confirmedPax} Pax</span>
           </p>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-rose-200/80 shadow-2xs">
+        <div className="rounded-sm border border-rose-200 bg-white p-5">
           <div className="flex items-center justify-between text-rose-800">
             <span className="text-xs font-semibold uppercase tracking-wider">
               Tidak Hadir
             </span>
-            <XCircle className="w-4 h-4" />
+            <XCircle className="h-4 w-4" />
           </div>
-          <p className="text-2xl font-bold text-rose-900 mt-2">
+          <p className="mt-2 font-serif-luxury text-3xl font-bold text-rose-950 tabular-nums">
             {counters.tidakHadirCount} Tamu
           </p>
-          <p className="text-xs text-rose-700 mt-1">
+          <p className="mt-1 text-xs text-rose-800">
             Telah mengonfirmasi berhalangan
           </p>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-amber-200/80 shadow-2xs">
+        <div className="rounded-sm border border-amber-200 bg-white p-5">
           <div className="flex items-center justify-between text-amber-800">
             <span className="text-xs font-semibold uppercase tracking-wider">
               Masih Ragu
             </span>
-            <HelpCircle className="w-4 h-4" />
+            <HelpCircle className="h-4 w-4" />
           </div>
-          <p className="text-2xl font-bold text-amber-900 mt-2">
+          <p className="mt-2 font-serif-luxury text-3xl font-bold text-amber-950 tabular-nums">
             {counters.raguCount} Tamu
           </p>
-          <p className="text-xs text-amber-700 mt-1">
+          <p className="mt-1 text-xs text-amber-800 tabular-nums">
             Potensi tambahan: {counters.raguPax} Pax
           </p>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-2xs">
+        <div className="rounded-sm border border-stone-200 bg-white p-5">
           <div className="flex items-center justify-between text-stone-600">
             <span className="text-xs font-semibold uppercase tracking-wider">
               Belum Konfirmasi
             </span>
-            <Clock className="w-4 h-4" />
+            <Clock className="h-4 w-4" />
           </div>
-          <p className="text-2xl font-bold text-stone-800 mt-2">
+          <p className="mt-2 font-serif-luxury text-3xl font-bold text-stone-900 tabular-nums">
             {counters.belumCount} Tamu
           </p>
-          <p className="text-xs text-stone-500 mt-1">
-            Menunggu respon undangan
+          <p className="mt-1 text-xs text-stone-600">
+            Menunggu respons undangan
           </p>
         </div>
       </div>
 
       {/* Filter & Search Bar */}
-      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-[#E5D1A7]/60 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="flex flex-col justify-between gap-4 rounded-sm border border-[#C5A059]/40 bg-white p-4 sm:p-5 lg:flex-row lg:items-center">
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0">
           {(
             [
@@ -313,10 +310,10 @@ export default function RsvpMonitoringClient({
                 key={tab}
                 type="button"
                 onClick={() => setStatusFilter(tab)}
-                className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                className={`min-h-10 whitespace-nowrap rounded-sm px-3.5 py-2 text-xs font-semibold transition-colors ${
                   active
-                    ? "bg-[#243830] text-[#FAF7F2] shadow-xs"
-                    : "bg-[#FAF7F2] text-[#4A6358] hover:bg-[#F2ECE1] hover:text-[#243830]"
+                    ? "bg-[#243830] text-[#FAF7F2]"
+                    : "border border-[#C5A059]/30 bg-[#FAF7F2] text-[#4A6358] hover:bg-[#F2ECE1] hover:text-[#1C2B24]"
                 }`}
               >
                 {tab}
@@ -326,47 +323,48 @@ export default function RsvpMonitoringClient({
         </div>
 
         <div className="relative w-full lg:w-80">
-          <Search className="w-4 h-4 text-[#4A6358] absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#4A6358]" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            aria-label="Cari nama tamu, kategori, atau catatan"
             placeholder="Cari nama tamu, kategori, atau catatan..."
-            className="w-full pl-10 pr-9 py-2.5 rounded-xl border border-[#E5D1A7] bg-[#FAF7F2]/60 text-xs text-[#222624] placeholder:text-[#4A6358]/60 focus:outline-none focus:ring-2 focus:ring-[#C5A059] focus:bg-white"
+            className="min-h-10 w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] py-2 pl-10 pr-9 text-xs text-[#222624] placeholder:text-[#4A6358]/65"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => setSearchQuery("")}
               aria-label="Reset pencarian"
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-[#4A6358] hover:text-[#243830] cursor-pointer"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-[#4A6358] hover:text-[#1C2B24]"
             >
-              <X className="w-3.5 h-3.5" />
+              <X className="h-3.5 w-3.5" />
             </button>
           )}
         </div>
       </div>
 
       {/* RSVP Table */}
-      <div className="bg-white rounded-2xl border border-[#E5D1A7]/60 shadow-xs overflow-hidden">
+      <div className="overflow-hidden rounded-sm border border-[#C5A059]/40 bg-white">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full border-collapse text-left">
             <thead>
-              <tr className="bg-[#FAF7F2] border-b border-[#E5D1A7]/60 text-[11px] font-semibold uppercase tracking-wider text-[#4A6358]">
-                <th className="py-3.5 px-5">Nama Tamu</th>
-                <th className="py-3.5 px-4">Kategori</th>
-                <th className="py-3.5 px-4">Status Kehadiran</th>
-                <th className="py-3.5 px-4 text-center">Jumlah Pax</th>
-                <th className="py-3.5 px-4">Catatan Tamu</th>
-                <th className="py-3.5 px-5 text-right">Waktu Konfirmasi</th>
+              <tr className="border-b border-[#C5A059]/30 bg-[#FAF7F2] text-[11px] font-semibold uppercase tracking-wider text-[#4A6358]">
+                <th className="px-5 py-3.5">Nama Tamu</th>
+                <th className="px-4 py-3.5">Kategori</th>
+                <th className="px-4 py-3.5">Status Kehadiran</th>
+                <th className="px-4 py-3.5 text-center">Jumlah Pax</th>
+                <th className="px-4 py-3.5">Catatan Tamu</th>
+                <th className="px-5 py-3.5 text-right">Waktu Konfirmasi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#FAF7F2] text-xs">
+            <tbody className="divide-y divide-[#F2ECE1] text-xs">
               {filteredRows.length === 0 ? (
                 <tr>
                   <td
                     colSpan={6}
-                    className="py-12 px-6 text-center text-[#4A6358]"
+                    className="px-6 py-12 text-center text-[#4A6358]"
                   >
                     Tidak ada data RSVP yang sesuai dengan filter.
                   </td>
@@ -375,69 +373,69 @@ export default function RsvpMonitoringClient({
                 filteredRows.map((row) => (
                   <tr
                     key={row.guestId}
-                    className="hover:bg-[#FAF7F2]/60 transition-colors"
+                    className="transition-colors hover:bg-[#FAF7F2]/60"
                   >
-                    <td className="py-4 px-5">
-                      <p className="font-semibold text-[#243830] text-sm">
+                    <td className="px-5 py-4">
+                      <p className="text-sm font-semibold text-[#1C2B24]">
                         {row.guestName}
                       </p>
                       {row.phone && (
-                        <p className="text-[11px] text-[#4A6358] font-mono mt-0.5">
+                        <p className="mt-0.5 font-mono text-[11px] text-[#4A6358] tabular-nums">
                           {row.phone}
                         </p>
                       )}
                     </td>
 
-                    <td className="py-4 px-4">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#FAF7F2] text-[#243830] border border-[#E5D1A7]">
+                    <td className="px-4 py-4">
+                      <span className="inline-flex items-center rounded-sm border border-[#C5A059]/35 bg-[#FAF7F2] px-2 py-0.5 text-[11px] font-semibold text-[#1C2B24]">
                         {row.category}
                       </span>
                     </td>
 
-                    <td className="py-4 px-4">
+                    <td className="px-4 py-4">
                       {row.status === "hadir" && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                          <CheckCircle2 className="w-3 h-3" />
+                        <span className="inline-flex items-center gap-1 rounded-sm border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-800">
+                          <CheckCircle2 className="h-3 w-3" />
                           Hadir
                         </span>
                       )}
                       {row.status === "tidak_hadir" && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-100 text-rose-800 border border-rose-200">
-                          <XCircle className="w-3 h-3" />
+                        <span className="inline-flex items-center gap-1 rounded-sm border border-rose-200 bg-rose-50 px-2 py-0.5 text-[11px] font-semibold text-rose-800">
+                          <XCircle className="h-3 w-3" />
                           Tidak Hadir
                         </span>
                       )}
                       {row.status === "ragu" && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-800 border border-amber-200">
-                          <HelpCircle className="w-3 h-3" />
+                        <span className="inline-flex items-center gap-1 rounded-sm border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-800">
+                          <HelpCircle className="h-3 w-3" />
                           Masih Ragu
                         </span>
                       )}
                       {row.status === "belum" && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-stone-100 text-stone-600 border border-stone-200">
-                          <Clock className="w-3 h-3" />
+                        <span className="inline-flex items-center gap-1 rounded-sm border border-stone-200 bg-stone-100 px-2 py-0.5 text-[11px] font-medium text-stone-600">
+                          <Clock className="h-3 w-3" />
                           Belum Konfirmasi
                         </span>
                       )}
                     </td>
 
-                    <td className="py-4 px-4 text-center">
-                      <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-[#FAF7F2] border border-[#E5D1A7]/60 font-semibold text-[#243830]">
+                    <td className="px-4 py-4 text-center">
+                      <span className="inline-flex items-center justify-center rounded-sm border border-[#C5A059]/35 bg-[#FAF7F2] px-2.5 py-1 font-semibold text-[#1C2B24] tabular-nums">
                         {row.pax} / {row.maxPax} Pax
                       </span>
                     </td>
 
-                    <td className="py-4 px-4 max-w-xs">
+                    <td className="max-w-xs px-4 py-4">
                       {row.notes ? (
-                        <p className="text-xs text-[#222624] italic">
+                        <p className="text-xs italic text-[#222624]">
                           &ldquo;{row.notes}&rdquo;
                         </p>
                       ) : (
-                        <span className="text-[#4A6358]/50">—</span>
+                        <span className="text-[#4A6358]/50">-</span>
                       )}
                     </td>
 
-                    <td className="py-4 px-5 text-right text-[#4A6358]">
+                    <td className="px-5 py-4 text-right text-[#4A6358] tabular-nums">
                       {formatDateId(row.updatedAt)}
                     </td>
                   </tr>

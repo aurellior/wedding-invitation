@@ -12,7 +12,6 @@ import {
   LogOut,
   Menu,
   X,
-  Sparkles,
   ShieldCheck,
   Loader2,
 } from "lucide-react";
@@ -31,26 +30,26 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   {
-    label: "Dashboard",
-    subtitle: "Ringkasan & Metrik",
+    label: "Ringkasan",
+    subtitle: "Metrik & Progres RSVP",
     href: "/admin",
     icon: LayoutDashboard,
   },
   {
-    label: "Guests",
-    subtitle: "Daftar Tamu & Kirim WA",
+    label: "Daftar Tamu",
+    subtitle: "Kuota & Pengiriman WA",
     href: "/admin/guests",
     icon: Users,
   },
   {
-    label: "RSVP",
-    subtitle: "Konfirmasi & Kuota Pax",
+    label: "Rekap RSVP",
+    subtitle: "Kehadiran & Ekspor CSV",
     href: "/admin/rsvp",
     icon: CheckCircle2,
   },
   {
-    label: "Wishes",
-    subtitle: "Moderasi Doa & Ucapan",
+    label: "Moderasi Doa",
+    subtitle: "Buku Tamu & Ucapan",
     href: "/admin/wishes",
     icon: MessageSquareHeart,
   },
@@ -163,36 +162,37 @@ export default function AdminSidebar({
   const isNavigating = Boolean(pendingPath && pendingPath !== pathname);
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] text-[#222624] flex flex-col lg:flex-row relative">
+    <div className="relative flex min-h-screen flex-col bg-[#FAF7F2] text-[#222624] lg:flex-row">
       {/* Top Loading Progress Bar */}
       {showTopBar && (
         <div
           role="progressbar"
+          aria-label="Memuat halaman admin"
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={progress}
-          className="fixed top-0 left-0 right-0 z-[100] h-1 bg-[#243830]/15 overflow-hidden pointer-events-none"
+          className="pointer-events-none fixed left-0 right-0 top-0 z-[100] h-1 overflow-hidden bg-[#243830]/15"
         >
           <div
-            className="h-full bg-gradient-to-r from-[#C5A059] via-[#E5D1A7] to-[#C5A059] shadow-[0_0_12px_#C5A059] transition-all duration-200 ease-out"
+            className="h-full bg-[#C5A059] transition-all duration-200 ease-out"
             style={{ width: `${progress}%` }}
           />
         </div>
       )}
 
       {/* Mobile Header Bar */}
-      <header className="lg:hidden sticky top-0 z-30 flex items-center justify-between bg-[#243830] text-[#FAF7F2] px-4 py-3.5 shadow-md">
+      <header className="sticky top-0 z-30 flex items-center justify-between border-b border-[#C5A059]/30 bg-[#1C2B24] px-4 py-3 text-[#FAF7F2] lg:hidden">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-[#C5A059]/20 border border-[#C5A059]/40 flex items-center justify-center text-[#E5D1A7] font-serif-luxury font-semibold">
+          <div className="flex h-8 w-8 items-center justify-center rounded-sm border border-[#C5A059]/45 bg-[#243830] font-serif-luxury text-sm font-semibold text-[#E5D1A7]">
             A&amp;N
           </div>
           <div>
-            <p className="font-serif-luxury text-base font-semibold tracking-wide text-[#FAF7F2] leading-tight">
+            <p className="font-serif-luxury text-base font-semibold leading-tight tracking-wide text-[#FAF7F2]">
               {WEDDING_CONFIG.couple.groom.nickname} &amp;{" "}
-              {WEDDING_CONFIG.couple.bride.nickname} — Back-Office
+              {WEDDING_CONFIG.couple.bride.nickname} | Back-Office
             </p>
             <p className="text-[11px] text-[#E5D1A7]/80">
-              Wedding Organizer Suite
+              Meja Kerja Panitia &amp; Mempelai
             </p>
           </div>
         </div>
@@ -200,84 +200,85 @@ export default function AdminSidebar({
         <button
           type="button"
           onClick={() => setMobileOpen(!mobileOpen)}
-          aria-label="Toggle Menu"
-          className="p-2 rounded-lg text-[#FAF7F2] hover:bg-white/10 transition-colors"
+          aria-label={mobileOpen ? "Tutup menu navigasi" : "Buka menu navigasi"}
+          className="flex h-11 w-11 items-center justify-center rounded-sm text-[#FAF7F2] transition-colors hover:bg-white/10"
         >
-          {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </header>
 
       {/* Mobile Drawer Overlay */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-xs lg:hidden"
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
       {/* Sidebar Navigation */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-72 bg-[#243830] text-[#FAF7F2] flex flex-col justify-between transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${
+        aria-label="Navigasi Back-Office"
+        className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col justify-between border-r border-[#C5A059]/30 bg-[#1C2B24] text-[#FAF7F2] transition-transform duration-200 ease-out lg:static lg:translate-x-0 ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         {/* Top Brand Section */}
         <div>
-          <div className="p-6 border-b border-white/10">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#C5A059]/20 border border-[#C5A059]/30 text-[#E5D1A7] text-[11px] font-medium tracking-wider uppercase mb-3">
-              <Sparkles className="w-3 h-3" />
-              Wedding Back-Office
-            </div>
-            <h1 className="font-serif-luxury text-2xl font-semibold text-white tracking-wide">
+          <div className="border-b border-[#C5A059]/25 p-6">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#C5A059]">
+              Meja Kerja Pernikahan
+            </p>
+            <p className="mt-1.5 font-serif-luxury text-2xl font-semibold tracking-wide text-[#FAF7F2]">
               {WEDDING_CONFIG.couple.groom.nickname} &amp;{" "}
               {WEDDING_CONFIG.couple.bride.nickname}
-            </h1>
-            <p className="text-xs text-[#E5D1A7]/80 mt-1">
+            </p>
+            <p className="mt-1 text-xs text-[#E5D1A7]/80 tabular-nums">
               {WEDDING_CONFIG.couple.weddingDateDisplay}
             </p>
           </div>
 
           {/* Navigation Links */}
-          <nav className="p-4 space-y-1.5">
-            <p className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-white/40">
-              Menu Manajemen
+          <nav className="space-y-1 p-4" aria-label="Menu Utama Admin">
+            <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#FAF7F2]/45">
+              Modul Operasional
             </p>
             {NAV_ITEMS.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.href);
-              const isItemLoading = pendingPath === item.href && pathname !== item.href;
+              const isItemLoading =
+                pendingPath === item.href && pathname !== item.href;
 
               return (
                 <Link
                   key={item.href}
                   href={item.href}
                   onClick={() => handleNavClick(item.href)}
-                  className={`group flex items-center gap-3.5 px-3.5 py-3 rounded-xl transition-all duration-200 ${
+                  className={`group flex min-h-11 items-center gap-3.5 rounded-sm px-3.5 py-2.5 transition-colors ${
                     active
-                      ? "bg-[#C5A059] text-[#243830] shadow-md font-semibold"
+                      ? "bg-[#C5A059] font-semibold text-[#1C2B24]"
                       : "text-[#FAF7F2]/80 hover:bg-white/10 hover:text-white"
                   }`}
                 >
                   <div
-                    className={`p-2 rounded-lg transition-colors ${
+                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-sm transition-colors ${
                       active
-                        ? "bg-[#243830]/15 text-[#243830]"
+                        ? "bg-[#1C2B24]/15 text-[#1C2B24]"
                         : "bg-white/5 text-[#E5D1A7] group-hover:bg-white/10"
                     }`}
                   >
                     {isItemLoading ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
-                      <Icon className="w-4 h-4" />
+                      <Icon className="h-4 w-4" />
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm leading-tight truncate">
+                    <p className="truncate text-sm leading-tight">
                       {item.label}
                     </p>
                     <p
-                      className={`text-[11px] truncate mt-0.5 ${
-                        active ? "text-[#243830]/80" : "text-white/50"
+                      className={`mt-0.5 truncate text-[11px] ${
+                        active ? "text-[#1C2B24]/80" : "text-white/55"
                       }`}
                     >
                       {item.subtitle}
@@ -290,14 +291,14 @@ export default function AdminSidebar({
         </div>
 
         {/* Bottom Actions */}
-        <div className="p-4 border-t border-white/10 space-y-2.5">
-          <div className="px-3.5 py-3 rounded-xl bg-white/5 border border-white/10">
-            <div className="flex items-center gap-2 text-xs text-[#E5D1A7] font-medium">
-              <ShieldCheck className="w-4 h-4 shrink-0" />
-              <span>Sesi Admin Aktif</span>
+        <div className="space-y-2.5 border-t border-[#C5A059]/25 p-4">
+          <div className="rounded-sm border border-[#C5A059]/25 bg-[#243830] px-3.5 py-3">
+            <div className="flex items-center gap-2 text-xs font-medium text-[#E5D1A7]">
+              <ShieldCheck className="h-4 w-4 shrink-0" />
+              <span>Sesi Panitia Aktif</span>
             </div>
-            <p className="text-[11px] text-white/60 mt-1 leading-relaxed">
-              Kelola daftar tamu, kuota RSVP, dan pengiriman WhatsApp.
+            <p className="mt-1 text-[11px] leading-relaxed text-[#FAF7F2]/65">
+              Kelola daftar tamu, kuota kursi, dan pengiriman WhatsApp.
             </p>
           </div>
 
@@ -305,37 +306,37 @@ export default function AdminSidebar({
             href="/"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-[#FAF7F2] text-xs font-medium transition-colors border border-white/10"
+            className="flex min-h-11 w-full items-center justify-center gap-2 rounded-sm border border-[#C5A059]/35 bg-[#243830] px-4 py-2.5 text-xs font-semibold text-[#FAF7F2] transition-colors hover:bg-[#243830]/80"
           >
-            <ExternalLink className="w-3.5 h-3.5 text-[#E5D1A7]" />
-            Lihat Live Undangan
+            <ExternalLink className="h-3.5 w-3.5 text-[#E5D1A7]" />
+            <span>Buka Halaman Undangan</span>
           </Link>
 
           <button
             type="button"
             onClick={handleLogout}
             disabled={loggingOut}
-            className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-200 text-xs font-medium transition-colors border border-rose-400/20 disabled:opacity-50 cursor-pointer"
+            className="flex min-h-11 w-full items-center justify-center gap-2 rounded-sm border border-rose-400/30 bg-rose-950/40 px-4 py-2.5 text-xs font-semibold text-rose-200 transition-colors hover:bg-rose-900/50 disabled:opacity-50"
           >
-            <LogOut className="w-3.5 h-3.5" />
-            {loggingOut ? "Keluar..." : "Keluar Sesi Admin"}
+            <LogOut className="h-3.5 w-3.5" />
+            <span>{loggingOut ? "Keluar..." : "Keluar Sesi Admin"}</span>
           </button>
         </div>
       </aside>
 
       {/* Main Content Area */}
       <div
-        className="flex-1 flex flex-col min-w-0"
+        className="flex min-w-0 flex-1 flex-col"
         onClick={handleContentClick}
       >
         {/* Desktop Top Header */}
-        <header className="hidden lg:flex items-center justify-between px-8 py-4 bg-white/80 backdrop-blur-md border-b border-[#E5D1A7]/40 sticky top-0 z-20">
+        <header className="sticky top-0 z-20 hidden items-center justify-between border-b border-[#C5A059]/30 bg-[#FAF7F2] px-8 py-4 lg:flex">
           <div>
-            <p className="text-xs uppercase tracking-widest text-[#4A6358] font-semibold">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#243830]">
               {WEDDING_CONFIG.couple.groom.nickname} &amp;{" "}
-              {WEDDING_CONFIG.couple.bride.nickname} — Back-Office
+              {WEDDING_CONFIG.couple.bride.nickname} | Back-Office
             </p>
-            <p className="text-xs text-[#222624]/60 mt-0.5">
+            <p className="mt-0.5 text-xs text-[#4A6358]">
               Manajemen Tamu, Konfirmasi Kehadiran (RSVP), dan Moderasi Ucapan
             </p>
           </div>
@@ -345,15 +346,15 @@ export default function AdminSidebar({
               href="/?to=Bapak%2FIbu%20Tamu%20Kehormatan"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-[#C5A059]/50 bg-[#FAF7F2] hover:bg-[#F2ECE1] text-[#243830] text-xs font-medium transition-colors"
+              className="inline-flex min-h-10 items-center gap-2 rounded-sm border border-[#C5A059]/50 bg-[#F2ECE1] px-3.5 py-2 text-xs font-semibold text-[#243830] transition-colors hover:bg-[#E5D1A7]/40"
             >
-              <ExternalLink className="w-3.5 h-3.5 text-[#C5A059]" />
-              Preview Undangan Tamu
+              <ExternalLink className="h-3.5 w-3.5 text-[#8A6825]" />
+              <span>Pratinjau Undangan Tamu</span>
             </Link>
           </div>
         </header>
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+        <main className="mx-auto w-full max-w-7xl flex-1 p-4 sm:p-6 lg:p-8">
           {isNavigating ? (
             pendingPath === "/admin" ? (
               <DashboardOverviewSkeleton />
