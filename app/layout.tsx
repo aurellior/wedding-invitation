@@ -17,7 +17,7 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: `The Wedding of ${WEDDING_CONFIG.couple.groom.nickname} & ${WEDDING_CONFIG.couple.bride.nickname} | ${WEDDING_CONFIG.couple.weddingDateDisplay}`,
+  title: `The Wedding of ${WEDDING_CONFIG.couple.groom.nickname} & ${WEDDING_CONFIG.couple.bride.nickname} — ${WEDDING_CONFIG.couple.weddingDateDisplay}`,
   description: `Undangan Pernikahan Digital ${WEDDING_CONFIG.couple.groom.fullName} & ${WEDDING_CONFIG.couple.bride.fullName}. ${WEDDING_CONFIG.couple.weddingDateDisplay}.`,
 };
 
@@ -37,3 +37,4 @@ export default function RootLayout({
     </html>
   );
 }
+

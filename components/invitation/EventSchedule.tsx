@@ -1,11 +1,13 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import {
   CalendarPlus,
   Clock,
   MapPin,
   Navigation,
+  Sparkles,
   Calendar,
 } from "lucide-react";
 import {
@@ -67,142 +69,175 @@ export default function EventSchedule({
   ];
 
   const primaryEvent = config.events[0] ?? DEFAULT_WEDDING_CONFIG.events[0];
-  const romanNumerals = ["I", "II", "III", "IV"];
 
   return (
     <section
       id="acara"
-      className="relative overflow-hidden border-b border-[#C5A059]/25 bg-[#F2ECE1]/75 px-4 py-20 sm:px-6 lg:px-8"
+      className="relative overflow-hidden bg-[#F2ECE1]/70 py-20 px-4 sm:px-6 lg:px-8"
     >
       <div className="mx-auto max-w-5xl">
-        {/* Asymmetric Section Header & Countdown Ledger */}
-        <div className="grid grid-cols-1 gap-8 border-b border-[#C5A059]/30 pb-12 lg:grid-cols-12 lg:items-end">
-          <div className="lg:col-span-6">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#8A6825]">
-              III. Rangkaian Acara
-            </p>
-            <h2 className="mt-2 font-serif-luxury text-4xl font-semibold leading-[1.1] text-[#1C2B24] sm:text-5xl">
-              Waktu &amp; Tempat Bahagia
-            </h2>
-            <p className="mt-3 max-w-xl text-sm leading-relaxed text-[#4A6358]">
-              Dengan memohon rahmat dan ridho Allah SWT, kami bermaksud
-              menyelenggarakan akad nikah dan resepsi pernikahan pada:
-            </p>
-          </div>
+        {/* Section Heading */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.7 }}
+          className="text-center"
+        >
+          <span className="inline-flex items-center gap-2 rounded-full border border-[#C5A059]/40 bg-[#FAF7F2] px-4 py-1 text-[11px] font-medium uppercase tracking-[0.25em] text-[#243830]">
+            <Sparkles className="h-3.5 w-3.5 text-[#C5A059]" />
+            Rangkaian Acara
+          </span>
+          <h2 className="mt-4 font-serif-luxury text-4xl font-semibold text-[#1C2B24] sm:text-5xl">
+            Waktu &amp; Tempat Bahagia
+          </h2>
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-[#4A6358]">
+            Dengan memohon rahmat dan ridho Allah SWT, kami bermaksud
+            menyelenggarakan rangkaian acara pernikahan kami pada:
+          </p>
+        </motion.div>
 
-          {/* Tabular Countdown Strip */}
-          <div className="lg:col-span-6">
-            <div className="rounded-sm border border-[#C5A059]/40 bg-[#1C2B24] p-5 text-[#FAF7F2]">
-              <div className="flex items-center justify-between border-b border-[#C5A059]/25 pb-2.5 text-[11px] uppercase tracking-[0.2em] text-[#E5D1A7]">
-                <span>Hitung Mundur Acara</span>
-                <span className="tabular-nums">{config.couple.shortDate}</span>
+        {/* Live Countdown Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7, delay: 0.1 }}
+          className="mx-auto mt-10 max-w-3xl rounded-3xl border border-[#C5A059]/35 bg-[#1C2B24] p-6 text-[#FAF7F2] shadow-xl sm:p-8"
+        >
+          <p className="text-center text-xs uppercase tracking-[0.28em] text-[#E5D1A7]">
+            Menuju Hari Bahagia • {config.couple.weddingDateDisplay}
+          </p>
+
+          <div className="mt-5 grid grid-cols-4 gap-3 sm:gap-5">
+            {countdownItems.map((item) => (
+              <div
+                key={item.label}
+                className="flex flex-col items-center justify-center rounded-2xl border border-[#C5A059]/30 bg-[#243830]/90 px-2 py-4 text-center shadow-inner sm:py-5"
+              >
+                <span className="font-serif-luxury text-3xl font-bold tracking-wider text-[#E5D1A7] sm:text-5xl">
+                  {String(item.value).padStart(2, "0")}
+                </span>
+                <span className="mt-1 text-[10px] font-medium uppercase tracking-[0.2em] text-[#FAF7F2]/75 sm:text-xs">
+                  {item.label}
+                </span>
               </div>
-              <div className="mt-4 grid grid-cols-4 divide-x divide-[#C5A059]/25 text-center">
-                {countdownItems.map((item) => (
-                  <div key={item.label} className="px-2">
-                    <span className="font-serif-luxury text-3xl font-semibold tracking-wider text-[#E5D1A7] tabular-nums sm:text-4xl">
-                      {String(item.value).padStart(2, "0")}
-                    </span>
-                    <span className="mt-1 block text-[10px] uppercase tracking-[0.18em] text-[#FAF7F2]/75">
-                      {item.label}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            ))}
           </div>
-        </div>
+        </motion.div>
 
-        {/* Event Itinerary Grid */}
-        <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2">
-          {config.events.map((event: WeddingEventDetail, idx: number) => (
-            <article
-              key={event.id}
-              className="flex flex-col justify-between rounded-sm border border-[#C5A059]/40 bg-[#FAF7F2] p-7 sm:p-9"
-            >
-              <div>
-                <div className="flex items-center justify-between border-b border-[#C5A059]/25 pb-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#8A6825]">
-                  <span>
-                    {romanNumerals[idx] ?? idx + 1}. {event.subtitle}
-                  </span>
-                  <span className="tabular-nums">0{idx + 1}</span>
-                </div>
+        {/* Event Cards Grid (Akad & Resepsi) */}
+        <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-2">
+          {config.events.map(
+            (event: WeddingEventDetail, idx: number) => (
+              <motion.div
+                key={event.id}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.7, delay: idx * 0.15 }}
+                className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-[#C5A059]/35 bg-[#FAF7F2] p-7 shadow-[0_14px_40px_rgba(36,56,48,0.07)] sm:p-9"
+              >
+                {/* Decorative top accent */}
+                <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-[#243830] via-[#C5A059] to-[#243830]" />
 
-                <h3 className="mt-5 font-serif-luxury text-3xl font-semibold text-[#1C2B24] sm:text-4xl">
-                  {event.title}
-                </h3>
-
-                <div className="mt-5 space-y-3.5 border-y border-[#C5A059]/25 py-5 text-sm text-[#222624]">
-                  <div className="flex items-start gap-3">
-                    <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-[#8A6825]" />
-                    <p className="font-semibold text-[#1C2B24]">
-                      {event.dateDisplay}
-                    </p>
+                <div>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="rounded-full border border-[#C5A059]/35 bg-[#F2ECE1] px-3.5 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#243830]">
+                      {event.subtitle}
+                    </span>
+                    <span className="font-serif-luxury text-sm italic text-[#C5A059]">
+                      0{idx + 1}
+                    </span>
                   </div>
 
-                  <div className="flex items-start gap-3">
-                    <Clock className="mt-0.5 h-4 w-4 shrink-0 text-[#8A6825]" />
-                    <p className="font-medium text-[#243830] tabular-nums">
-                      {event.timeDisplay}
-                    </p>
-                  </div>
+                  <h3 className="mt-4 font-serif-luxury text-3xl font-semibold text-[#1C2B24] sm:text-4xl">
+                    {event.title}
+                  </h3>
 
-                  <div className="flex items-start gap-3">
-                    <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#8A6825]" />
-                    <div>
-                      <p className="font-semibold text-[#1C2B24]">
-                        {event.venueName}
-                      </p>
-                      <p className="mt-0.5 text-xs leading-relaxed text-[#4A6358]">
-                        {event.venueAddress}
-                      </p>
+                  <div className="mt-6 space-y-3.5 border-y border-[#C5A059]/25 py-5 text-sm text-[#222624]">
+                    <div className="flex items-start gap-3">
+                      <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-[#C5A059]" />
+                      <div>
+                        <p className="font-semibold text-[#1C2B24]">
+                          {event.dateDisplay}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <Clock className="mt-0.5 h-4 w-4 shrink-0 text-[#C5A059]" />
+                      <div>
+                        <p className="font-medium text-[#243830]">
+                          {event.timeDisplay}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#C5A059]" />
+                      <div>
+                        <p className="font-semibold text-[#1C2B24]">
+                          {event.venueName}
+                        </p>
+                        <p className="mt-0.5 text-xs leading-relaxed text-[#4A6358]">
+                          {event.venueAddress}
+                        </p>
+                      </div>
                     </div>
                   </div>
+
+                  {event.dressCode && (
+                    <div className="mt-4 flex items-center gap-2 rounded-xl bg-[#F2ECE1]/80 px-3.5 py-2.5 text-xs text-[#243830]">
+                      <Sparkles className="h-3.5 w-3.5 shrink-0 text-[#C5A059]" />
+                      <span>
+                        <strong className="font-semibold">Dress Code:</strong>{" "}
+                        {event.dressCode}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
-                {event.dressCode && (
-                  <p className="mt-4 text-xs text-[#243830]">
-                    <strong className="font-semibold uppercase tracking-wider text-[#1C2B24]">
-                      Busana:
-                    </strong>{" "}
-                    {event.dressCode}
-                  </p>
-                )}
-              </div>
+                {/* Action Buttons */}
+                <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+                  <a
+                    href={buildGoogleCalendarUrl(event, config.couple)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#243830] px-4 py-3 text-xs font-medium tracking-wide text-[#FAF7F2] shadow-sm transition-colors hover:bg-[#1C2B24]"
+                  >
+                    <CalendarPlus className="h-4 w-4 text-[#E5D1A7]" />
+                    <span>Add to Google Calendar</span>
+                  </a>
 
-              {/* Action Buttons (44px+ min height) */}
-              <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-                <a
-                  href={buildGoogleCalendarUrl(event, config.couple)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-sm bg-[#243830] px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-[#FAF7F2] transition-colors hover:bg-[#1C2B24]"
-                >
-                  <CalendarPlus className="h-4 w-4 text-[#E5D1A7]" />
-                  <span>Simpan ke Kalender</span>
-                </a>
-
-                <a
-                  href={event.googleMapsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-sm border border-[#C5A059]/55 bg-[#FAF7F2] px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-[#243830] transition-colors hover:bg-[#F2ECE1]"
-                >
-                  <Navigation className="h-4 w-4 text-[#8A6825]" />
-                  <span>Petunjuk Lokasi</span>
-                </a>
-              </div>
-            </article>
-          ))}
+                  <a
+                    href={event.googleMapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-[#C5A059]/50 bg-[#FAF7F2] px-4 py-3 text-xs font-semibold tracking-wide text-[#243830] transition-colors hover:bg-[#F2ECE1]"
+                  >
+                    <Navigation className="h-4 w-4 text-[#C5A059]" />
+                    <span>Petunjuk Lokasi</span>
+                  </a>
+                </div>
+              </motion.div>
+            )
+          )}
         </div>
 
-        {/* Framed Venue Map Sheet */}
-        <div className="mt-8 rounded-sm border border-[#C5A059]/40 bg-[#FAF7F2] p-4 sm:p-6">
-          <div className="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+        {/* Embedded Google Maps */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7, delay: 0.2 }}
+          className="mt-10 overflow-hidden rounded-3xl border-2 border-[#C5A059]/40 bg-[#FAF7F2] p-3 shadow-lg sm:p-4"
+        >
+          <div className="mb-3 flex flex-col justify-between gap-2 px-2 sm:flex-row sm:items-center">
             <div>
-              <h3 className="font-serif-luxury text-2xl font-semibold text-[#1C2B24]">
-                Peta Lokasi: {primaryEvent.venueName}
-              </h3>
+              <h4 className="font-serif-luxury text-xl font-semibold text-[#1C2B24]">
+                Peta Lokasi — {primaryEvent.venueName}
+              </h4>
               <p className="text-xs text-[#4A6358]">
                 {primaryEvent.venueAddress}
               </p>
@@ -211,26 +246,24 @@ export default function EventSchedule({
               href={primaryEvent.googleMapsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex min-h-11 items-center gap-2 self-start rounded-sm border border-[#C5A059]/50 bg-[#F2ECE1] px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#243830] transition-colors hover:bg-[#E5D1A7]/40 sm:self-auto"
+              className="inline-flex items-center gap-1.5 self-start rounded-full border border-[#C5A059]/40 bg-[#F2ECE1] px-3.5 py-1.5 text-xs font-medium text-[#243830] transition-colors hover:bg-[#E5D1A7]/40 sm:self-auto"
             >
-              <Navigation className="h-3.5 w-3.5 text-[#8A6825]" />
-              <span>Buka di Google Maps</span>
+              <Navigation className="h-3.5 w-3.5 text-[#C5A059]" />
+              <span>Buka di Aplikasi Google Maps</span>
             </a>
           </div>
 
-          <div className="relative h-72 w-full overflow-hidden rounded-sm border border-[#C5A059]/30 sm:h-80">
+          <div className="relative h-72 w-full overflow-hidden rounded-2xl border border-[#C5A059]/25 sm:h-80">
             <iframe
-              title={`Peta Lokasi ${primaryEvent.venueName}`}
+              title="Lokasi Pernikahan The Dharmawangsa Jakarta"
               src={primaryEvent.googleMapsEmbedUrl}
-              width="800"
-              height="360"
               className="h-full w-full border-0"
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
               allowFullScreen
             />
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

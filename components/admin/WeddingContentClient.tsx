@@ -16,6 +16,7 @@ import {
   AlertCircle,
   ExternalLink,
   RefreshCw,
+  Sparkles,
 } from "lucide-react";
 import type {
   BankAccount,
@@ -337,12 +338,13 @@ export default function WeddingContentClient({
   return (
     <form onSubmit={handleSave} className="space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col gap-4 rounded-sm border border-[#C5A059]/40 bg-white p-6 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 rounded-2xl border border-[#E5D1A7]/60 bg-white p-6 shadow-xs sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8A6825]">
-            Manajemen Konten &amp; Informasi Acara
-          </p>
-          <h1 className="mt-1 font-serif-luxury text-2xl font-semibold text-[#1C2B24] sm:text-3xl">
+          <div className="mb-1.5 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#C5A059]">
+            <Sparkles className="h-3.5 w-3.5" />
+            <span>Manajemen Konten &amp; Informasi Acara</span>
+          </div>
+          <h1 className="font-serif-luxury text-2xl font-semibold text-[#243830] sm:text-3xl">
             Pengaturan Konten Undangan
           </h1>
           <p className="mt-1 text-xs text-[#4A6358]">
@@ -356,9 +358,9 @@ export default function WeddingContentClient({
             href="/"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex min-h-11 items-center gap-2 rounded-sm border border-[#C5A059]/50 bg-[#FAF7F2] px-4 py-2.5 text-xs font-semibold text-[#243830] transition-colors hover:bg-[#F2ECE1]"
+            className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#C5A059]/50 bg-[#FAF7F2] px-4 py-2.5 text-xs font-semibold text-[#243830] transition-colors hover:bg-[#F2ECE1]"
           >
-            <ExternalLink className="h-3.5 w-3.5 text-[#8A6825]" />
+            <ExternalLink className="h-3.5 w-3.5 text-[#C5A059]" />
             <span>Lihat Undangan Live</span>
           </a>
 
@@ -366,7 +368,7 @@ export default function WeddingContentClient({
             type="button"
             disabled={resetting || saving}
             onClick={handleResetDefault}
-            className="inline-flex min-h-11 items-center gap-2 rounded-sm border border-stone-300 bg-white px-4 py-2.5 text-xs font-semibold text-[#4A6358] transition-colors hover:bg-stone-50 hover:text-[#1C2B24] disabled:opacity-50"
+            className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-stone-300 bg-white px-4 py-2.5 text-xs font-semibold text-[#4A6358] transition-colors hover:bg-stone-50 hover:text-[#1C2B24] disabled:opacity-50"
           >
             <RotateCcw className="h-3.5 w-3.5" />
             <span>{resetting ? "Mereset..." : "Reset Default"}</span>
@@ -375,7 +377,7 @@ export default function WeddingContentClient({
           <button
             type="submit"
             disabled={saving}
-            className="inline-flex min-h-11 items-center gap-2 rounded-sm bg-[#243830] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#FAF7F2] transition-colors hover:bg-[#1C2B24] disabled:opacity-60"
+            className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-xl bg-[#243830] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#FAF7F2] shadow-sm transition-colors hover:bg-[#1C2B24] disabled:opacity-60"
           >
             {saving ? (
               <>
@@ -396,7 +398,7 @@ export default function WeddingContentClient({
       {feedback && (
         <div
           role={feedback.type === "error" ? "alert" : "status"}
-          className={`flex items-start gap-2.5 rounded-sm border p-4 text-xs ${
+          className={`flex items-start gap-2.5 rounded-xl border p-4 text-xs ${
             feedback.type === "success"
               ? "border-emerald-700/40 bg-emerald-50 text-emerald-950"
               : "border-rose-600/40 bg-rose-50 text-rose-900"
@@ -423,7 +425,7 @@ export default function WeddingContentClient({
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`flex min-h-11 flex-col items-start justify-between rounded-sm border p-3.5 text-left transition-colors ${
+              className={`flex min-h-11 flex-col items-start justify-between rounded-xl border p-3.5 text-left transition-colors ${
                 isActive
                   ? "border-[#243830] bg-[#243830] text-[#FAF7F2]"
                   : "border-[#C5A059]/35 bg-white text-[#222624] hover:bg-[#FAF7F2]"
@@ -454,7 +456,7 @@ export default function WeddingContentClient({
         <div className="space-y-6">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {/* Groom Form */}
-            <div className="rounded-sm border border-[#C5A059]/40 bg-white p-6">
+            <div className="rounded-2xl border border-[#C5A059]/40 bg-white p-6 shadow-xs">
               <div className="border-b border-[#F2ECE1] pb-3.5">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8A6825]">
                   01 / Mempelai Pria
@@ -475,7 +477,7 @@ export default function WeddingContentClient({
                       required
                       value={config.couple.groom.nickname}
                       onChange={(e) => updateGroom("nickname", e.target.value)}
-                      className="min-h-11 w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                      className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
                     />
                   </div>
                   <div>
@@ -490,7 +492,7 @@ export default function WeddingContentClient({
                       onChange={(e) =>
                         updateGroom("childOrder", e.target.value)
                       }
-                      className="min-h-11 w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                      className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
                     />
                   </div>
                 </div>
@@ -504,7 +506,7 @@ export default function WeddingContentClient({
                     required
                     value={config.couple.groom.fullName}
                     onChange={(e) => updateGroom("fullName", e.target.value)}
-                    className="min-h-11 w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                    className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
                   />
                 </div>
 
@@ -520,7 +522,7 @@ export default function WeddingContentClient({
                       onChange={(e) =>
                         updateGroom("fatherName", e.target.value)
                       }
-                      className="min-h-11 w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                      className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
                     />
                   </div>
                   <div>
@@ -534,7 +536,7 @@ export default function WeddingContentClient({
                       onChange={(e) =>
                         updateGroom("motherName", e.target.value)
                       }
-                      className="min-h-11 w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                      className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
                     />
                   </div>
                 </div>
@@ -548,14 +550,14 @@ export default function WeddingContentClient({
                     placeholder="@username"
                     value={config.couple.groom.instagram}
                     onChange={(e) => updateGroom("instagram", e.target.value)}
-                    className="min-h-11 w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                    className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
                   />
                 </div>
               </div>
             </div>
 
             {/* Bride Form */}
-            <div className="rounded-sm border border-[#C5A059]/40 bg-white p-6">
+            <div className="rounded-2xl border border-[#C5A059]/40 bg-white p-6 shadow-xs">
               <div className="border-b border-[#F2ECE1] pb-3.5">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8A6825]">
                   02 / Mempelai Wanita
@@ -576,7 +578,7 @@ export default function WeddingContentClient({
                       required
                       value={config.couple.bride.nickname}
                       onChange={(e) => updateBride("nickname", e.target.value)}
-                      className="min-h-11 w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                      className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
                     />
                   </div>
                   <div>
@@ -591,7 +593,7 @@ export default function WeddingContentClient({
                       onChange={(e) =>
                         updateBride("childOrder", e.target.value)
                       }
-                      className="min-h-11 w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                      className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
                     />
                   </div>
                 </div>
@@ -605,7 +607,7 @@ export default function WeddingContentClient({
                     required
                     value={config.couple.bride.fullName}
                     onChange={(e) => updateBride("fullName", e.target.value)}
-                    className="min-h-11 w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                    className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
                   />
                 </div>
 
@@ -621,7 +623,7 @@ export default function WeddingContentClient({
                       onChange={(e) =>
                         updateBride("fatherName", e.target.value)
                       }
-                      className="min-h-11 w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                      className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
                     />
                   </div>
                   <div>
@@ -635,7 +637,7 @@ export default function WeddingContentClient({
                       onChange={(e) =>
                         updateBride("motherName", e.target.value)
                       }
-                      className="min-h-11 w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                      className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
                     />
                   </div>
                 </div>
@@ -649,7 +651,7 @@ export default function WeddingContentClient({
                     placeholder="@username"
                     value={config.couple.bride.instagram}
                     onChange={(e) => updateBride("instagram", e.target.value)}
-                    className="min-h-11 w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                    className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
                   />
                 </div>
               </div>
@@ -657,7 +659,7 @@ export default function WeddingContentClient({
           </div>
 
           {/* Wedding Date & Hashtag */}
-          <div className="rounded-sm border border-[#C5A059]/40 bg-white p-6">
+          <div className="rounded-2xl border border-[#C5A059]/40 bg-white p-6 shadow-xs">
             <div className="border-b border-[#F2ECE1] pb-3.5">
               <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8A6825]">
                 03 / Tanggal Utama &amp; Tagar Pernikahan
@@ -680,7 +682,7 @@ export default function WeddingContentClient({
                   onChange={(e) =>
                     updateCoupleMeta("weddingDateDisplay", e.target.value)
                   }
-                  className="min-h-11 w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                  className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
                 />
               </div>
 
@@ -696,7 +698,7 @@ export default function WeddingContentClient({
                   onChange={(e) =>
                     updateCoupleMeta("shortDate", e.target.value)
                   }
-                  className="min-h-11 w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24] tabular-nums"
+                  className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24] tabular-nums"
                 />
               </div>
 
@@ -712,7 +714,7 @@ export default function WeddingContentClient({
                   onChange={(e) =>
                     updateCoupleMeta("weddingDateIso", e.target.value)
                   }
-                  className="min-h-11 w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 font-mono text-xs text-[#1C2B24] tabular-nums"
+                  className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 font-mono text-xs text-[#1C2B24] tabular-nums"
                 />
               </div>
 
@@ -726,7 +728,7 @@ export default function WeddingContentClient({
                   placeholder="#ArkaFoundHisNadia"
                   value={config.couple.hashtag}
                   onChange={(e) => updateCoupleMeta("hashtag", e.target.value)}
-                  className="min-h-11 w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                  className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
                 />
               </div>
             </div>
@@ -740,7 +742,7 @@ export default function WeddingContentClient({
           {config.events.map((event, idx) => (
             <div
               key={event.id}
-              className="rounded-sm border border-[#C5A059]/40 bg-white p-6"
+              className="rounded-2xl border border-[#C5A059]/40 bg-white p-6 shadow-xs"
             >
               <div className="border-b border-[#F2ECE1] pb-3.5">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8A6825]">
@@ -764,7 +766,7 @@ export default function WeddingContentClient({
                       onChange={(e) =>
                         updateEvent(idx, "title", e.target.value)
                       }
-                      className="min-h-11 w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                      className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
                     />
                   </div>
                   <div>
@@ -778,7 +780,7 @@ export default function WeddingContentClient({
                       onChange={(e) =>
                         updateEvent(idx, "subtitle", e.target.value)
                       }
-                      className="min-h-11 w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                      className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
                     />
                   </div>
                 </div>
@@ -795,7 +797,7 @@ export default function WeddingContentClient({
                       onChange={(e) =>
                         updateEvent(idx, "dateDisplay", e.target.value)
                       }
-                      className="min-h-11 w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                      className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
                     />
                   </div>
                   <div>
@@ -810,7 +812,7 @@ export default function WeddingContentClient({
                       onChange={(e) =>
                         updateEvent(idx, "timeDisplay", e.target.value)
                       }
-                      className="min-h-11 w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24] tabular-nums"
+                      className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24] tabular-nums"
                     />
                   </div>
                 </div>
@@ -826,7 +828,7 @@ export default function WeddingContentClient({
                     onChange={(e) =>
                       updateEvent(idx, "venueName", e.target.value)
                     }
-                    className="min-h-11 w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                    className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
                   />
                 </div>
 
@@ -841,7 +843,7 @@ export default function WeddingContentClient({
                     onChange={(e) =>
                       updateEvent(idx, "venueAddress", e.target.value)
                     }
-                    className="w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2.5 text-sm text-[#1C2B24]"
+                    className="w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2.5 text-sm text-[#1C2B24]"
                   />
                 </div>
 
@@ -856,7 +858,7 @@ export default function WeddingContentClient({
                     onChange={(e) =>
                       updateEvent(idx, "googleMapsUrl", e.target.value)
                     }
-                    className="min-h-11 w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 font-mono text-xs text-[#1C2B24]"
+                    className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 font-mono text-xs text-[#1C2B24]"
                   />
                 </div>
 
@@ -871,7 +873,7 @@ export default function WeddingContentClient({
                     onChange={(e) =>
                       updateEvent(idx, "googleMapsEmbedUrl", e.target.value)
                     }
-                    className="min-h-11 w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 font-mono text-xs text-[#1C2B24]"
+                    className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 font-mono text-xs text-[#1C2B24]"
                   />
                   <p className="mt-1 text-[11px] text-[#4A6358]">
                     Format cepat:{" "}
@@ -891,7 +893,7 @@ export default function WeddingContentClient({
                     onChange={(e) =>
                       updateEvent(idx, "dressCode", e.target.value)
                     }
-                    className="min-h-11 w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                    className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
                   />
                 </div>
               </div>
@@ -902,7 +904,7 @@ export default function WeddingContentClient({
 
       {/* TAB 3: KUTIPAN & AYAT */}
       {activeTab === "quote" && (
-        <div className="rounded-sm border border-[#C5A059]/40 bg-white p-6">
+        <div className="rounded-2xl border border-[#C5A059]/40 bg-white p-6 shadow-xs">
           <div className="border-b border-[#F2ECE1] pb-3.5">
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8A6825]">
               Kutipan Pembuka Undangan
@@ -923,7 +925,7 @@ export default function WeddingContentClient({
                 required
                 value={config.quote.arabic}
                 onChange={(e) => updateQuote("arabic", e.target.value)}
-                className="w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-4 py-3 font-serif-luxury text-xl leading-loose text-[#1C2B24]"
+                className="w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-4 py-3 font-serif-luxury text-xl leading-loose text-[#1C2B24]"
               />
             </div>
 
@@ -936,7 +938,7 @@ export default function WeddingContentClient({
                 required
                 value={config.quote.translation}
                 onChange={(e) => updateQuote("translation", e.target.value)}
-                className="w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2.5 text-sm leading-relaxed text-[#1C2B24]"
+                className="w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2.5 text-sm leading-relaxed text-[#1C2B24]"
               />
             </div>
 
@@ -950,7 +952,7 @@ export default function WeddingContentClient({
                 placeholder="QS. Ar-Rum: 21"
                 value={config.quote.source}
                 onChange={(e) => updateQuote("source", e.target.value)}
-                className="min-h-11 w-full max-w-md rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                className="min-h-11 w-full max-w-md rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
               />
             </div>
           </div>
@@ -961,7 +963,7 @@ export default function WeddingContentClient({
       {activeTab === "gifts" && (
         <div className="space-y-6">
           {/* Bank Accounts */}
-          <div className="rounded-sm border border-[#C5A059]/40 bg-white p-6">
+          <div className="rounded-2xl border border-[#C5A059]/40 bg-white p-6 shadow-xs">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#F2ECE1] pb-3.5">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8A6825]">
@@ -975,7 +977,7 @@ export default function WeddingContentClient({
               <button
                 type="button"
                 onClick={addBankAccount}
-                className="inline-flex min-h-10 items-center gap-1.5 rounded-sm border border-[#C5A059]/50 bg-[#FAF7F2] px-3.5 py-2 text-xs font-semibold text-[#243830] transition-colors hover:bg-[#F2ECE1]"
+                className="inline-flex min-h-10 items-center gap-1.5 rounded-xl border border-[#C5A059]/50 bg-[#FAF7F2] px-3.5 py-2 text-xs font-semibold text-[#243830] transition-colors hover:bg-[#F2ECE1]"
               >
                 <Plus className="h-3.5 w-3.5 text-[#8A6825]" />
                 <span>Tambah Rekening</span>
@@ -986,7 +988,7 @@ export default function WeddingContentClient({
               {config.gifts.accounts.map((acc, idx) => (
                 <div
                   key={acc.id}
-                  className="space-y-3.5 rounded-sm border border-[#C5A059]/35 bg-[#FAF7F2]/60 p-4"
+                  className="space-y-3.5 rounded-xl border border-[#C5A059]/35 bg-[#FAF7F2]/60 p-4"
                 >
                   <div className="flex items-center justify-between border-b border-[#C5A059]/25 pb-2.5">
                     <span className="text-xs font-semibold uppercase tracking-wider text-[#243830]">
@@ -996,7 +998,7 @@ export default function WeddingContentClient({
                       <button
                         type="button"
                         onClick={() => removeBankAccount(idx)}
-                        className="inline-flex items-center gap-1 rounded-sm border border-rose-200 bg-rose-50 px-2.5 py-1 text-[11px] font-semibold text-rose-700 hover:bg-rose-100"
+                        className="inline-flex items-center gap-1 rounded-xl border border-rose-200 bg-rose-50 px-2.5 py-1 text-[11px] font-semibold text-rose-700 hover:bg-rose-100"
                       >
                         <Trash2 className="h-3 w-3" />
                         <span>Hapus</span>
@@ -1015,7 +1017,7 @@ export default function WeddingContentClient({
                       onChange={(e) =>
                         updateBankAccount(idx, "bankName", e.target.value)
                       }
-                      className="min-h-10 w-full rounded-sm border border-[#C5A059]/45 bg-white px-3 py-2 text-sm text-[#1C2B24]"
+                      className="min-h-10 w-full rounded-xl border border-[#C5A059]/45 bg-white px-3 py-2 text-sm text-[#1C2B24]"
                     />
                   </div>
 
@@ -1035,7 +1037,7 @@ export default function WeddingContentClient({
                             e.target.value
                           )
                         }
-                        className="min-h-10 w-full rounded-sm border border-[#C5A059]/45 bg-white px-3 py-2 font-mono text-sm text-[#1C2B24] tabular-nums"
+                        className="min-h-10 w-full rounded-xl border border-[#C5A059]/45 bg-white px-3 py-2 font-mono text-sm text-[#1C2B24] tabular-nums"
                       />
                     </div>
                     <div>
@@ -1053,7 +1055,7 @@ export default function WeddingContentClient({
                             e.target.value
                           )
                         }
-                        className="min-h-10 w-full rounded-sm border border-[#C5A059]/45 bg-white px-3 py-2 text-sm text-[#1C2B24]"
+                        className="min-h-10 w-full rounded-xl border border-[#C5A059]/45 bg-white px-3 py-2 text-sm text-[#1C2B24]"
                       />
                     </div>
                   </div>
@@ -1068,7 +1070,7 @@ export default function WeddingContentClient({
                       onChange={(e) =>
                         updateBankAccount(idx, "branch", e.target.value)
                       }
-                      className="min-h-10 w-full rounded-sm border border-[#C5A059]/45 bg-white px-3 py-2 text-sm text-[#1C2B24]"
+                      className="min-h-10 w-full rounded-xl border border-[#C5A059]/45 bg-white px-3 py-2 text-sm text-[#1C2B24]"
                     />
                   </div>
                 </div>
@@ -1078,7 +1080,7 @@ export default function WeddingContentClient({
 
           {/* QRIS & Physical Shipping Address */}
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <div className="rounded-sm border border-[#C5A059]/40 bg-white p-6">
+            <div className="rounded-2xl border border-[#C5A059]/40 bg-white p-6 shadow-xs">
               <div className="border-b border-[#F2ECE1] pb-3.5">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8A6825]">
                   Pembayaran QRIS
@@ -1098,7 +1100,7 @@ export default function WeddingContentClient({
                     required
                     value={config.gifts.qris.merchantName}
                     onChange={(e) => updateQris("merchantName", e.target.value)}
-                    className="min-h-11 w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                    className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
                   />
                 </div>
 
@@ -1111,7 +1113,7 @@ export default function WeddingContentClient({
                     required
                     value={config.gifts.qris.nmid}
                     onChange={(e) => updateQris("nmid", e.target.value)}
-                    className="min-h-11 w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 font-mono text-sm text-[#1C2B24] tabular-nums"
+                    className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 font-mono text-sm text-[#1C2B24] tabular-nums"
                   />
                 </div>
 
@@ -1124,13 +1126,13 @@ export default function WeddingContentClient({
                     required
                     value={config.gifts.qris.codePayload}
                     onChange={(e) => updateQris("codePayload", e.target.value)}
-                    className="w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 font-mono text-xs text-[#1C2B24]"
+                    className="w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 font-mono text-xs text-[#1C2B24]"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="rounded-sm border border-[#C5A059]/40 bg-white p-6">
+            <div className="rounded-2xl border border-[#C5A059]/40 bg-white p-6 shadow-xs">
               <div className="border-b border-[#F2ECE1] pb-3.5">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8A6825]">
                   Kado Pernikahan Fisik
@@ -1152,7 +1154,7 @@ export default function WeddingContentClient({
                     onChange={(e) =>
                       updateShippingAddress("recipient", e.target.value)
                     }
-                    className="min-h-11 w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                    className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
                   />
                 </div>
 
@@ -1167,7 +1169,7 @@ export default function WeddingContentClient({
                     onChange={(e) =>
                       updateShippingAddress("phone", e.target.value)
                     }
-                    className="min-h-11 w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 font-mono text-sm text-[#1C2B24] tabular-nums"
+                    className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 font-mono text-sm text-[#1C2B24] tabular-nums"
                   />
                 </div>
 
@@ -1182,7 +1184,7 @@ export default function WeddingContentClient({
                     onChange={(e) =>
                       updateShippingAddress("address", e.target.value)
                     }
-                    className="w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2.5 text-sm text-[#1C2B24]"
+                    className="w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2.5 text-sm text-[#1C2B24]"
                   />
                 </div>
               </div>
@@ -1193,7 +1195,7 @@ export default function WeddingContentClient({
 
       {/* TAB 5: MUSIK LATAR */}
       {activeTab === "audio" && (
-        <div className="rounded-sm border border-[#C5A059]/40 bg-white p-6">
+        <div className="rounded-2xl border border-[#C5A059]/40 bg-white p-6 shadow-xs">
           <div className="border-b border-[#F2ECE1] pb-3.5">
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8A6825]">
               Pengaturan Audio Undangan
@@ -1213,7 +1215,7 @@ export default function WeddingContentClient({
                 required
                 value={config.audio.title}
                 onChange={(e) => updateAudio("title", e.target.value)}
-                className="min-h-11 w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
               />
             </div>
 
@@ -1226,7 +1228,7 @@ export default function WeddingContentClient({
                 required
                 value={config.audio.artist}
                 onChange={(e) => updateAudio("artist", e.target.value)}
-                className="min-h-11 w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
               />
             </div>
 
@@ -1240,7 +1242,7 @@ export default function WeddingContentClient({
                 placeholder="/audio/wedding-theme.mp3"
                 value={config.audio.src}
                 onChange={(e) => updateAudio("src", e.target.value)}
-                className="min-h-11 w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 font-mono text-xs text-[#1C2B24]"
+                className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 font-mono text-xs text-[#1C2B24]"
               />
             </div>
           </div>

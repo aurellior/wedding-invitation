@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   MessageSquareHeart,
   Send,
+  Sparkles,
   CheckCircle2,
   Clock,
   AlertCircle,
@@ -52,7 +53,7 @@ function renderAttendanceBadge(badge?: AttendanceStatus | null) {
 
   if (badge === "hadir") {
     return (
-      <span className="inline-flex items-center gap-1 rounded-sm border border-emerald-700/30 bg-emerald-950/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-900">
+      <span className="inline-flex items-center gap-1 rounded-full border border-emerald-700/25 bg-emerald-900/10 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-900">
         <CheckCircle2 className="h-3 w-3 text-emerald-700" />
         Hadir
       </span>
@@ -61,14 +62,14 @@ function renderAttendanceBadge(badge?: AttendanceStatus | null) {
 
   if (badge === "tidak_hadir") {
     return (
-      <span className="inline-flex items-center gap-1 rounded-sm border border-rose-700/30 bg-rose-950/10 px-2 py-0.5 text-[10px] font-semibold text-rose-900">
+      <span className="inline-flex items-center gap-1 rounded-full border border-rose-700/25 bg-rose-900/10 px-2.5 py-0.5 text-[10px] font-semibold text-rose-900">
         Berhalangan
       </span>
     );
   }
 
   return (
-    <span className="inline-flex items-center gap-1 rounded-sm border border-amber-700/30 bg-amber-950/10 px-2 py-0.5 text-[10px] font-semibold text-amber-900">
+    <span className="inline-flex items-center gap-1 rounded-full border border-amber-700/25 bg-amber-900/10 px-2.5 py-0.5 text-[10px] font-semibold text-amber-900">
       Masih Ragu
     </span>
   );
@@ -183,6 +184,7 @@ export default function WishWall({
       };
 
       if (!response.ok || !result.data) {
+        // Rollback optimistic item on error
         setWishes((prev) => prev.filter((w) => w.id !== tempId));
         setErrorMsg(
           result.error ?? "Gagal mengirim ucapan. Silakan coba kembali."
@@ -200,7 +202,7 @@ export default function WishWall({
 
       setMessage("");
       setSuccessMsg(
-        result.message ?? "Terima kasih atas ucapan dan doa restu Anda."
+        result.message ?? "Terima kasih atas ucapan dan doa restu Anda!"
       );
     } catch {
       setWishes((prev) => prev.filter((w) => w.id !== tempId));
@@ -213,33 +215,42 @@ export default function WishWall({
   return (
     <section
       id="ucapan"
-      className="relative border-b border-[#C5A059]/25 bg-[#F2ECE1]/75 px-4 py-20 sm:px-6 lg:px-8"
+      className="relative bg-[#F2ECE1]/70 py-20 px-4 sm:px-6 lg:px-8"
     >
       <div className="mx-auto max-w-5xl">
-        {/* Editorial Heading */}
-        <div className="grid grid-cols-1 gap-6 border-b border-[#C5A059]/30 pb-10 lg:grid-cols-12 lg:items-end">
-          <div className="lg:col-span-7">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#8A6825]">
-              V. Buku Tamu &amp; Doa Restu
-            </p>
-            <h2 className="mt-2 font-serif-luxury text-4xl font-semibold leading-[1.1] text-[#1C2B24] sm:text-5xl">
-              Untaian Doa &amp; Harapan
-            </h2>
-          </div>
-          <div className="lg:col-span-5">
-            <p className="text-sm leading-relaxed text-[#4A6358]">
-              Kirimkan doa dan harapan tulus Anda untuk mengiringi langkah awal
-              kehidupan rumah tangga kami.
-            </p>
-          </div>
-        </div>
+        {/* Heading */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7 }}
+          className="text-center"
+        >
+          <span className="inline-flex items-center gap-2 rounded-full border border-[#C5A059]/40 bg-[#FAF7F2] px-4 py-1 text-[11px] font-medium uppercase tracking-[0.25em] text-[#243830]">
+            <Sparkles className="h-3.5 w-3.5 text-[#C5A059]" />
+            Untaian Doa &amp; Harapan
+          </span>
+          <h2 className="mt-4 font-serif-luxury text-4xl font-semibold text-[#1C2B24] sm:text-5xl">
+            Ucapan &amp; Doa Restu
+          </h2>
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-[#4A6358]">
+            Kirimkan doa dan harapan tulus Anda untuk mengiringi langkah awal
+            kehidupan rumah tangga kami.
+          </p>
+        </motion.div>
 
-        <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-12">
+        <div className="mt-12 grid grid-cols-1 gap-8 lg:grid-cols-12">
           {/* Left Column: Wish Submission Form */}
-          <div className="lg:col-span-5">
-            <div className="rounded-sm border border-[#C5A059]/40 bg-[#FAF7F2] p-6 sm:p-8">
+          <motion.div
+            initial={{ opacity: 0, x: -16 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            className="lg:col-span-5"
+          >
+            <div className="rounded-3xl border border-[#C5A059]/40 bg-[#FAF7F2] p-6 shadow-md sm:p-8">
               <div className="flex items-center gap-2.5 border-b border-[#C5A059]/25 pb-4">
-                <MessageSquareHeart className="h-5 w-5 text-[#8A6825]" />
+                <MessageSquareHeart className="h-5 w-5 text-[#C5A059]" />
                 <h3 className="font-serif-luxury text-2xl font-semibold text-[#1C2B24]">
                   Tulis Ucapan
                 </h3>
@@ -261,7 +272,7 @@ export default function WishWall({
                     readOnly={Boolean(registeredGuest)}
                     onChange={(e) => setSenderName(e.target.value)}
                     placeholder="Nama lengkap Anda / Keluarga"
-                    className={`mt-1.5 min-h-11 w-full rounded-sm border border-[#C5A059]/45 px-4 py-2.5 text-sm text-[#1C2B24] ${
+                    className={`mt-1.5 w-full rounded-xl border border-[#C5A059]/40 px-4 py-2.5 text-sm text-[#1C2B24] focus:outline-none focus:ring-2 focus:ring-[#C5A059]/40 ${
                       registeredGuest
                         ? "cursor-not-allowed bg-[#F2ECE1] font-semibold"
                         : "bg-[#FAF7F2]"
@@ -282,7 +293,7 @@ export default function WishWall({
                     onChange={(e) =>
                       setAttendanceBadge(e.target.value as AttendanceStatus)
                     }
-                    className="mt-1.5 min-h-11 w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-4 py-2.5 text-sm text-[#1C2B24]"
+                    className="mt-1.5 w-full rounded-xl border border-[#C5A059]/40 bg-[#FAF7F2] px-4 py-2.5 text-sm text-[#1C2B24] focus:outline-none focus:ring-2 focus:ring-[#C5A059]/40"
                   >
                     <option value="hadir">Hadir</option>
                     <option value="tidak_hadir">Berhalangan Hadir</option>
@@ -298,7 +309,7 @@ export default function WishWall({
                     >
                       Doa &amp; Ucapan
                     </label>
-                    <span className="text-[11px] text-[#4A6358] tabular-nums">
+                    <span className="text-[11px] text-[#4A6358]">
                       {message.length}/500
                     </span>
                   </div>
@@ -309,31 +320,29 @@ export default function WishWall({
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     placeholder="Tuliskan doa dan harapan terbaik untuk kedua mempelai..."
-                    className="mt-1.5 w-full rounded-sm border border-[#C5A059]/45 bg-[#FAF7F2] px-4 py-3 text-sm text-[#1C2B24] placeholder:text-[#4A6358]/60"
+                    className="mt-1.5 w-full rounded-xl border border-[#C5A059]/40 bg-[#FAF7F2] px-4 py-3 text-sm text-[#1C2B24] placeholder:text-[#4A6358]/60 focus:outline-none focus:ring-2 focus:ring-[#C5A059]/40"
                   />
                 </div>
 
                 <AnimatePresence>
                   {errorMsg && (
                     <motion.div
-                      role="alert"
                       initial={{ opacity: 0, y: -4 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0 }}
-                      className="flex items-start gap-2 rounded-sm border border-rose-600/40 bg-rose-50 p-3 text-xs text-rose-900"
+                      className="flex items-start gap-2 rounded-xl border border-rose-500/40 bg-rose-50 p-3 text-xs text-rose-900"
                     >
-                      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-700" />
+                      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-600" />
                       <span>{errorMsg}</span>
                     </motion.div>
                   )}
 
                   {successMsg && (
                     <motion.div
-                      role="status"
                       initial={{ opacity: 0, y: -4 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0 }}
-                      className="flex items-start gap-2 rounded-sm border border-emerald-700/40 bg-emerald-50 p-3 text-xs text-emerald-900"
+                      className="flex items-start gap-2 rounded-xl border border-emerald-600/40 bg-emerald-50 p-3 text-xs text-emerald-900"
                     >
                       <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
                       <span>{successMsg}</span>
@@ -344,7 +353,7 @@ export default function WishWall({
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-sm bg-[#243830] px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#FAF7F2] transition-colors hover:bg-[#1C2B24] disabled:opacity-60"
+                  className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#243830] px-5 py-3.5 text-sm font-semibold tracking-wider text-[#FAF7F2] shadow-md transition-colors hover:bg-[#1C2B24] disabled:opacity-60"
                 >
                   <Send className="h-4 w-4 text-[#E5D1A7]" />
                   <span>
@@ -353,40 +362,48 @@ export default function WishWall({
                 </button>
               </form>
             </div>
-          </div>
+          </motion.div>
 
-          {/* Right Column: Editorial Guestbook Ledger */}
-          <div className="lg:col-span-7">
-            <div className="flex h-full flex-col rounded-sm border border-[#C5A059]/40 bg-[#FAF7F2] p-6 sm:p-8">
+          {/* Right Column: Live Scrollable Feed */}
+          <motion.div
+            initial={{ opacity: 0, x: 16 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            className="lg:col-span-7"
+          >
+            <div className="flex h-full flex-col rounded-3xl border border-[#C5A059]/40 bg-[#FAF7F2] p-6 shadow-md sm:p-8">
               <div className="flex items-center justify-between border-b border-[#C5A059]/25 pb-4">
                 <div>
                   <h3 className="font-serif-luxury text-2xl font-semibold text-[#1C2B24]">
-                    Lembar Doa Restu
+                    Dinding Doa Restu
                   </h3>
                   <p className="text-xs text-[#4A6358]">
-                    Catatan kehadiran &amp; doa dari kerabat serta sahabat
+                    Diperbarui secara langsung (Realtime)
                   </p>
                 </div>
-                <span className="rounded-sm border border-[#C5A059]/45 bg-[#F2ECE1] px-3 py-1 text-xs font-semibold text-[#243830] tabular-nums">
+                <span className="rounded-full border border-[#C5A059]/40 bg-[#F2ECE1] px-3.5 py-1 text-xs font-semibold text-[#243830]">
                   {wishes.length} Ucapan
                 </span>
               </div>
 
-              <div className="mt-2 max-h-[460px] divide-y divide-[#C5A059]/25 overflow-y-auto pr-1">
+              <div className="mt-5 max-h-[460px] space-y-4 overflow-y-auto pr-1">
                 <AnimatePresence initial={false}>
                   {wishes.map((wish) => (
                     <motion.article
                       key={wish.id}
-                      initial={{ opacity: 0, y: -8 }}
+                      initial={{ opacity: 0, y: -12 }}
                       animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.25 }}
-                      className={`py-4 transition-colors ${
-                        wish.isOptimistic ? "bg-[#F2ECE1]/60 px-3" : ""
+                      exit={{ opacity: 0, scale: 0.96 }}
+                      transition={{ duration: 0.3 }}
+                      className={`rounded-2xl border p-4 transition-colors ${
+                        wish.isOptimistic
+                          ? "border-[#C5A059] bg-[#F2ECE1]/70"
+                          : "border-[#C5A059]/25 bg-[#FAF7F2] hover:border-[#C5A059]/50"
                       }`}
                     >
                       <div className="flex items-start gap-3.5">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-[#C5A059]/40 bg-[#243830] font-serif-luxury text-xs font-semibold text-[#E5D1A7]">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#C5A059]/40 bg-[#243830] font-serif-luxury text-sm font-semibold text-[#E5D1A7]">
                           {getInitials(wish.sender_name)}
                         </div>
 
@@ -399,18 +416,18 @@ export default function WishWall({
                               {renderAttendanceBadge(wish.attendance_badge)}
                               {wish.isOptimistic && (
                                 <span className="inline-flex items-center gap-1 text-[10px] italic text-[#4A6358]">
-                                  <Clock className="h-3 w-3 text-[#8A6825]" />
+                                  <Clock className="h-3 w-3 animate-pulse text-[#C5A059]" />
                                   Mengirim...
                                 </span>
                               )}
                             </div>
                           </div>
 
-                          <p className="mt-1.5 text-xs leading-relaxed text-[#222624] sm:text-sm">
+                          <p className="mt-2 text-xs leading-relaxed text-[#222624] sm:text-sm">
                             {wish.message}
                           </p>
 
-                          <p className="mt-2 text-[11px] text-[#4A6358] tabular-nums">
+                          <p className="mt-2.5 text-[11px] text-[#4A6358]">
                             {formatIndonesianDate(wish.created_at)}
                           </p>
                         </div>
@@ -421,13 +438,13 @@ export default function WishWall({
 
                 {wishes.length === 0 && (
                   <div className="py-12 text-center text-sm text-[#4A6358]">
-                    Belum ada catatan doa. Silakan tuliskan ucapan pertama untuk
-                    kedua mempelai.
+                    Belum ada ucapan. Jadilah yang pertama mengirimkan doa restu
+                    untuk mempelai!
                   </div>
                 )}
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>

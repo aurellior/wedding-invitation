@@ -1,77 +1,33 @@
 @import "tailwindcss";
 
 :root {
-  --surface-paper: #FAF7F2;
-  --surface-stone: #F2ECE1;
-  --ink-cypress: #1C2B24;
+  --bg-ivory: #FAF7F2;
+  --bg-cream: #F2ECE1;
   --sage-deep: #243830;
   --sage-soft: #4A6358;
-  --accent-brass: #C5A059;
-  --accent-brass-ink: #8A6825;
+  --gold-champagne: #C5A059;
   --gold-light: #E5D1A7;
-  --ink-charcoal: #222624;
-  --hairline-rule: rgba(197, 160, 89, 0.32);
+  --charcoal: #222624;
 }
 
 @layer base {
   html {
     scroll-behavior: smooth;
-    background-color: var(--surface-paper);
-    color: var(--ink-charcoal);
+    background-color: var(--bg-ivory);
+    color: var(--charcoal);
   }
 
   body {
     font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
     overflow-x: hidden;
-    text-rendering: optimizeLegibility;
   }
 
-  h1,
-  h2,
-  h3,
-  .font-serif-luxury {
+  h1, h2, h3, .font-serif-luxury {
     font-family: var(--font-serif), Georgia, serif;
   }
-
-  /* R-32 & R-39: Explicit pointer states and visible keyboard focus rings */
-  button:not(:disabled),
-  [role="button"]:not(:disabled),
-  a[href],
-  select:not(:disabled),
-  summary {
-    cursor: pointer;
-  }
-
-  button:disabled,
-  input:disabled,
-  select:disabled,
-  textarea:disabled {
-    cursor: not-allowed;
-  }
-
-  :focus-visible {
-    outline: 2px solid var(--accent-brass);
-    outline-offset: 2px;
-  }
 }
 
-/* R-39: Respect prefers-reduced-motion across all animations and smooth scrolling */
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-
-/* Delicate scrollbar */
+/* Custom delicate scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -83,5 +39,6 @@
 
 ::-webkit-scrollbar-thumb {
   background: #C5A059;
-  border-radius: 2px;
+  border-radius: 9999px;
 }
+
