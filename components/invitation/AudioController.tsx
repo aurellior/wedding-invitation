@@ -64,6 +64,13 @@ export default function AudioController({
     }
   }, [isMuted]);
 
+  useEffect(() => {
+    setUsingSynthFallback(false);
+    if (audioRef.current) {
+      audioRef.current.load();
+    }
+  }, [audioConfig.src]);
+
   const stopSynth = useCallback(() => {
     if (synthIntervalRef.current) {
       clearInterval(synthIntervalRef.current);

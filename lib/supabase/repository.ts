@@ -1283,3 +1283,185 @@ export async function updateWeddingConfig(
   return merged;
 }
 
+// ============================================================================
+// WEDDING CUSTOM MP3 AUDIO STORAGE (POSTGRES BYTEA + LOCAL FALLBACK)
+// ============================================================================
+
+export interface StoredWeddingAudio {
+  fileName: string;
+  mimeType: string;
+  buffer: Buffer;
+  updatedAt: string;
+}
+
+async function ensureWeddingAudioTable(pool: Pool): Promise<void> {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS public.wedding_audio (
+      id TEXT PRIMARY KEY,
+      file_name TEXT NOT NULL,
+      mime_type TEXT NOT NULL,
+      audio_data BYTEA NOT NULL,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+  `);
+}
+
+function getLocalAudioPath(): string {
+  const dataDir = path.join(process.cwd(), ".data");
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
+  }
+  return path.join(dataDir, "wedding-audio.json");
+}
+
+export async function saveWeddingAudioChunk(params: {
+  fileName: string;
+  mimeType: string;
+  chunkBuffer: Buffer;
+  chunkIndex: number;
+  totalChunks: number;
+}): Promise<void> {
+  const { fileName, mimeType, chunkBuffer, chunkIndex } = params;
+  const pool = await ensurePostgresSchema();
+
+  if (pool) {
+    await ensureWeddingAudioTable(pool);
+    if (chunkIndex === 0) {
+      await pool.query(
+        `INSERT INTO public.wedding_audio (id, file_name, mime_type, audio_data, updated_at)
+         VALUES ('default', $1, $2, $3, now())
+         ON CONFLICT (id)
+         DO UPDATE SET
+           file_name = EXCLUDED.file_name,
+           mime_type = EXCLUDED.mime_type,
+           audio_data = EXCLUDED.audio_data,
+           updated_at = now()`,
+        [fileName, mimeType, chunkBuffer]
+      );
+    } else {
+      await pool.query(
+        `UPDATE public.wedding_audio
+         SET audio_data = audio_data || $1,
+             updated_at = now()
+         WHERE id = 'default'`,
+        [chunkBuffer]
+      );
+    }
+    return;
+  }
+
+  // Local fallback when running offline without PostgreSQL
+  const localPath = getLocalAudioPath();
+  if (chunkIndex === 0 || !fs.existsSync(localPath)) {
+    fs.writeFileSync(
+      localPath,
+      JSON.stringify({
+        fileName,
+        mimeType,
+        base64: chunkBuffer.toString("base64"),
+        updatedAt: new Date().toISOString(),
+      }),
+      "utf-8"
+    );
+  } else {
+    const existing = JSON.parse(fs.readFileSync(localPath, "utf-8")) as {
+      fileName: string;
+      mimeType: string;
+      base64: string;
+    };
+    const combined = Buffer.concat([
+      Buffer.from(existing.base64, "base64"),
+      chunkBuffer,
+    ]);
+    fs.writeFileSync(
+      localPath,
+      JSON.stringify({
+        fileName,
+        mimeType,
+        base64: combined.toString("base64"),
+        updatedAt: new Date().toISOString(),
+      }),
+      "utf-8"
+    );
+  }
+}
+
+export async function getWeddingAudio(): Promise<StoredWeddingAudio | null> {
+  const pool = await ensurePostgresSchema();
+  if (pool) {
+    try {
+      await ensureWeddingAudioTable(pool);
+      const { rows } = await pool.query<{
+        file_name: string;
+        mime_type: string;
+        audio_data: Buffer;
+        updated_at: Date | string;
+      }>(
+        `SELECT file_name, mime_type, audio_data, updated_at
+         FROM public.wedding_audio
+         WHERE id = 'default'
+         LIMIT 1`
+      );
+      if (rows[0] && rows[0].audio_data) {
+        return {
+          fileName: rows[0].file_name,
+          mimeType: rows[0].mime_type || "audio/mpeg",
+          buffer: Buffer.isBuffer(rows[0].audio_data)
+            ? rows[0].audio_data
+            : Buffer.from(rows[0].audio_data),
+          updatedAt:
+            rows[0].updated_at instanceof Date
+              ? rows[0].updated_at.toISOString()
+              : String(rows[0].updated_at),
+        };
+      }
+    } catch (err) {
+      console.error("Postgres getWeddingAudio error:", err);
+    }
+  }
+
+  try {
+    const localPath = getLocalAudioPath();
+    if (fs.existsSync(localPath)) {
+      const parsed = JSON.parse(fs.readFileSync(localPath, "utf-8")) as {
+        fileName: string;
+        mimeType: string;
+        base64: string;
+        updatedAt: string;
+      };
+      return {
+        fileName: parsed.fileName,
+        mimeType: parsed.mimeType || "audio/mpeg",
+        buffer: Buffer.from(parsed.base64, "base64"),
+        updatedAt: parsed.updatedAt,
+      };
+    }
+  } catch {
+    // Ignore local read error
+  }
+
+  return null;
+}
+
+export async function deleteWeddingAudio(): Promise<void> {
+  const pool = await ensurePostgresSchema();
+  if (pool) {
+    try {
+      await ensureWeddingAudioTable(pool);
+      await pool.query(`DELETE FROM public.wedding_audio WHERE id = 'default'`);
+    } catch (err) {
+      console.error("Postgres deleteWeddingAudio error:", err);
+    }
+  }
+
+  try {
+    const localPath = getLocalAudioPath();
+    if (fs.existsSync(localPath)) {
+      fs.unlinkSync(localPath);
+    }
+  } catch {
+    // Ignore
+  }
+}
+
+
