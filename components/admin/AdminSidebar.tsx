@@ -1,0 +1,261 @@
+"use client";
+
+import React, { useState } from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import {
+  LayoutDashboard,
+  Users,
+  CheckCircle2,
+  MessageSquareHeart,
+  ExternalLink,
+  LogOut,
+  Menu,
+  X,
+  Sparkles,
+  ShieldCheck,
+} from "lucide-react";
+import { WEDDING_CONFIG } from "@/lib/config/wedding-config";
+
+interface NavItem {
+  label: string;
+  subtitle: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+const NAV_ITEMS: NavItem[] = [
+  {
+    label: "Dashboard",
+    subtitle: "Ringkasan & Metrik",
+    href: "/admin",
+    icon: LayoutDashboard,
+  },
+  {
+    label: "Guests",
+    subtitle: "Daftar Tamu & Kirim WA",
+    href: "/admin/guests",
+    icon: Users,
+  },
+  {
+    label: "RSVP",
+    subtitle: "Konfirmasi & Kuota Pax",
+    href: "/admin/rsvp",
+    icon: CheckCircle2,
+  },
+  {
+    label: "Wishes",
+    subtitle: "Moderasi Doa & Ucapan",
+    href: "/admin/wishes",
+    icon: MessageSquareHeart,
+  },
+];
+
+export default function AdminSidebar({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  // Render login page without the back-office sidebar chrome
+  if (pathname === "/admin/login") {
+    return <>{children}</>;
+  }
+
+  const isActive = (href: string) => {
+    if (href === "/admin") {
+      return pathname === "/admin";
+    }
+    return pathname.startsWith(href);
+  };
+
+  const handleLogout = async () => {
+    try {
+      setLoggingOut(true);
+      await fetch("/api/admin/auth", { method: "DELETE" });
+      router.push("/admin/login");
+      router.refresh();
+    } catch {
+      router.push("/admin/login");
+    } finally {
+      setLoggingOut(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#FAF7F2] text-[#222624] flex flex-col lg:flex-row">
+      {/* Mobile Header Bar */}
+      <header className="lg:hidden sticky top-0 z-30 flex items-center justify-between bg-[#243830] text-[#FAF7F2] px-4 py-3.5 shadow-md">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-[#C5A059]/20 border border-[#C5A059]/40 flex items-center justify-center text-[#E5D1A7] font-serif-luxury font-semibold">
+            A&amp;N
+          </div>
+          <div>
+            <p className="font-serif-luxury text-base font-semibold tracking-wide text-[#FAF7F2] leading-tight">
+              {WEDDING_CONFIG.couple.groom.nickname} &amp;{" "}
+              {WEDDING_CONFIG.couple.bride.nickname} — Back-Office
+            </p>
+            <p className="text-[11px] text-[#E5D1A7]/80">
+              Wedding Organizer Suite
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setMobileOpen(!mobileOpen)}
+          aria-label="Toggle Menu"
+          className="p-2 rounded-lg text-[#FAF7F2] hover:bg-white/10 transition-colors"
+        >
+          {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
+      </header>
+
+      {/* Mobile Drawer Overlay */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-xs lg:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      {/* Sidebar Navigation */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 w-72 bg-[#243830] text-[#FAF7F2] flex flex-col justify-between transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        {/* Top Brand Section */}
+        <div>
+          <div className="p-6 border-b border-white/10">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#C5A059]/20 border border-[#C5A059]/30 text-[#E5D1A7] text-[11px] font-medium tracking-wider uppercase mb-3">
+              <Sparkles className="w-3 h-3" />
+              Wedding Back-Office
+            </div>
+            <h1 className="font-serif-luxury text-2xl font-semibold text-white tracking-wide">
+              {WEDDING_CONFIG.couple.groom.nickname} &amp;{" "}
+              {WEDDING_CONFIG.couple.bride.nickname}
+            </h1>
+            <p className="text-xs text-[#E5D1A7]/80 mt-1">
+              {WEDDING_CONFIG.couple.weddingDateDisplay}
+            </p>
+          </div>
+
+          {/* Navigation Links */}
+          <nav className="p-4 space-y-1.5">
+            <p className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-white/40">
+              Menu Manajemen
+            </p>
+            {NAV_ITEMS.map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  className={`group flex items-center gap-3.5 px-3.5 py-3 rounded-xl transition-all duration-200 ${
+                    active
+                      ? "bg-[#C5A059] text-[#243830] shadow-md font-semibold"
+                      : "text-[#FAF7F2]/80 hover:bg-white/10 hover:text-white"
+                  }`}
+                >
+                  <div
+                    className={`p-2 rounded-lg transition-colors ${
+                      active
+                        ? "bg-[#243830]/15 text-[#243830]"
+                        : "bg-white/5 text-[#E5D1A7] group-hover:bg-white/10"
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm leading-tight truncate">
+                      {item.label}
+                    </p>
+                    <p
+                      className={`text-[11px] truncate mt-0.5 ${
+                        active ? "text-[#243830]/80" : "text-white/50"
+                      }`}
+                    >
+                      {item.subtitle}
+                    </p>
+                  </div>
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+
+        {/* Bottom Actions */}
+        <div className="p-4 border-t border-white/10 space-y-2.5">
+          <div className="px-3.5 py-3 rounded-xl bg-white/5 border border-white/10">
+            <div className="flex items-center gap-2 text-xs text-[#E5D1A7] font-medium">
+              <ShieldCheck className="w-4 h-4 shrink-0" />
+              <span>Sesi Admin Aktif</span>
+            </div>
+            <p className="text-[11px] text-white/60 mt-1 leading-relaxed">
+              Kelola daftar tamu, kuota RSVP, dan pengiriman WhatsApp.
+            </p>
+          </div>
+
+          <Link
+            href="/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-[#FAF7F2] text-xs font-medium transition-colors border border-white/10"
+          >
+            <ExternalLink className="w-3.5 h-3.5 text-[#E5D1A7]" />
+            Lihat Live Undangan
+          </Link>
+
+          <button
+            type="button"
+            onClick={handleLogout}
+            disabled={loggingOut}
+            className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-200 text-xs font-medium transition-colors border border-rose-400/20 disabled:opacity-50 cursor-pointer"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            {loggingOut ? "Keluar..." : "Keluar Sesi Admin"}
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Desktop Top Header */}
+        <header className="hidden lg:flex items-center justify-between px-8 py-4 bg-white/80 backdrop-blur-md border-b border-[#E5D1A7]/40 sticky top-0 z-20">
+          <div>
+            <p className="text-xs uppercase tracking-widest text-[#4A6358] font-semibold">
+              {WEDDING_CONFIG.couple.groom.nickname} &amp;{" "}
+              {WEDDING_CONFIG.couple.bride.nickname} — Back-Office
+            </p>
+            <p className="text-xs text-[#222624]/60 mt-0.5">
+              Manajemen Tamu, Konfirmasi Kehadiran (RSVP), dan Moderasi Ucapan
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Link
+              href="/?to=Bapak%2FIbu%20Tamu%20Kehormatan"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-[#C5A059]/50 bg-[#FAF7F2] hover:bg-[#F2ECE1] text-[#243830] text-xs font-medium transition-colors"
+            >
+              <ExternalLink className="w-3.5 h-3.5 text-[#C5A059]" />
+              Preview Undangan Tamu
+            </Link>
+          </div>
+        </header>
+
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+}
