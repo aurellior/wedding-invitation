@@ -212,10 +212,14 @@ function getPgPool(): Pool | null {
 
   if (!globalForPg.__weddingPgPool) {
     const connectionString =
-      process.env.POSTGRES_URL?.trim() || process.env.DATABASE_URL?.trim();
+      process.env.DATABASE_URL_POOLED?.trim() ||
+      process.env.POSTGRES_URL?.trim() ||
+      process.env.DATABASE_URL?.trim();
     globalForPg.__weddingPgPool = new Pool({
       connectionString,
-      max: 5,
+      max: 10,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 5000,
       ssl: { rejectUnauthorized: false },
     });
   }
@@ -223,10 +227,14 @@ function getPgPool(): Pool | null {
   return globalForPg.__weddingPgPool;
 }
 
-async function ensurePostgresSchema(): Promise<Pool | null> {
+async function ensurePostgresSchema(forceInit = false): Promise<Pool | null> {
   const pool = getPgPool();
   if (!pool) {
     return null;
+  }
+
+  if (!forceInit) {
+    return pool;
   }
 
   if (!globalForPg.__weddingPgInitPromise) {

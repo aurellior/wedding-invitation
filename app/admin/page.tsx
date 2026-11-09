@@ -15,10 +15,10 @@ import {
   Database,
 } from "lucide-react";
 import {
-  getDashboardMetrics,
   getGuests,
   getRsvps,
   getWishes,
+  isPostgresConfigured,
   isSupabaseConfigured,
 } from "@/lib/supabase/repository";
 import { WEDDING_CONFIG } from "@/lib/config/wedding-config";
@@ -74,14 +74,32 @@ function StatusBadge({ status }: { status?: AttendanceStatus | null }) {
 }
 
 export default async function AdminDashboardPage() {
-  const [metrics, guests, rsvps, wishes] = await Promise.all([
-    getDashboardMetrics(),
+  const [guests, rsvps, wishes] = await Promise.all([
     getGuests(),
     getRsvps(),
     getWishes(),
   ]);
 
-  const supabaseActive = isSupabaseConfigured();
+  const attendingRsvps = rsvps.filter((r) => r.attendance_status === "hadir");
+  const declinedRsvps = rsvps.filter(
+    (r) => r.attendance_status === "tidak_hadir"
+  );
+  const metrics = {
+    totalGuests: guests.length,
+    totalAttendingRsvps: attendingRsvps.length,
+    totalDeclinedRsvps: declinedRsvps.length,
+    totalPendingGuests: Math.max(
+      0,
+      guests.length - attendingRsvps.length - declinedRsvps.length
+    ),
+    estimatedPax: attendingRsvps.reduce(
+      (sum, r) => sum + (Number.isFinite(r.pax) ? r.pax : 0),
+      0
+    ),
+    totalWishes: wishes.length,
+  };
+
+  const cloudDbActive = isSupabaseConfigured() || isPostgresConfigured();
 
   const invitationsSentCount = guests.filter((g) => g.invitation_sent).length;
   const totalMaxPaxQuota = guests.reduce((sum, g) => sum + (g.max_pax || 0), 0);
@@ -130,7 +148,7 @@ export default async function AdminDashboardPage() {
               <span>
                 Storage:{" "}
                 <strong className="text-white">
-                  {supabaseActive ? "Supabase Cloud" : "Local Persistent DB"}
+                  {cloudDbActive ? "PostgreSQL Cloud" : "Local Persistent DB"}
                 </strong>
               </span>
             </div>

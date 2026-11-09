@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -14,8 +14,13 @@ import {
   X,
   Sparkles,
   ShieldCheck,
+  Loader2,
 } from "lucide-react";
 import { WEDDING_CONFIG } from "@/lib/config/wedding-config";
+import {
+  AdminTablePageSkeleton,
+  DashboardOverviewSkeleton,
+} from "@/components/admin/AdminSkeleton";
 
 interface NavItem {
   label: string;
@@ -61,21 +66,90 @@ export default function AdminSidebar({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
 
+  // Navigation progress & instant skeleton transition state
+  const [pendingPath, setPendingPath] = useState<string | null>(null);
+  const [progress, setProgress] = useState<number>(0);
+  const [showTopBar, setShowTopBar] = useState<boolean>(false);
+
+  // Prefetch all admin routes on mount for snappy transitions
+  useEffect(() => {
+    NAV_ITEMS.forEach((item) => {
+      router.prefetch(item.href);
+    });
+  }, [router]);
+
+  // Complete top progress bar when pathname updates
+  useEffect(() => {
+    if (pendingPath) {
+      setProgress(100);
+      const timer = setTimeout(() => {
+        setShowTopBar(false);
+        setPendingPath(null);
+        setProgress(0);
+      }, 220);
+      return () => clearTimeout(timer);
+    }
+  }, [pathname, pendingPath]);
+
+  // Animate progress while navigation is in-flight
+  useEffect(() => {
+    if (!pendingPath || pendingPath === pathname) return;
+
+    setShowTopBar(true);
+    setProgress(28);
+
+    const t1 = setTimeout(() => setProgress(58), 120);
+    const t2 = setTimeout(() => setProgress(82), 320);
+    const t3 = setTimeout(() => setProgress(92), 700);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
+  }, [pendingPath, pathname]);
+
+  // Intercept internal /admin link clicks inside main content to trigger top bar & skeleton
+  const handleContentClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const anchor = (e.target as HTMLElement).closest("a");
+    if (!anchor) return;
+    const href = anchor.getAttribute("href");
+    const target = anchor.getAttribute("target");
+    if (
+      href &&
+      href.startsWith("/admin") &&
+      target !== "_blank" &&
+      href !== pathname
+    ) {
+      setPendingPath(href);
+    }
+  };
+
   // Render login page without the back-office sidebar chrome
   if (pathname === "/admin/login") {
     return <>{children}</>;
   }
 
+  const activeOrPendingPath = pendingPath ?? pathname;
+
   const isActive = (href: string) => {
     if (href === "/admin") {
-      return pathname === "/admin";
+      return activeOrPendingPath === "/admin";
     }
-    return pathname.startsWith(href);
+    return activeOrPendingPath.startsWith(href);
+  };
+
+  const handleNavClick = (href: string) => {
+    setMobileOpen(false);
+    if (href !== pathname) {
+      setPendingPath(href);
+    }
   };
 
   const handleLogout = async () => {
     try {
       setLoggingOut(true);
+      setPendingPath("/admin/login");
       await fetch("/api/admin/auth", { method: "DELETE" });
       router.push("/admin/login");
       router.refresh();
@@ -86,8 +160,26 @@ export default function AdminSidebar({
     }
   };
 
+  const isNavigating = Boolean(pendingPath && pendingPath !== pathname);
+
   return (
-    <div className="min-h-screen bg-[#FAF7F2] text-[#222624] flex flex-col lg:flex-row">
+    <div className="min-h-screen bg-[#FAF7F2] text-[#222624] flex flex-col lg:flex-row relative">
+      {/* Top Loading Progress Bar */}
+      {showTopBar && (
+        <div
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={progress}
+          className="fixed top-0 left-0 right-0 z-[100] h-1 bg-[#243830]/15 overflow-hidden pointer-events-none"
+        >
+          <div
+            className="h-full bg-gradient-to-r from-[#C5A059] via-[#E5D1A7] to-[#C5A059] shadow-[0_0_12px_#C5A059] transition-all duration-200 ease-out"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      )}
+
       {/* Mobile Header Bar */}
       <header className="lg:hidden sticky top-0 z-30 flex items-center justify-between bg-[#243830] text-[#FAF7F2] px-4 py-3.5 shadow-md">
         <div className="flex items-center gap-2.5">
@@ -153,11 +245,13 @@ export default function AdminSidebar({
             {NAV_ITEMS.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.href);
+              const isItemLoading = pendingPath === item.href && pathname !== item.href;
+
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  onClick={() => setMobileOpen(false)}
+                  onClick={() => handleNavClick(item.href)}
                   className={`group flex items-center gap-3.5 px-3.5 py-3 rounded-xl transition-all duration-200 ${
                     active
                       ? "bg-[#C5A059] text-[#243830] shadow-md font-semibold"
@@ -171,7 +265,11 @@ export default function AdminSidebar({
                         : "bg-white/5 text-[#E5D1A7] group-hover:bg-white/10"
                     }`}
                   >
-                    <Icon className="w-4 h-4" />
+                    {isItemLoading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Icon className="w-4 h-4" />
+                    )}
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm leading-tight truncate">
@@ -226,7 +324,10 @@ export default function AdminSidebar({
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div
+        className="flex-1 flex flex-col min-w-0"
+        onClick={handleContentClick}
+      >
         {/* Desktop Top Header */}
         <header className="hidden lg:flex items-center justify-between px-8 py-4 bg-white/80 backdrop-blur-md border-b border-[#E5D1A7]/40 sticky top-0 z-20">
           <div>
@@ -253,7 +354,15 @@ export default function AdminSidebar({
         </header>
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
-          {children}
+          {isNavigating ? (
+            pendingPath === "/admin" ? (
+              <DashboardOverviewSkeleton />
+            ) : (
+              <AdminTablePageSkeleton />
+            )
+          ) : (
+            children
+          )}
         </main>
       </div>
     </div>
