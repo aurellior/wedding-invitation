@@ -26,7 +26,10 @@ import type {
   GuestCategory,
   RsvpRecord,
 } from "@/types/wedding";
-import { WEDDING_CONFIG } from "@/lib/config/wedding-config";
+import {
+  DEFAULT_WEDDING_CONFIG,
+  type WeddingContentConfig,
+} from "@/lib/config/wedding-config";
 
 const CATEGORIES: GuestCategory[] = [
   "VIP",
@@ -58,10 +61,12 @@ export function buildPersonalizedUrl(
 
 export function buildWhatsAppMessage(
   guestName: string,
-  invitationUrl: string
+  invitationUrl: string,
+  config: WeddingContentConfig = DEFAULT_WEDDING_CONFIG
 ): string {
-  const akad = WEDDING_CONFIG.events[0];
-  const resepsi = WEDDING_CONFIG.events[1];
+  const akad = config.events[0] ?? DEFAULT_WEDDING_CONFIG.events[0];
+  const resepsi =
+    config.events[1] ?? config.events[0] ?? DEFAULT_WEDDING_CONFIG.events[1];
 
   return [
     `Kepada Yth. *${guestName}*`,
@@ -71,11 +76,11 @@ export function buildWhatsAppMessage(
     ``,
     `Tanpa mengurangi rasa hormat, perkenankan kami mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberikan doa restu pada acara pernikahan kami:`,
     ``,
-    `*${WEDDING_CONFIG.couple.groom.fullName}*`,
+    `*${config.couple.groom.fullName}*`,
     `&`,
-    `*${WEDDING_CONFIG.couple.bride.fullName}*`,
+    `*${config.couple.bride.fullName}*`,
     ``,
-    `Hari/Tanggal: ${WEDDING_CONFIG.couple.weddingDateDisplay}`,
+    `Hari/Tanggal: ${config.couple.weddingDateDisplay}`,
     `${akad.title}: ${akad.timeDisplay}`,
     `${resepsi.title}: ${resepsi.timeDisplay}`,
     `Lokasi: ${resepsi.venueName}`,
@@ -86,7 +91,7 @@ export function buildWhatsAppMessage(
     `Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir.`,
     ``,
     `Kami yang berbahagia,`,
-    `*${WEDDING_CONFIG.couple.groom.nickname} & ${WEDDING_CONFIG.couple.bride.nickname}*`,
+    `*${config.couple.groom.nickname} & ${config.couple.bride.nickname}*`,
   ].join("\n");
 }
 
@@ -150,11 +155,13 @@ function RsvpStatusBadge({
 interface GuestManagementClientProps {
   initialGuests: Guest[];
   initialRsvps: RsvpRecord[];
+  weddingConfig?: WeddingContentConfig;
 }
 
 export default function GuestManagementClient({
   initialGuests,
   initialRsvps,
+  weddingConfig = DEFAULT_WEDDING_CONFIG,
 }: GuestManagementClientProps) {
   const router = useRouter();
   const [guests, setGuests] = useState<Guest[]>(initialGuests);
@@ -336,7 +343,11 @@ export default function GuestManagementClient({
         ? window.location.origin
         : "http://localhost:3000";
     const personalizedUrl = buildPersonalizedUrl(origin, guest.name);
-    const message = buildWhatsAppMessage(guest.name, personalizedUrl);
+    const message = buildWhatsAppMessage(
+      guest.name,
+      personalizedUrl,
+      weddingConfig
+    );
     const normalizedPhone = normalizeIndonesianPhone(guest.phone);
 
     const waUrl = normalizedPhone

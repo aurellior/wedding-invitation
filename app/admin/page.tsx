@@ -12,15 +12,16 @@ import {
   HelpCircle,
   Clock,
   Database,
+  FileEdit,
 } from "lucide-react";
 import {
   getGuests,
   getRsvps,
+  getWeddingConfig,
   getWishes,
   isPostgresConfigured,
   isSupabaseConfigured,
 } from "@/lib/supabase/repository";
-import { WEDDING_CONFIG } from "@/lib/config/wedding-config";
 import type { AttendanceStatus } from "@/types/wedding";
 
 export const dynamic = "force-dynamic";
@@ -73,10 +74,11 @@ function StatusBadge({ status }: { status?: AttendanceStatus | null }) {
 }
 
 export default async function AdminDashboardPage() {
-  const [guests, rsvps, wishes] = await Promise.all([
+  const [guests, rsvps, wishes, config] = await Promise.all([
     getGuests(),
     getRsvps(),
     getWishes(),
+    getWeddingConfig(),
   ]);
 
   const attendingRsvps = rsvps.filter((r) => r.attendance_status === "hadir");
@@ -116,21 +118,21 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* Operational Header Ledger (No blurred radial orbs or AI pills) */}
+      {/* Operational Header Ledger */}
       <div className="rounded-sm border border-[#C5A059]/40 bg-[#1C2B24] p-6 text-[#FAF7F2] sm:p-8">
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#C5A059]">
               Laporan Operasional Pernikahan •{" "}
-              {WEDDING_CONFIG.couple.groom.nickname} &amp;{" "}
-              {WEDDING_CONFIG.couple.bride.nickname}
+              {config.couple.groom.nickname} &amp;{" "}
+              {config.couple.bride.nickname}
             </p>
             <h1 className="mt-2 font-serif-luxury text-3xl font-semibold text-[#FAF7F2] sm:text-4xl">
               Ringkasan Kehadiran &amp; Distribusi Undangan
             </h1>
             <p className="mt-1.5 max-w-2xl text-xs leading-relaxed text-[#FAF7F2]/80 sm:text-sm">
               Pantau rekapitulasi tamu terdaftar, alokasi kursi resepsi (pax),
-              dan status pengiriman undangan WhatsApp personal.
+              dan kelola konten undangan secara langsung.
             </p>
           </div>
 
@@ -144,6 +146,13 @@ export default async function AdminDashboardPage() {
                 </strong>
               </span>
             </div>
+            <Link
+              href="/admin/content"
+              className="inline-flex min-h-11 items-center gap-2 rounded-sm border border-[#C5A059]/50 bg-[#243830] px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#E5D1A7] transition-colors hover:bg-[#C5A059] hover:text-[#1C2B24]"
+            >
+              <FileEdit className="h-3.5 w-3.5" />
+              <span>Edit Konten Undangan</span>
+            </Link>
             <Link
               href="/admin/guests"
               className="inline-flex min-h-11 items-center gap-2 rounded-sm bg-[#C5A059] px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#1C2B24] transition-colors hover:bg-[#E5D1A7]"
@@ -164,7 +173,7 @@ export default async function AdminDashboardPage() {
                 Progres Konfirmasi Kehadiran (RSVP)
               </h2>
               <p className="text-xs text-[#4A6358]">
-                 proporsi tamu undangan yang telah menyerahkan konfirmasi
+                Proporsi tamu undangan yang telah menyerahkan konfirmasi
                 kehadiran
               </p>
             </div>
@@ -223,11 +232,26 @@ export default async function AdminDashboardPage() {
               Tindakan Cepat
             </h2>
             <p className="mt-1 text-xs text-[#4A6358]">
-              Pintasan operasional daftar tamu dan rekapitulasi kursi
+              Pintasan operasional konten undangan dan daftar tamu
             </p>
           </div>
 
           <div className="mt-4 space-y-2.5">
+            <Link
+              href="/admin/content"
+              className="flex min-h-11 items-center justify-between rounded-sm border border-[#C5A059]/35 bg-[#FAF7F2] p-3.5 transition-colors hover:bg-[#F2ECE1]"
+            >
+              <div>
+                <p className="text-xs font-semibold text-[#1C2B24]">
+                  Edit Konten Undangan (Nama, Alamat, Rekening)
+                </p>
+                <p className="text-[11px] text-[#4A6358]">
+                  Ubah nama mempelai, lokasi acara, &amp; amplop digital
+                </p>
+              </div>
+              <ArrowUpRight className="h-4 w-4 shrink-0 text-[#8A6825]" />
+            </Link>
+
             <Link
               href="/admin/guests"
               className="flex min-h-11 items-center justify-between rounded-sm border border-[#C5A059]/35 bg-[#FAF7F2] p-3.5 transition-colors hover:bg-[#F2ECE1]"
@@ -238,21 +262,6 @@ export default async function AdminDashboardPage() {
                 </p>
                 <p className="text-[11px] text-[#4A6358]">
                   Buat tautan `?to=` dan kirim undangan
-                </p>
-              </div>
-              <ArrowUpRight className="h-4 w-4 shrink-0 text-[#8A6825]" />
-            </Link>
-
-            <Link
-              href="/admin/rsvp"
-              className="flex min-h-11 items-center justify-between rounded-sm border border-[#C5A059]/35 bg-[#FAF7F2] p-3.5 transition-colors hover:bg-[#F2ECE1]"
-            >
-              <div>
-                <p className="text-xs font-semibold text-[#1C2B24]">
-                  Ekspor Laporan Kehadiran (CSV)
-                </p>
-                <p className="text-[11px] text-[#4A6358]">
-                  Unduh tabel kuota kursi untuk panitia
                 </p>
               </div>
               <ArrowUpRight className="h-4 w-4 shrink-0 text-[#8A6825]" />

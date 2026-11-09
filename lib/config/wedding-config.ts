@@ -21,7 +21,51 @@ export interface WeddingEventDetail {
   dressCode?: string;
 }
 
-export const WEDDING_CONFIG = {
+export interface PersonProfile {
+  nickname: string;
+  fullName: string;
+  fatherName: string;
+  motherName: string;
+  childOrder: string;
+  instagram: string;
+}
+
+export interface WeddingContentConfig {
+  couple: {
+    groom: PersonProfile;
+    bride: PersonProfile;
+    hashtag: string;
+    weddingDateIso: string;
+    weddingDateDisplay: string;
+    shortDate: string;
+  };
+  quote: {
+    arabic: string;
+    translation: string;
+    source: string;
+  };
+  events: WeddingEventDetail[];
+  gifts: {
+    accounts: BankAccount[];
+    qris: {
+      merchantName: string;
+      nmid: string;
+      codePayload: string;
+    };
+    shippingAddress: {
+      recipient: string;
+      phone: string;
+      address: string;
+    };
+  };
+  audio: {
+    title: string;
+    artist: string;
+    src: string;
+  };
+}
+
+export const DEFAULT_WEDDING_CONFIG: WeddingContentConfig = {
   couple: {
     groom: {
       nickname: "Arka",
@@ -86,7 +130,7 @@ export const WEDDING_CONFIG = {
         "https://www.google.com/maps?q=The+Dharmawangsa+Jakarta&output=embed",
       dressCode: "Formal Attire / Earthy Botanical Palette",
     },
-  ] satisfies WeddingEventDetail[],
+  ],
   gifts: {
     accounts: [
       {
@@ -103,7 +147,7 @@ export const WEDDING_CONFIG = {
         accountHolder: "Nadia Maharani Putri",
         branch: "KCP Kebayoran Baru, Jakarta",
       },
-    ] satisfies BankAccount[],
+    ],
     qris: {
       merchantName: "ARKA & NADIA WEDDING GIFT",
       nmid: "ID1026098877665",
@@ -122,11 +166,78 @@ export const WEDDING_CONFIG = {
     artist: "Instrumental Chamber Ensemble",
     src: "/audio/wedding-theme.mp3",
   },
-} as const;
+};
 
-export function buildGoogleCalendarUrl(event: WeddingEventDetail): string {
-  const title = `${event.title}: Pernikahan ${WEDDING_CONFIG.couple.groom.nickname} & ${WEDDING_CONFIG.couple.bride.nickname}`;
-  const details = `Undangan Pernikahan ${WEDDING_CONFIG.couple.groom.fullName} & ${WEDDING_CONFIG.couple.bride.fullName}.\n\nAcara: ${event.title} (${event.timeDisplay})\nLokasi: ${event.venueName}, ${event.venueAddress}`;
+export const WEDDING_CONFIG = DEFAULT_WEDDING_CONFIG;
+
+export function mergeWithDefaultConfig(
+  partial?: Partial<WeddingContentConfig> | null
+): WeddingContentConfig {
+  if (!partial || typeof partial !== "object") {
+    return structuredClone(DEFAULT_WEDDING_CONFIG);
+  }
+
+  return {
+    couple: {
+      groom: {
+        ...DEFAULT_WEDDING_CONFIG.couple.groom,
+        ...(partial.couple?.groom ?? {}),
+      },
+      bride: {
+        ...DEFAULT_WEDDING_CONFIG.couple.bride,
+        ...(partial.couple?.bride ?? {}),
+      },
+      hashtag:
+        partial.couple?.hashtag ?? DEFAULT_WEDDING_CONFIG.couple.hashtag,
+      weddingDateIso:
+        partial.couple?.weddingDateIso ??
+        DEFAULT_WEDDING_CONFIG.couple.weddingDateIso,
+      weddingDateDisplay:
+        partial.couple?.weddingDateDisplay ??
+        DEFAULT_WEDDING_CONFIG.couple.weddingDateDisplay,
+      shortDate:
+        partial.couple?.shortDate ?? DEFAULT_WEDDING_CONFIG.couple.shortDate,
+    },
+    quote: {
+      ...DEFAULT_WEDDING_CONFIG.quote,
+      ...(partial.quote ?? {}),
+    },
+    events:
+      Array.isArray(partial.events) && partial.events.length > 0
+        ? partial.events.map((ev, idx) => ({
+            ...(DEFAULT_WEDDING_CONFIG.events[idx] ??
+              DEFAULT_WEDDING_CONFIG.events[0]),
+            ...ev,
+          }))
+        : structuredClone(DEFAULT_WEDDING_CONFIG.events),
+    gifts: {
+      accounts:
+        Array.isArray(partial.gifts?.accounts) &&
+        partial.gifts.accounts.length > 0
+          ? partial.gifts.accounts.map((acc) => ({ ...acc }))
+          : structuredClone(DEFAULT_WEDDING_CONFIG.gifts.accounts),
+      qris: {
+        ...DEFAULT_WEDDING_CONFIG.gifts.qris,
+        ...(partial.gifts?.qris ?? {}),
+      },
+      shippingAddress: {
+        ...DEFAULT_WEDDING_CONFIG.gifts.shippingAddress,
+        ...(partial.gifts?.shippingAddress ?? {}),
+      },
+    },
+    audio: {
+      ...DEFAULT_WEDDING_CONFIG.audio,
+      ...(partial.audio ?? {}),
+    },
+  };
+}
+
+export function buildGoogleCalendarUrl(
+  event: WeddingEventDetail,
+  couple: WeddingContentConfig["couple"] = DEFAULT_WEDDING_CONFIG.couple
+): string {
+  const title = `${event.title}: Pernikahan ${couple.groom.nickname} & ${couple.bride.nickname}`;
+  const details = `Undangan Pernikahan ${couple.groom.fullName} & ${couple.bride.fullName}.\n\nAcara: ${event.title} (${event.timeDisplay})\nLokasi: ${event.venueName}, ${event.venueAddress}`;
   const params = new URLSearchParams({
     action: "TEMPLATE",
     text: title,

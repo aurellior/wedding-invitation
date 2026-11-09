@@ -10,6 +10,11 @@ import type {
   RsvpRecord,
   WishRecord,
 } from "@/types/wedding";
+import {
+  DEFAULT_WEDDING_CONFIG,
+  mergeWithDefaultConfig,
+  type WeddingContentConfig,
+} from "@/lib/config/wedding-config";
 import { isSupabaseConfigured } from "./client";
 import { createServerSupabaseClient } from "./server";
 
@@ -39,6 +44,7 @@ interface LocalDatabaseSchema {
   guests: Guest[];
   rsvps: RsvpRecord[];
   wishes: WishRecord[];
+  config?: WeddingContentConfig;
 }
 
 const INITIAL_SEED_DATA: LocalDatabaseSchema = {
@@ -274,6 +280,12 @@ async function ensurePostgresSchema(forceInit = false): Promise<Pool | null> {
           attendance_badge TEXT,
           created_at TIMESTAMPTZ NOT NULL DEFAULT now()
         );
+
+        CREATE TABLE IF NOT EXISTS public.wedding_settings (
+          id TEXT PRIMARY KEY,
+          config JSONB NOT NULL,
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        );
       `);
 
       const { rows } = await pool.query<{ count: string }>(
@@ -405,6 +417,7 @@ function cloneSeedData(): LocalDatabaseSchema {
     guests: INITIAL_SEED_DATA.guests.map((g) => ({ ...g })),
     rsvps: INITIAL_SEED_DATA.rsvps.map((r) => ({ ...r })),
     wishes: INITIAL_SEED_DATA.wishes.map((w) => ({ ...w })),
+    config: structuredClone(DEFAULT_WEDDING_CONFIG),
   };
 }
 
@@ -422,6 +435,7 @@ function readLocalDb(): LocalDatabaseSchema {
           guests: parsed.guests,
           rsvps: parsed.rsvps,
           wishes: parsed.wishes,
+          config: mergeWithDefaultConfig(parsed.config),
         };
         return globalForPg.__weddingLocalDb;
       }
@@ -1158,3 +1172,114 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
     totalWishes,
   };
 }
+
+// ============================================================================
+// WEDDING CONTENT SETTINGS REPOSITORY (CMS)
+// ============================================================================
+
+async function ensureWeddingSettingsTable(pool: Pool): Promise<void> {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS public.wedding_settings (
+      id TEXT PRIMARY KEY,
+      config JSONB NOT NULL,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+  `);
+}
+
+export async function getWeddingConfig(): Promise<WeddingContentConfig> {
+  if (isSupabaseConfigured()) {
+    const supabase = await createServerSupabaseClient();
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("wedding_settings")
+        .select("config")
+        .eq("id", "default")
+        .maybeSingle();
+
+      if (!error && data && data.config) {
+        return mergeWithDefaultConfig(
+          data.config as Partial<WeddingContentConfig>
+        );
+      }
+    }
+  }
+
+  const pool = await ensurePostgresSchema();
+  if (pool) {
+    try {
+      const { rows } = await pool.query<{ config: Partial<WeddingContentConfig> }>(
+        `SELECT config FROM public.wedding_settings WHERE id = 'default' LIMIT 1`
+      );
+      if (rows[0]?.config) {
+        return mergeWithDefaultConfig(rows[0].config);
+      }
+    } catch {
+      try {
+        await ensureWeddingSettingsTable(pool);
+      } catch (initErr) {
+        console.error("Postgres ensureWeddingSettingsTable error:", initErr);
+      }
+    }
+  }
+
+  const db = readLocalDb();
+  return mergeWithDefaultConfig(db.config);
+}
+
+export async function updateWeddingConfig(
+  nextConfig: Partial<WeddingContentConfig>
+): Promise<WeddingContentConfig> {
+  const merged = mergeWithDefaultConfig(nextConfig);
+  const nowIso = new Date().toISOString();
+
+  if (isSupabaseConfigured()) {
+    const supabase = await createServerSupabaseClient();
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("wedding_settings")
+        .upsert(
+          {
+            id: "default",
+            config: merged,
+            updated_at: nowIso,
+          },
+          { onConflict: "id" }
+        )
+        .select("config")
+        .single();
+
+      if (!error && data?.config) {
+        return mergeWithDefaultConfig(
+          data.config as Partial<WeddingContentConfig>
+        );
+      }
+    }
+  }
+
+  const pool = await ensurePostgresSchema();
+  if (pool) {
+    try {
+      await ensureWeddingSettingsTable(pool);
+      const { rows } = await pool.query<{ config: Partial<WeddingContentConfig> }>(
+        `INSERT INTO public.wedding_settings (id, config, updated_at)
+         VALUES ('default', $1::jsonb, $2)
+         ON CONFLICT (id)
+         DO UPDATE SET config = EXCLUDED.config, updated_at = EXCLUDED.updated_at
+         RETURNING config`,
+        [JSON.stringify(merged), nowIso]
+      );
+      if (rows[0]?.config) {
+        return mergeWithDefaultConfig(rows[0].config);
+      }
+    } catch (err) {
+      console.error("Postgres updateWeddingConfig error:", err);
+    }
+  }
+
+  const db = readLocalDb();
+  db.config = merged;
+  writeLocalDb(db);
+  return merged;
+}
+

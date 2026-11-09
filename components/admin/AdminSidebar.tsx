@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
+  FileEdit,
   Users,
   CheckCircle2,
   MessageSquareHeart,
@@ -15,7 +16,10 @@ import {
   ShieldCheck,
   Loader2,
 } from "lucide-react";
-import { WEDDING_CONFIG } from "@/lib/config/wedding-config";
+import {
+  DEFAULT_WEDDING_CONFIG,
+  type WeddingContentConfig,
+} from "@/lib/config/wedding-config";
 import {
   AdminTablePageSkeleton,
   DashboardOverviewSkeleton,
@@ -34,6 +38,12 @@ const NAV_ITEMS: NavItem[] = [
     subtitle: "Metrik & Progres RSVP",
     href: "/admin",
     icon: LayoutDashboard,
+  },
+  {
+    label: "Konten Undangan",
+    subtitle: "Mempelai, Acara & Rekening",
+    href: "/admin/content",
+    icon: FileEdit,
   },
   {
     label: "Daftar Tamu",
@@ -56,8 +66,10 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 export default function AdminSidebar({
+  config = DEFAULT_WEDDING_CONFIG,
   children,
 }: {
+  config?: WeddingContentConfig;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -160,6 +172,9 @@ export default function AdminSidebar({
   };
 
   const isNavigating = Boolean(pendingPath && pendingPath !== pathname);
+  const monogram = `${config.couple.groom.nickname[0] ?? "A"}&${
+    config.couple.bride.nickname[0] ?? "N"
+  }`;
 
   return (
     <div className="relative flex min-h-screen flex-col bg-[#FAF7F2] text-[#222624] lg:flex-row">
@@ -184,12 +199,12 @@ export default function AdminSidebar({
       <header className="sticky top-0 z-30 flex items-center justify-between border-b border-[#C5A059]/30 bg-[#1C2B24] px-4 py-3 text-[#FAF7F2] lg:hidden">
         <div className="flex items-center gap-2.5">
           <div className="flex h-8 w-8 items-center justify-center rounded-sm border border-[#C5A059]/45 bg-[#243830] font-serif-luxury text-sm font-semibold text-[#E5D1A7]">
-            A&amp;N
+            {monogram}
           </div>
           <div>
             <p className="font-serif-luxury text-base font-semibold leading-tight tracking-wide text-[#FAF7F2]">
-              {WEDDING_CONFIG.couple.groom.nickname} &amp;{" "}
-              {WEDDING_CONFIG.couple.bride.nickname} | Back-Office
+              {config.couple.groom.nickname} &amp;{" "}
+              {config.couple.bride.nickname} | Back-Office
             </p>
             <p className="text-[11px] text-[#E5D1A7]/80">
               Meja Kerja Panitia &amp; Mempelai
@@ -229,11 +244,11 @@ export default function AdminSidebar({
               Meja Kerja Pernikahan
             </p>
             <p className="mt-1.5 font-serif-luxury text-2xl font-semibold tracking-wide text-[#FAF7F2]">
-              {WEDDING_CONFIG.couple.groom.nickname} &amp;{" "}
-              {WEDDING_CONFIG.couple.bride.nickname}
+              {config.couple.groom.nickname} &amp;{" "}
+              {config.couple.bride.nickname}
             </p>
             <p className="mt-1 text-xs text-[#E5D1A7]/80 tabular-nums">
-              {WEDDING_CONFIG.couple.weddingDateDisplay}
+              {config.couple.weddingDateDisplay}
             </p>
           </div>
 
@@ -298,7 +313,7 @@ export default function AdminSidebar({
               <span>Sesi Panitia Aktif</span>
             </div>
             <p className="mt-1 text-[11px] leading-relaxed text-[#FAF7F2]/65">
-              Kelola daftar tamu, kuota kursi, dan pengiriman WhatsApp.
+              Kelola konten undangan, daftar tamu, kuota kursi, dan WhatsApp.
             </p>
           </div>
 
@@ -333,11 +348,11 @@ export default function AdminSidebar({
         <header className="sticky top-0 z-20 hidden items-center justify-between border-b border-[#C5A059]/30 bg-[#FAF7F2] px-8 py-4 lg:flex">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#243830]">
-              {WEDDING_CONFIG.couple.groom.nickname} &amp;{" "}
-              {WEDDING_CONFIG.couple.bride.nickname} | Back-Office
+              {config.couple.groom.nickname} &amp;{" "}
+              {config.couple.bride.nickname} | Back-Office
             </p>
             <p className="mt-0.5 text-xs text-[#4A6358]">
-              Manajemen Tamu, Konfirmasi Kehadiran (RSVP), dan Moderasi Ucapan
+              Manajemen Konten Undangan, Daftar Tamu, RSVP, dan Moderasi Ucapan
             </p>
           </div>
 

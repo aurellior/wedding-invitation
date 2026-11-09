@@ -1,17 +1,23 @@
 import type { Metadata } from "next";
 import AdminSidebar from "@/components/admin/AdminSidebar";
-import { WEDDING_CONFIG } from "@/lib/config/wedding-config";
+import { getWeddingConfig } from "@/lib/supabase/repository";
 
-export const metadata: Metadata = {
-  title: `Back-Office Admin | ${WEDDING_CONFIG.couple.groom.nickname} & ${WEDDING_CONFIG.couple.bride.nickname}`,
-  description:
-    "Dashboard manajemen tamu undangan, pengiriman WhatsApp, monitoring RSVP, dan moderasi ucapan.",
-};
+export const dynamic = "force-dynamic";
 
-export default function AdminLayout({
+export async function generateMetadata(): Promise<Metadata> {
+  const config = await getWeddingConfig();
+  return {
+    title: `Back-Office Admin | ${config.couple.groom.nickname} & ${config.couple.bride.nickname}`,
+    description:
+      "Dashboard manajemen konten undangan, daftar tamu, pengiriman WhatsApp, monitoring RSVP, dan moderasi ucapan.",
+  };
+}
+
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <AdminSidebar>{children}</AdminSidebar>;
+  const config = await getWeddingConfig();
+  return <AdminSidebar config={config}>{children}</AdminSidebar>;
 }

@@ -3,7 +3,10 @@
 import React, { useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { MailOpen, ShieldCheck } from "lucide-react";
-import { WEDDING_CONFIG } from "@/lib/config/wedding-config";
+import {
+  DEFAULT_WEDDING_CONFIG,
+  type WeddingContentConfig,
+} from "@/lib/config/wedding-config";
 import type { GuestCategory } from "@/types/wedding";
 
 export interface CoverOverlayProps {
@@ -12,6 +15,7 @@ export interface CoverOverlayProps {
   isRegistered?: boolean;
   isOpened: boolean;
   onOpenInvitation: () => void;
+  config?: WeddingContentConfig;
 }
 
 export default function CoverOverlay({
@@ -20,6 +24,7 @@ export default function CoverOverlay({
   isRegistered = false,
   isOpened,
   onOpenInvitation,
+  config = DEFAULT_WEDDING_CONFIG,
 }: CoverOverlayProps) {
   useEffect(() => {
     if (!isOpened) {
@@ -39,6 +44,9 @@ export default function CoverOverlay({
     }
     onOpenInvitation();
   };
+
+  const primaryVenue =
+    config.events[0]?.venueName.split(",")[0] ?? "Jakarta Selatan";
 
   return (
     <AnimatePresence>
@@ -102,7 +110,7 @@ export default function CoverOverlay({
           {/* Top Editorial Folio Bar */}
           <div className="relative z-10 mx-auto flex w-full max-w-2xl items-center justify-between border-b border-[#C5A059]/25 pb-3 text-[11px] uppercase tracking-[0.24em] text-[#E5D1A7]/85">
             <span>Undangan Pernikahan</span>
-            <span className="tabular-nums">{WEDDING_CONFIG.couple.shortDate}</span>
+            <span className="tabular-nums">{config.couple.shortDate}</span>
           </div>
 
           {/* Center Couple Typography & Dedicated Nameplate Slip */}
@@ -115,9 +123,9 @@ export default function CoverOverlay({
             {/* Letterpress Monogram Seal */}
             <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-sm border border-[#C5A059]/45 bg-[#243830]">
               <span className="font-serif-luxury text-2xl font-medium tracking-widest text-[#E5D1A7]">
-                {WEDDING_CONFIG.couple.groom.nickname[0]}
+                {config.couple.groom.nickname[0]}
                 <span className="mx-0.5 text-sm italic text-[#C5A059]">&amp;</span>
-                {WEDDING_CONFIG.couple.bride.nickname[0]}
+                {config.couple.bride.nickname[0]}
               </span>
             </div>
 
@@ -125,15 +133,15 @@ export default function CoverOverlay({
               id="cover-couple-title"
               className="font-serif-luxury text-5xl font-normal leading-[1.04] tracking-[-0.01em] text-[#FAF7F2] sm:text-6xl md:text-7xl"
             >
-              {WEDDING_CONFIG.couple.groom.nickname}{" "}
+              {config.couple.groom.nickname}{" "}
               <span className="font-serif-luxury italic text-[#C5A059]">
                 &amp;
               </span>{" "}
-              {WEDDING_CONFIG.couple.bride.nickname}
+              {config.couple.bride.nickname}
             </h1>
 
             <p className="mt-3 text-xs font-medium uppercase tracking-[0.26em] text-[#E5D1A7]">
-              {WEDDING_CONFIG.couple.weddingDateDisplay}
+              {config.couple.weddingDateDisplay}
             </p>
 
             {/* Printed Guest Nameplate Card */}
@@ -171,8 +179,8 @@ export default function CoverOverlay({
 
           {/* Bottom Colophon */}
           <div className="relative z-10 mx-auto flex w-full max-w-2xl items-center justify-between border-t border-[#C5A059]/25 pt-3 text-[11px] tracking-[0.2em] text-[#E5D1A7]/70">
-            <span>The Dharmawangsa Jakarta</span>
-            <span>{WEDDING_CONFIG.couple.hashtag}</span>
+            <span>{primaryVenue}</span>
+            <span>{config.couple.hashtag}</span>
           </div>
         </motion.div>
       )}

@@ -3,14 +3,17 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Volume2, VolumeX, Pause, Play } from "lucide-react";
-import { WEDDING_CONFIG } from "@/lib/config/wedding-config";
+import {
+  DEFAULT_WEDDING_CONFIG,
+  type WeddingContentConfig,
+} from "@/lib/config/wedding-config";
 
 export interface AudioControllerProps {
   isOpened: boolean;
+  audioConfig?: WeddingContentConfig["audio"];
 }
 
 // Romantic arpeggio notes (frequencies in Hz) - Clair de Lune inspired progression
-// Chords: Cmaj7 -> Am9 -> Fmaj7 -> G6
 const ROMANTIC_ARPEGGIO_SEQUENCE: number[] = [
   261.63, // C4
   329.63, // E4
@@ -38,7 +41,10 @@ const ROMANTIC_ARPEGGIO_SEQUENCE: number[] = [
   293.66, // D4
 ];
 
-export default function AudioController({ isOpened }: AudioControllerProps) {
+export default function AudioController({
+  isOpened,
+  audioConfig = DEFAULT_WEDDING_CONFIG.audio,
+}: AudioControllerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [usingSynthFallback, setUsingSynthFallback] = useState(false);
@@ -211,7 +217,7 @@ export default function AudioController({ isOpened }: AudioControllerProps) {
     <>
       <audio
         ref={audioRef}
-        src={WEDDING_CONFIG.audio.src}
+        src={audioConfig.src}
         loop
         preload="none"
         onError={() => {
@@ -236,13 +242,11 @@ export default function AudioController({ isOpened }: AudioControllerProps) {
               exit={{ opacity: 0, y: 4 }}
               className="pointer-events-none max-w-[230px] rounded-sm border border-[#C5A059]/45 bg-[#1C2B24] px-3.5 py-2 text-right text-xs text-[#FAF7F2] shadow-md"
             >
-              <p className="font-medium text-[#E5D1A7]">
-                {WEDDING_CONFIG.audio.title}
-              </p>
+              <p className="font-medium text-[#E5D1A7]">{audioConfig.title}</p>
               <p className="text-[10px] text-[#FAF7F2]/75">
                 {usingSynthFallback
                   ? "Ambient Romantic Suite"
-                  : WEDDING_CONFIG.audio.artist}
+                  : audioConfig.artist}
               </p>
             </motion.div>
           )}

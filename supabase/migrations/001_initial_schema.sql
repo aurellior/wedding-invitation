@@ -200,7 +200,33 @@ END
 $$;
 
 -- ----------------------------------------------------------------------------
--- 6. OPTIONAL SEED DATA (Safe Idempotent Insert)
+-- 6. WEDDING SETTINGS TABLE (Dynamic CMS Content)
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.wedding_settings (
+  id TEXT PRIMARY KEY,
+  config JSONB NOT NULL,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.wedding_settings ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public can view wedding settings" ON public.wedding_settings;
+CREATE POLICY "Public can view wedding settings"
+  ON public.wedding_settings
+  FOR SELECT
+  TO anon, authenticated
+  USING (true);
+
+DROP POLICY IF EXISTS "Admin full access on wedding settings" ON public.wedding_settings;
+CREATE POLICY "Admin full access on wedding settings"
+  ON public.wedding_settings
+  FOR ALL
+  TO authenticated, service_role
+  USING (true)
+  WITH CHECK (true);
+
+-- ----------------------------------------------------------------------------
+-- 7. OPTIONAL SEED DATA (Safe Idempotent Insert)
 -- ----------------------------------------------------------------------------
 INSERT INTO public.guests (id, name, slug, category, phone, max_pax, invitation_sent)
 VALUES

@@ -9,8 +9,9 @@ import {
   Calendar,
 } from "lucide-react";
 import {
-  WEDDING_CONFIG,
+  DEFAULT_WEDDING_CONFIG,
   buildGoogleCalendarUrl,
+  type WeddingContentConfig,
   type WeddingEventDetail,
 } from "@/lib/config/wedding-config";
 
@@ -34,7 +35,11 @@ function calculateTimeLeft(targetIso: string): TimeLeft {
   };
 }
 
-export default function EventSchedule() {
+export default function EventSchedule({
+  config = DEFAULT_WEDDING_CONFIG,
+}: {
+  config?: WeddingContentConfig;
+}) {
   const [mounted, setMounted] = useState(false);
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({
     days: 0,
@@ -45,14 +50,14 @@ export default function EventSchedule() {
 
   useEffect(() => {
     setMounted(true);
-    setTimeLeft(calculateTimeLeft(WEDDING_CONFIG.couple.weddingDateIso));
+    setTimeLeft(calculateTimeLeft(config.couple.weddingDateIso));
 
     const interval = setInterval(() => {
-      setTimeLeft(calculateTimeLeft(WEDDING_CONFIG.couple.weddingDateIso));
+      setTimeLeft(calculateTimeLeft(config.couple.weddingDateIso));
     }, 1000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [config.couple.weddingDateIso]);
 
   const countdownItems = [
     { label: "Hari", value: mounted ? timeLeft.days : 0 },
@@ -61,7 +66,7 @@ export default function EventSchedule() {
     { label: "Detik", value: mounted ? timeLeft.seconds : 0 },
   ];
 
-  const primaryEvent = WEDDING_CONFIG.events[0];
+  const primaryEvent = config.events[0] ?? DEFAULT_WEDDING_CONFIG.events[0];
   const romanNumerals = ["I", "II", "III", "IV"];
 
   return (
@@ -90,9 +95,7 @@ export default function EventSchedule() {
             <div className="rounded-sm border border-[#C5A059]/40 bg-[#1C2B24] p-5 text-[#FAF7F2]">
               <div className="flex items-center justify-between border-b border-[#C5A059]/25 pb-2.5 text-[11px] uppercase tracking-[0.2em] text-[#E5D1A7]">
                 <span>Hitung Mundur Acara</span>
-                <span className="tabular-nums">
-                  {WEDDING_CONFIG.couple.shortDate}
-                </span>
+                <span className="tabular-nums">{config.couple.shortDate}</span>
               </div>
               <div className="mt-4 grid grid-cols-4 divide-x divide-[#C5A059]/25 text-center">
                 {countdownItems.map((item) => (
@@ -112,87 +115,85 @@ export default function EventSchedule() {
 
         {/* Event Itinerary Grid */}
         <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2">
-          {WEDDING_CONFIG.events.map(
-            (event: WeddingEventDetail, idx: number) => (
-              <article
-                key={event.id}
-                className="flex flex-col justify-between rounded-sm border border-[#C5A059]/40 bg-[#FAF7F2] p-7 sm:p-9"
-              >
-                <div>
-                  <div className="flex items-center justify-between border-b border-[#C5A059]/25 pb-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#8A6825]">
-                    <span>
-                      {romanNumerals[idx] ?? idx + 1}. {event.subtitle}
-                    </span>
-                    <span className="tabular-nums">0{idx + 1}</span>
-                  </div>
+          {config.events.map((event: WeddingEventDetail, idx: number) => (
+            <article
+              key={event.id}
+              className="flex flex-col justify-between rounded-sm border border-[#C5A059]/40 bg-[#FAF7F2] p-7 sm:p-9"
+            >
+              <div>
+                <div className="flex items-center justify-between border-b border-[#C5A059]/25 pb-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#8A6825]">
+                  <span>
+                    {romanNumerals[idx] ?? idx + 1}. {event.subtitle}
+                  </span>
+                  <span className="tabular-nums">0{idx + 1}</span>
+                </div>
 
-                  <h3 className="mt-5 font-serif-luxury text-3xl font-semibold text-[#1C2B24] sm:text-4xl">
-                    {event.title}
-                  </h3>
+                <h3 className="mt-5 font-serif-luxury text-3xl font-semibold text-[#1C2B24] sm:text-4xl">
+                  {event.title}
+                </h3>
 
-                  <div className="mt-5 space-y-3.5 border-y border-[#C5A059]/25 py-5 text-sm text-[#222624]">
-                    <div className="flex items-start gap-3">
-                      <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-[#8A6825]" />
-                      <p className="font-semibold text-[#1C2B24]">
-                        {event.dateDisplay}
-                      </p>
-                    </div>
-
-                    <div className="flex items-start gap-3">
-                      <Clock className="mt-0.5 h-4 w-4 shrink-0 text-[#8A6825]" />
-                      <p className="font-medium text-[#243830] tabular-nums">
-                        {event.timeDisplay}
-                      </p>
-                    </div>
-
-                    <div className="flex items-start gap-3">
-                      <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#8A6825]" />
-                      <div>
-                        <p className="font-semibold text-[#1C2B24]">
-                          {event.venueName}
-                        </p>
-                        <p className="mt-0.5 text-xs leading-relaxed text-[#4A6358]">
-                          {event.venueAddress}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {event.dressCode && (
-                    <p className="mt-4 text-xs text-[#243830]">
-                      <strong className="font-semibold uppercase tracking-wider text-[#1C2B24]">
-                        Busana:
-                      </strong>{" "}
-                      {event.dressCode}
+                <div className="mt-5 space-y-3.5 border-y border-[#C5A059]/25 py-5 text-sm text-[#222624]">
+                  <div className="flex items-start gap-3">
+                    <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-[#8A6825]" />
+                    <p className="font-semibold text-[#1C2B24]">
+                      {event.dateDisplay}
                     </p>
-                  )}
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <Clock className="mt-0.5 h-4 w-4 shrink-0 text-[#8A6825]" />
+                    <p className="font-medium text-[#243830] tabular-nums">
+                      {event.timeDisplay}
+                    </p>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#8A6825]" />
+                    <div>
+                      <p className="font-semibold text-[#1C2B24]">
+                        {event.venueName}
+                      </p>
+                      <p className="mt-0.5 text-xs leading-relaxed text-[#4A6358]">
+                        {event.venueAddress}
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Action Buttons (44px+ min height) */}
-                <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-                  <a
-                    href={buildGoogleCalendarUrl(event)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-sm bg-[#243830] px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-[#FAF7F2] transition-colors hover:bg-[#1C2B24]"
-                  >
-                    <CalendarPlus className="h-4 w-4 text-[#E5D1A7]" />
-                    <span>Simpan ke Kalender</span>
-                  </a>
+                {event.dressCode && (
+                  <p className="mt-4 text-xs text-[#243830]">
+                    <strong className="font-semibold uppercase tracking-wider text-[#1C2B24]">
+                      Busana:
+                    </strong>{" "}
+                    {event.dressCode}
+                  </p>
+                )}
+              </div>
 
-                  <a
-                    href={event.googleMapsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-sm border border-[#C5A059]/55 bg-[#FAF7F2] px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-[#243830] transition-colors hover:bg-[#F2ECE1]"
-                  >
-                    <Navigation className="h-4 w-4 text-[#8A6825]" />
-                    <span>Petunjuk Lokasi</span>
-                  </a>
-                </div>
-              </article>
-            )
-          )}
+              {/* Action Buttons (44px+ min height) */}
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+                <a
+                  href={buildGoogleCalendarUrl(event, config.couple)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-sm bg-[#243830] px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-[#FAF7F2] transition-colors hover:bg-[#1C2B24]"
+                >
+                  <CalendarPlus className="h-4 w-4 text-[#E5D1A7]" />
+                  <span>Simpan ke Kalender</span>
+                </a>
+
+                <a
+                  href={event.googleMapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-sm border border-[#C5A059]/55 bg-[#FAF7F2] px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-[#243830] transition-colors hover:bg-[#F2ECE1]"
+                >
+                  <Navigation className="h-4 w-4 text-[#8A6825]" />
+                  <span>Petunjuk Lokasi</span>
+                </a>
+              </div>
+            </article>
+          ))}
         </div>
 
         {/* Framed Venue Map Sheet */}
@@ -219,7 +220,7 @@ export default function EventSchedule() {
 
           <div className="relative h-72 w-full overflow-hidden rounded-sm border border-[#C5A059]/30 sm:h-80">
             <iframe
-              title="Lokasi Pernikahan The Dharmawangsa Jakarta"
+              title={`Peta Lokasi ${primaryEvent.venueName}`}
               src={primaryEvent.googleMapsEmbedUrl}
               width="800"
               height="360"
