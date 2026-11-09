@@ -8,7 +8,6 @@ import {
   Mail,
   Sparkles,
   ArrowRight,
-  KeyRound,
   AlertCircle,
   Eye,
   EyeOff,
@@ -21,7 +20,7 @@ function AdminLoginForm() {
   const searchParams = useSearchParams();
   const nextPath = searchParams.get("next") || "/admin";
 
-  const [email, setEmail] = useState("admin@wedding.id");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -39,7 +38,7 @@ function AdminLoginForm() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email: email.trim() || "admin@wedding.id",
+          email: email.trim(),
           password,
         }),
       });
@@ -50,7 +49,7 @@ function AdminLoginForm() {
         setError(
           result.error ||
             result.message ||
-            "Kredensial tidak valid. Silakan periksa kembali password admin Anda."
+            "Kredensial tidak valid. Silakan periksa kembali email dan password Anda."
         );
         return;
       }
@@ -62,12 +61,6 @@ function AdminLoginForm() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleQuickFillDemo = () => {
-    setEmail("admin@wedding.id");
-    setPassword("wedding2026");
-    setError(null);
   };
 
   return (
@@ -127,7 +120,7 @@ function AdminLoginForm() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@wedding.id"
+                  placeholder="Masukkan email admin..."
                   required
                   className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#E5D1A7] bg-[#FAF7F2]/60 text-sm text-[#222624] placeholder:text-[#222624]/40 focus:outline-none focus:ring-2 focus:ring-[#C5A059] focus:bg-white transition-all"
                 />
@@ -139,7 +132,7 @@ function AdminLoginForm() {
                 htmlFor="admin-password"
                 className="block text-xs font-semibold text-[#243830] uppercase tracking-wider mb-1.5"
               >
-                Password / Kunci Akses
+                Password
               </label>
               <div className="relative">
                 <Lock className="w-4 h-4 text-[#4A6358] absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -176,35 +169,6 @@ function AdminLoginForm() {
               <ArrowRight className="w-4 h-4 text-[#E5D1A7]" />
             </button>
           </form>
-
-          {/* Demo / Environment Hint Box */}
-          <div className="mt-6 pt-5 border-t border-[#E5D1A7]/40">
-            <div className="rounded-2xl bg-[#FAF7F2] border border-[#E5D1A7]/70 p-4">
-              <div className="flex items-center justify-between gap-2 mb-1.5">
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-[#243830]">
-                  <KeyRound className="w-3.5 h-3.5 text-[#C5A059]" />
-                  <span>Akses Demo &amp; Supabase Auth</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleQuickFillDemo}
-                  className="text-[11px] font-semibold text-[#C5A059] hover:text-[#243830] underline underline-offset-2 cursor-pointer"
-                >
-                  Isi Otomatis
-                </button>
-              </div>
-              <p className="text-[11px] text-[#4A6358] leading-relaxed">
-                Untuk pengujian lokal/demo, gunakan password default{" "}
-                <code className="px-1.5 py-0.5 rounded bg-[#243830]/10 text-[#243830] font-mono font-semibold">
-                  wedding2026
-                </code>{" "}
-                (atau sesuai variabel{" "}
-                <code className="font-mono text-[#243830]">ADMIN_PASSWORD</code>{" "}
-                pada <code className="font-mono text-[#243830]">.env</code>).
-                Akun Supabase Auth juga terhubung otomatis bila telah dikonfigurasi.
-              </p>
-            </div>
-          </div>
         </div>
       </div>
     </div>

@@ -3,7 +3,6 @@ import { Heart, Instagram, Sparkles } from "lucide-react";
 import { WEDDING_CONFIG } from "@/lib/config/wedding-config";
 import {
   findGuestByName,
-  getGuests,
   getRsvpByGuestId,
   getWishes,
 } from "@/lib/supabase/repository";
@@ -41,12 +40,11 @@ export default async function InvitationPage({
   const rawGuestName = decodeGuestParameter(params.to);
 
   // Server-side lookups for Strict Invite-Only RSVP & initial Wishes
-  const [registeredGuest, wishes, allGuests] = await Promise.all([
+  const [registeredGuest, wishes] = await Promise.all([
     rawGuestName !== "Tamu Undangan"
       ? findGuestByName(rawGuestName)
       : Promise.resolve(null),
     getWishes(),
-    getGuests(),
   ]);
 
   const initialRsvp = registeredGuest
@@ -54,7 +52,6 @@ export default async function InvitationPage({
     : null;
 
   const displayGuestName = registeredGuest?.name ?? rawGuestName;
-  const sampleGuestNames = allGuests.slice(0, 4).map((g) => g.name);
 
   return (
     <InvitationClientShell
@@ -232,7 +229,6 @@ export default async function InvitationPage({
         guestName={displayGuestName}
         registeredGuest={registeredGuest}
         initialRsvp={initialRsvp}
-        sampleGuestNames={sampleGuestNames}
       />
 
       {/* 5. REALTIME & OPTIMISTIC WISH WALL */}

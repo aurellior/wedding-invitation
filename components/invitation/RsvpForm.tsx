@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   CheckCircle2,
@@ -11,7 +10,6 @@ import {
   Users,
   Send,
   AlertCircle,
-  ExternalLink,
   RefreshCw,
 } from "lucide-react";
 import type { AttendanceStatus, Guest, RsvpRecord } from "@/types/wedding";
@@ -20,7 +18,6 @@ export interface RsvpFormProps {
   guestName: string;
   registeredGuest: Guest | null;
   initialRsvp: RsvpRecord | null;
-  sampleGuestNames?: string[];
 }
 
 const ATTENDANCE_OPTIONS: {
@@ -46,10 +43,8 @@ const ATTENDANCE_OPTIONS: {
 ];
 
 export default function RsvpForm({
-  guestName,
   registeredGuest,
   initialRsvp,
-  sampleGuestNames = [],
 }: RsvpFormProps) {
   const [savedRsvp, setSavedRsvp] = useState<RsvpRecord | null>(initialRsvp);
   const [attendanceStatus, setAttendanceStatus] = useState<AttendanceStatus>(
@@ -68,7 +63,9 @@ export default function RsvpForm({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  const maxPaxAllowed = registeredGuest ? Math.max(1, registeredGuest.max_pax) : 1;
+  const maxPaxAllowed = registeredGuest
+    ? Math.max(1, registeredGuest.max_pax)
+    : 1;
   const paxOptions = Array.from({ length: maxPaxAllowed }, (_, i) => i + 1);
 
   const handleStatusChange = (status: AttendanceStatus) => {
@@ -111,7 +108,8 @@ export default function RsvpForm({
 
       if (!response.ok || !result.data) {
         setErrorMsg(
-          result.error ?? "Gagal menyimpan konfirmasi kehadiran. Silakan coba lagi."
+          result.error ??
+            "Gagal menyimpan konfirmasi kehadiran. Silakan coba lagi."
         );
         return;
       }
@@ -164,7 +162,7 @@ export default function RsvpForm({
             Konfirmasi Kehadiran
           </span>
           <h2 className="mt-4 font-serif-luxury text-4xl font-semibold text-[#1C2B24] sm:text-5xl">
-            RSVP Undangan Resmi
+            RSVP Kehadiran
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-[#4A6358]">
             Kehadiran Anda merupakan kehormatan bagi kami. Mohon konfirmasikan
@@ -186,9 +184,7 @@ export default function RsvpForm({
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#C5A059]/25 pb-5">
                 <div className="inline-flex items-center gap-2 rounded-full border border-[#C5A059]/45 bg-[#243830] px-4 py-1.5 text-xs font-medium text-[#E5D1A7]">
                   <ShieldCheck className="h-4 w-4 text-[#C5A059]" />
-                  <span>
-                    Tamu Terdaftar • Kategori: {registeredGuest.category}
-                  </span>
+                  <span>Undangan Resmi • {registeredGuest.category}</span>
                 </div>
 
                 <div className="inline-flex items-center gap-1.5 text-xs font-medium text-[#4A6358]">
@@ -212,7 +208,7 @@ export default function RsvpForm({
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div className="flex items-center gap-2 font-semibold text-[#1C2B24]">
                         <CheckCircle2 className="h-4 w-4 text-[#243830]" />
-                        <span>Status RSVP Tercatat Saat Ini:</span>
+                        <span>Status Kehadiran Tercatat:</span>
                       </div>
                       <span
                         className={`rounded-full border px-3 py-0.5 text-[11px] font-semibold ${
@@ -228,8 +224,7 @@ export default function RsvpForm({
                     </div>
                     <p className="mt-1.5 text-[11px] text-[#4A6358]">
                       Anda dapat memperbarui konfirmasi kehadiran kapan saja
-                      dengan mengirimkan ulang formulir di bawah ini (otomatis
-                      memperbarui data sebelumnya).
+                      melalui formulir di bawah ini.
                     </p>
                   </motion.div>
                 )}
@@ -246,7 +241,7 @@ export default function RsvpForm({
                     <span>Nama Tamu Undangan</span>
                     <span className="inline-flex items-center gap-1 text-[11px] font-normal normal-case text-[#4A6358]">
                       <Lock className="h-3 w-3 text-[#C5A059]" />
-                      Terkunci sesuai tautan undangan
+                      Sesuai undangan personal
                     </span>
                   </label>
                   <input
@@ -282,9 +277,7 @@ export default function RsvpForm({
                           </span>
                           <span
                             className={`mt-1 text-[11px] leading-snug ${
-                              isSelected
-                                ? "text-[#E5D1A7]"
-                                : "text-[#4A6358]"
+                              isSelected ? "text-[#E5D1A7]" : "text-[#4A6358]"
                             }`}
                           >
                             {option.subtitle}
@@ -305,8 +298,7 @@ export default function RsvpForm({
                       Jumlah Tamu yang Hadir (Pax)
                     </label>
                     <span className="text-[11px] text-[#4A6358]">
-                      Maksimal {registeredGuest.max_pax} orang sesuai kuota
-                      undangan
+                      Maksimal {registeredGuest.max_pax} orang
                     </span>
                   </div>
 
@@ -325,10 +317,7 @@ export default function RsvpForm({
                     >
                       {paxOptions.map((num) => (
                         <option key={num} value={num}>
-                          {num} Orang{" "}
-                          {num === registeredGuest.max_pax
-                            ? "(Kuota Maksimal)"
-                            : ""}
+                          {num} Orang
                         </option>
                       ))}
                     </select>
@@ -343,7 +332,7 @@ export default function RsvpForm({
                   >
                     Catatan Tambahan{" "}
                     <span className="font-normal normal-case text-[#4A6358]">
-                      (Opsional — mis. sesi kehadiran / preferensi jamuan)
+                      (Opsional)
                     </span>
                   </label>
                   <textarea
@@ -352,7 +341,7 @@ export default function RsvpForm({
                     maxLength={300}
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Contoh: InsyaAllah hadir bersama pasangan saat sesi resepsi siang..."
+                    placeholder="Tuliskan pesan singkat atau catatan kehadiran..."
                     className="mt-2 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-4 py-3 text-sm text-[#1C2B24] placeholder:text-[#4A6358]/60 focus:border-[#243830] focus:outline-none focus:ring-2 focus:ring-[#C5A059]/40"
                   />
                 </div>
@@ -382,7 +371,7 @@ export default function RsvpForm({
                       <div>
                         <p className="font-semibold">{successMsg}</p>
                         <p className="mt-0.5 text-[11px] text-emerald-800">
-                          Data tercatat atas nama{" "}
+                          Konfirmasi tercatat atas nama{" "}
                           <strong>{registeredGuest.name}</strong>. Sampai
                           berjumpa di hari bahagia kami!
                         </p>
@@ -406,8 +395,8 @@ export default function RsvpForm({
                       <Send className="h-4 w-4 text-[#E5D1A7]" />
                       <span>
                         {savedRsvp
-                          ? "Perbarui Konfirmasi Kehadiran (RSVP)"
-                          : "Kirim Konfirmasi Kehadiran (RSVP)"}
+                          ? "Perbarui Konfirmasi Kehadiran"
+                          : "Kirim Konfirmasi Kehadiran"}
                       </span>
                     </>
                   )}
@@ -415,54 +404,22 @@ export default function RsvpForm({
               </form>
             </>
           ) : (
-            /* Strict Invite-Only Notice when visitor is not registered */
-            <div className="text-center">
+            /* Formal Production Notice when opened without registered personal invitation link */
+            <div className="py-4 text-center">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-[#C5A059]/40 bg-[#F2ECE1] text-[#243830]">
                 <Lock className="h-6 w-6 text-[#C5A059]" />
               </div>
 
               <h3 className="mt-4 font-serif-luxury text-2xl font-semibold text-[#1C2B24] sm:text-3xl">
-                Mode RSVP Khusus Tamu Terdaftar
+                Konfirmasi Kehadiran Khusus Tamu Terdaftar
               </h3>
 
               <p className="mx-auto mt-2.5 max-w-lg text-xs leading-relaxed text-[#4A6358] sm:text-sm">
-                Saat ini Anda membuka undangan sebagai{" "}
-                <strong className="text-[#1C2B24]">&ldquo;{guestName}&rdquo;</strong>.
-                Fitur konfirmasi kehadiran (RSVP) menggunakan sistem{" "}
-                <span className="font-semibold text-[#243830]">
-                  Strict Invite-Only
-                </span>{" "}
-                yang hanya aktif melalui tautan personal resmi (parameter{" "}
-                <code className="rounded bg-[#F2ECE1] px-1.5 py-0.5 text-[#1C2B24]">
-                  ?to=Nama+Tamu
-                </code>
-                ) sesuai daftar buku tamu mempelai.
+                Formulir konfirmasi kehadiran (RSVP) ini terhubung langsung
+                dengan daftar tamu resmi mempelai. Silakan akses halaman
+                undangan melalui tautan personal yang telah kami kirimkan kepada
+                Anda melalui pesan WhatsApp.
               </p>
-
-              {sampleGuestNames.length > 0 && (
-                <div className="mt-6 rounded-2xl border border-[#C5A059]/35 bg-[#F2ECE1]/80 p-5 text-left">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-[#243830]">
-                    Simulasi Tautan Tamu Terdaftar (Klik untuk Menguji RSVP):
-                  </p>
-                  <p className="mt-1 text-xs text-[#4A6358]">
-                    Pilih salah satu nama tamu terdaftar di bawah ini untuk
-                    menguji fitur RSVP terkunci beserta batas kuota kehadiran:
-                  </p>
-
-                  <div className="mt-3.5 flex flex-wrap gap-2">
-                    {sampleGuestNames.map((name) => (
-                      <Link
-                        key={name}
-                        href={`/?to=${encodeURIComponent(name)}#rsvp`}
-                        className="inline-flex items-center gap-1.5 rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-xs font-medium text-[#1C2B24] shadow-xs transition-all hover:border-[#243830] hover:bg-[#243830] hover:text-[#FAF7F2]"
-                      >
-                        <span>?to={name}</span>
-                        <ExternalLink className="h-3 w-3 text-[#C5A059]" />
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           )}
         </motion.div>
