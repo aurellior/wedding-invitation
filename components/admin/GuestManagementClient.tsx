@@ -33,6 +33,7 @@ import {
   renderWhatsAppTemplate,
   type WeddingContentConfig,
 } from "@/lib/config/wedding-config";
+import { ConfirmModal } from "./ConfirmModal";
 
 const CATEGORIES: GuestCategory[] = [
   "VIP",
@@ -145,6 +146,10 @@ export default function GuestManagementClient({
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
+  // Modal state for Delete confirmation
+  const [guestToDelete, setGuestToDelete] = useState<Guest | null>(null);
+  const [isDeletingGuest, setIsDeletingGuest] = useState(false);
+
   // Map guest_id -> RsvpRecord for O(1) lookup
   const rsvpByGuestId = useMemo(() => {
     const map = new Map<string, RsvpRecord>();
@@ -251,25 +256,26 @@ export default function GuestManagementClient({
     }
   };
 
-  const handleDeleteGuest = async (guest: Guest) => {
-    const confirmed = window.confirm(
-      `Hapus tamu "${guest.name}" beserta data konfirmasi RSVP terkait?`
-    );
-    if (!confirmed) return;
+  const handleConfirmDeleteGuest = async () => {
+    if (!guestToDelete) return;
 
+    setIsDeletingGuest(true);
     try {
       const res = await fetch(
-        `/api/guests?id=${encodeURIComponent(guest.id)}`,
+        `/api/guests?id=${encodeURIComponent(guestToDelete.id)}`,
         {
           method: "DELETE",
         }
       );
       if (res.ok) {
-        setGuests((prev) => prev.filter((item) => item.id !== guest.id));
+        setGuests((prev) => prev.filter((item) => item.id !== guestToDelete.id));
         router.refresh();
+        setGuestToDelete(null);
       }
     } catch {
       // Ignore network error
+    } finally {
+      setIsDeletingGuest(false);
     }
   };
 
@@ -487,19 +493,21 @@ export default function GuestManagementClient({
                       className="hover:bg-[#FAF7F2]/60 transition-colors"
                     >
                       {/* Nama Tamu */}
-                      <td className="py-4 px-5 align-middle max-w-[220px] sm:max-w-[260px]">
-                        <p
-                          className="font-semibold text-[#243830] text-sm truncate"
-                          title={guest.name}
-                        >
-                          {guest.name}
-                        </p>
-                        <p
-                          className="text-[11px] text-[#4A6358]/80 font-mono mt-0.5 truncate"
-                          title={`/?to=${encodeURIComponent(guest.name)}`}
-                        >
-                          /?to={encodeURIComponent(guest.name)}
-                        </p>
+                      <td className="py-4 px-5 align-middle">
+                        <div className="max-w-[180px] sm:max-w-[220px] md:max-w-[260px] overflow-hidden">
+                          <p
+                            className="font-semibold text-[#243830] text-sm truncate"
+                            title={guest.name}
+                          >
+                            {guest.name}
+                          </p>
+                          <p
+                            className="text-[11px] text-[#4A6358]/80 font-mono mt-0.5 truncate"
+                            title={`/?to=${encodeURIComponent(guest.name)}`}
+                          >
+                            /?to={encodeURIComponent(guest.name)}
+                          </p>
+                        </div>
                       </td>
 
                       {/* Kategori */}
@@ -622,7 +630,7 @@ export default function GuestManagementClient({
                           {/* Hapus Tamu */}
                           <button
                             type="button"
-                            onClick={() => handleDeleteGuest(guest)}
+                            onClick={() => setGuestToDelete(guest)}
                             className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition-colors cursor-pointer"
                             title="Hapus tamu"
                           >
@@ -768,6 +776,28 @@ export default function GuestManagementClient({
           </div>
         </div>
       )}
+
+      {/* Confirmation Modal Hapus Tamu */}
+      <ConfirmModal
+        isOpen={!!guestToDelete}
+        onClose={() => {
+          if (!isDeletingGuest) setGuestToDelete(null);
+        }}
+        onConfirm={handleConfirmDeleteGuest}
+        title="Hapus Tamu Undangan"
+        description={
+          <span>
+            Apakah Anda yakin ingin menghapus data tamu{" "}
+            <strong className="text-[#243830]">{guestToDelete?.name}</strong>?
+            Data konfirmasi RSVP dan riwayat kehadiran terkait juga akan dihapus
+            secara permanen.
+          </span>
+        }
+        confirmText="Ya, Hapus Tamu"
+        cancelText="Batal"
+        variant="danger"
+        isLoading={isDeletingGuest}
+      />
     </div>
   );
 }

@@ -13,6 +13,7 @@ import {
   X,
 } from "lucide-react";
 import type { AttendanceStatus, WishRecord } from "@/types/wedding";
+import { ConfirmModal } from "./ConfirmModal";
 
 function formatDateId(iso: string): string {
   try {
@@ -64,7 +65,8 @@ export default function WishesModerationClient({
   const router = useRouter();
   const [wishes, setWishes] = useState<WishRecord[]>(initialWishes);
   const [searchQuery, setSearchQuery] = useState("");
-  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [wishToDelete, setWishToDelete] = useState<WishRecord | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const filteredWishes = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -76,29 +78,27 @@ export default function WishesModerationClient({
     );
   }, [wishes, searchQuery]);
 
-  const handleDeleteWish = async (wish: WishRecord) => {
-    const confirmed = window.confirm(
-      `Hapus ucapan dari "${wish.sender_name}" dari halaman WishWall?`
-    );
-    if (!confirmed) return;
+  const handleConfirmDeleteWish = async () => {
+    if (!wishToDelete) return;
 
-    setDeletingId(wish.id);
+    setIsDeleting(true);
     try {
       const res = await fetch(
-        `/api/wishes?id=${encodeURIComponent(wish.id)}`,
+        `/api/wishes?id=${encodeURIComponent(wishToDelete.id)}`,
         {
           method: "DELETE",
         }
       );
 
       if (res.ok) {
-        setWishes((prev) => prev.filter((item) => item.id !== wish.id));
+        setWishes((prev) => prev.filter((item) => item.id !== wishToDelete.id));
         router.refresh();
+        setWishToDelete(null);
       }
     } catch {
       // Ignore network error
     } finally {
-      setDeletingId(null);
+      setIsDeleting(false);
     }
   };
 
@@ -179,15 +179,12 @@ export default function WishesModerationClient({
 
                   <button
                     type="button"
-                    disabled={deletingId === wish.id}
-                    onClick={() => handleDeleteWish(wish)}
+                    onClick={() => setWishToDelete(wish)}
                     title="Hapus ucapan ini"
-                    className="inline-flex h-8 items-center gap-1.5 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-medium transition-colors disabled:opacity-50 cursor-pointer shrink-0"
+                    className="inline-flex h-8 items-center gap-1.5 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-medium transition-colors cursor-pointer shrink-0"
                   >
                     <Trash2 className="w-3.5 h-3.5 shrink-0" />
-                    <span>
-                      {deletingId === wish.id ? "Menghapus..." : "Hapus"}
-                    </span>
+                    <span>Hapus</span>
                   </button>
                 </div>
 
@@ -199,6 +196,30 @@ export default function WishesModerationClient({
           ))}
         </div>
       )}
+
+      {/* Confirmation Modal */}
+      <ConfirmModal
+        isOpen={!!wishToDelete}
+        onClose={() => {
+          if (!isDeleting) setWishToDelete(null);
+        }}
+        onConfirm={handleConfirmDeleteWish}
+        title="Hapus Ucapan"
+        description={
+          <span>
+            Apakah Anda yakin ingin menghapus ucapan dari{" "}
+            <strong className="text-[#243830]">
+              {wishToDelete?.sender_name}
+            </strong>
+            ? Ucapan yang dihapus akan hilang dari WishWall dan tidak dapat
+            dikembalikan.
+          </span>
+        }
+        confirmText="Ya, Hapus Ucapan"
+        cancelText="Batal"
+        variant="danger"
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

@@ -27,6 +27,7 @@ import {
   type WeddingContentConfig,
   type WeddingEventDetail,
 } from "@/lib/config/wedding-config";
+import { ConfirmModal } from "./ConfirmModal";
 
 type ContentTabId =
   | "couple"
@@ -112,6 +113,11 @@ export default function WeddingContentClient({
     type: "success" | "error";
     text: string;
   } | null>(null);
+
+  // Modal confirmation states
+  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
+  const [isDeleteAudioConfirmOpen, setIsDeleteAudioConfirmOpen] = useState(false);
+  const [accountIndexToDelete, setAccountIndexToDelete] = useState<number | null>(null);
 
   const handleAudioFileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>
@@ -378,6 +384,13 @@ export default function WeddingContentClient({
 
   const removeBankAccount = (index: number) => {
     if (config.gifts.accounts.length <= 1) return;
+    setAccountIndexToDelete(index);
+  };
+
+  const handleConfirmRemoveBankAccount = () => {
+    if (accountIndexToDelete === null) return;
+    const index = accountIndexToDelete;
+    if (config.gifts.accounts.length <= 1) return;
     setConfig((prev) => ({
       ...prev,
       gifts: {
@@ -385,6 +398,7 @@ export default function WeddingContentClient({
         accounts: prev.gifts.accounts.filter((_, i) => i !== index),
       },
     }));
+    setAccountIndexToDelete(null);
   };
 
   const updateQris = (
@@ -478,12 +492,7 @@ export default function WeddingContentClient({
     }
   };
 
-  const handleResetDefault = async () => {
-    const confirmed = window.confirm(
-      "Kembalikan seluruh teks, nama mempelai, lokasi acara, dan rekening ke pengaturan contoh awal?"
-    );
-    if (!confirmed) return;
-
+  const handleConfirmResetDefault = async () => {
     setResetting(true);
     setFeedback(null);
 
@@ -508,6 +517,7 @@ export default function WeddingContentClient({
             result.message ||
             "Konten undangan telah dikembalikan ke pengaturan awal.",
         });
+        setIsResetConfirmOpen(false);
         router.refresh();
       }
     } catch {
@@ -552,7 +562,7 @@ export default function WeddingContentClient({
           <button
             type="button"
             disabled={resetting || saving}
-            onClick={handleResetDefault}
+            onClick={() => setIsResetConfirmOpen(true)}
             className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-stone-300 bg-white px-4 py-2.5 text-xs font-semibold text-[#4A6358] transition-colors hover:bg-stone-50 hover:text-[#1C2B24] disabled:opacity-50"
           >
             <RotateCcw className="h-3.5 w-3.5" />
@@ -1400,7 +1410,7 @@ export default function WeddingContentClient({
               <button
                 type="button"
                 disabled={uploadingAudio}
-                onClick={handleUseDefaultSynthAudio}
+                onClick={() => setIsDeleteAudioConfirmOpen(true)}
                 className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2 text-xs font-semibold text-rose-700 transition-colors hover:bg-rose-100 disabled:opacity-50"
               >
                 <Trash2 className="h-3.5 w-3.5" />
@@ -1672,6 +1682,64 @@ export default function WeddingContentClient({
           </div>
         </div>
       )}
+
+      {/* Modal Konfirmasi Reset Default */}
+      <ConfirmModal
+        isOpen={isResetConfirmOpen}
+        onClose={() => {
+          if (!resetting) setIsResetConfirmOpen(false);
+        }}
+        onConfirm={handleConfirmResetDefault}
+        title="Reset Pengaturan Konten"
+        description="Apakah Anda yakin ingin mengembalikan seluruh teks, nama mempelai, jadwal acara, dan rekening ke data contoh awal? Perubahan kustom saat ini yang belum tersimpan akan hilang."
+        confirmText="Ya, Reset Default"
+        cancelText="Batal"
+        variant="warning"
+        isLoading={resetting}
+      />
+
+      {/* Modal Konfirmasi Hapus File Musik MP3 */}
+      <ConfirmModal
+        isOpen={isDeleteAudioConfirmOpen}
+        onClose={() => {
+          if (!uploadingAudio) setIsDeleteAudioConfirmOpen(false);
+        }}
+        onConfirm={async () => {
+          setIsDeleteAudioConfirmOpen(false);
+          await handleUseDefaultSynthAudio();
+        }}
+        title="Hapus Musik MP3 Kustom"
+        description="Apakah Anda yakin ingin menghapus file lagu MP3 yang telah diunggah dan beralih kembali ke musik instrumen romantis bawaan?"
+        confirmText="Ya, Hapus Musik"
+        cancelText="Batal"
+        variant="danger"
+        isLoading={uploadingAudio}
+      />
+
+      {/* Modal Konfirmasi Hapus Rekening Bank */}
+      <ConfirmModal
+        isOpen={accountIndexToDelete !== null}
+        onClose={() => setAccountIndexToDelete(null)}
+        onConfirm={handleConfirmRemoveBankAccount}
+        title="Hapus Rekening Bank"
+        description={
+          accountIndexToDelete !== null && config.gifts.accounts[accountIndexToDelete] ? (
+            <span>
+              Hapus rekening{" "}
+              <strong className="text-[#243830]">
+                {config.gifts.accounts[accountIndexToDelete].bankName || "Bank"}{" "}
+                - {config.gifts.accounts[accountIndexToDelete].accountNumber}
+              </strong>{" "}
+              dari daftar amplop digital?
+            </span>
+          ) : (
+            "Hapus rekening bank ini dari daftar amplop digital?"
+          )
+        }
+        confirmText="Ya, Hapus Rekening"
+        cancelText="Batal"
+        variant="danger"
+      />
     </form>
   );
 }

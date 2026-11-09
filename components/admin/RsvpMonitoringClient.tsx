@@ -377,18 +377,20 @@ export default function RsvpMonitoringClient({
                     key={row.guestId}
                     className="hover:bg-[#FAF7F2]/60 transition-colors"
                   >
-                    <td className="py-4 px-5 align-middle max-w-[220px] sm:max-w-[260px]">
-                      <p
-                        className="font-semibold text-[#243830] text-sm truncate"
-                        title={row.guestName}
-                      >
-                        {row.guestName}
-                      </p>
-                      {row.phone && (
-                        <p className="text-[11px] text-[#4A6358] font-mono mt-0.5 truncate">
-                          {row.phone}
+                    <td className="py-4 px-5 align-middle">
+                      <div className="max-w-[180px] sm:max-w-[220px] md:max-w-[260px] overflow-hidden">
+                        <p
+                          className="font-semibold text-[#243830] text-sm truncate"
+                          title={row.guestName}
+                        >
+                          {row.guestName}
                         </p>
-                      )}
+                        {row.phone && (
+                          <p className="text-[11px] text-[#4A6358] font-mono mt-0.5 truncate">
+                            {row.phone}
+                          </p>
+                        )}
+                      </div>
                     </td>
 
                     <td className="py-4 px-4 align-middle whitespace-nowrap">
