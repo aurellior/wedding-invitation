@@ -421,15 +421,21 @@ export default async function AdminDashboardPage() {
                   key={rsvp.id}
                   className="px-6 py-4 flex items-start justify-between gap-4 hover:bg-[#FAF7F2]/50 transition-colors"
                 >
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-sm font-semibold text-[#243830] truncate">
+                      <p
+                        className="text-sm font-semibold text-[#243830] truncate max-w-[220px] sm:max-w-xs"
+                        title={rsvp.guest_name}
+                      >
                         {rsvp.guest_name}
                       </p>
                       <StatusBadge status={rsvp.attendance_status} />
                     </div>
                     {rsvp.notes && (
-                      <p className="text-xs text-[#4A6358] mt-1 line-clamp-1 italic">
+                      <p
+                        className="text-xs text-[#4A6358] mt-1 line-clamp-1 italic break-words"
+                        title={rsvp.notes}
+                      >
                         &ldquo;{rsvp.notes}&rdquo;
                       </p>
                     )}
@@ -438,7 +444,7 @@ export default async function AdminDashboardPage() {
                     </p>
                   </div>
                   <div className="shrink-0 text-right">
-                    <span className="inline-block px-2.5 py-1 rounded-lg bg-[#FAF7F2] border border-[#E5D1A7]/60 text-xs font-semibold text-[#243830]">
+                    <span className="inline-block whitespace-nowrap px-2.5 py-1 rounded-lg bg-[#FAF7F2] border border-[#E5D1A7]/60 text-xs font-semibold text-[#243830]">
                       {rsvp.pax} Pax
                     </span>
                   </div>
@@ -479,20 +485,26 @@ export default async function AdminDashboardPage() {
                   key={wish.id}
                   className="px-6 py-4 hover:bg-[#FAF7F2]/50 transition-colors"
                 >
-                  <div className="flex items-center justify-between gap-2 mb-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-sm font-semibold text-[#243830]">
+                  <div className="flex items-start justify-between gap-3 mb-1">
+                    <div className="flex items-center gap-2 flex-wrap min-w-0 flex-1">
+                      <p
+                        className="text-sm font-semibold text-[#243830] truncate max-w-[220px] sm:max-w-xs"
+                        title={wish.sender_name}
+                      >
                         {wish.sender_name}
                       </p>
                       {wish.attendance_badge && (
                         <StatusBadge status={wish.attendance_badge} />
                       )}
                     </div>
-                    <span className="text-[11px] text-[#4A6358]/70 shrink-0">
+                    <span className="text-[11px] text-[#4A6358]/70 shrink-0 whitespace-nowrap">
                       {formatDateId(wish.created_at)}
                     </span>
                   </div>
-                  <p className="text-xs text-[#4A6358] line-clamp-2 leading-relaxed">
+                  <p
+                    className="text-xs text-[#4A6358] line-clamp-2 leading-relaxed break-words"
+                    title={wish.message}
+                  >
                     {wish.message}
                   </p>
                 </div>

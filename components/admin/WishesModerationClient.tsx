@@ -158,13 +158,16 @@ export default function WishesModerationClient({
           {filteredWishes.map((wish) => (
             <div
               key={wish.id}
-              className="bg-white rounded-2xl border border-[#E5D1A7]/60 p-5 shadow-xs flex flex-col justify-between gap-4 hover:border-[#C5A059] transition-colors"
+              className="bg-white rounded-2xl border border-[#E5D1A7]/60 p-5 shadow-xs flex flex-col justify-between gap-4 hover:border-[#C5A059] transition-colors overflow-hidden"
             >
               <div>
                 <div className="flex items-start justify-between gap-3">
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold text-[#243830] text-sm">
+                      <h3
+                        className="font-semibold text-[#243830] text-sm truncate max-w-full"
+                        title={wish.sender_name}
+                      >
                         {wish.sender_name}
                       </h3>
                       <AttendanceBadge status={wish.attendance_badge} />
@@ -179,16 +182,16 @@ export default function WishesModerationClient({
                     disabled={deletingId === wish.id}
                     onClick={() => handleDeleteWish(wish)}
                     title="Hapus ucapan ini"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-medium transition-colors disabled:opacity-50 cursor-pointer shrink-0"
+                    className="inline-flex h-8 items-center gap-1.5 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-medium transition-colors disabled:opacity-50 cursor-pointer shrink-0"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <Trash2 className="w-3.5 h-3.5 shrink-0" />
                     <span>
                       {deletingId === wish.id ? "Menghapus..." : "Hapus"}
                     </span>
                   </button>
                 </div>
 
-                <div className="mt-3.5 p-3.5 rounded-xl bg-[#FAF7F2] border border-[#E5D1A7]/40 text-xs text-[#222624] leading-relaxed">
+                <div className="mt-3.5 p-3.5 rounded-xl bg-[#FAF7F2] border border-[#E5D1A7]/40 text-xs text-[#222624] leading-relaxed break-words whitespace-pre-line">
                   &ldquo;{wish.message}&rdquo;
                 </div>
               </div>

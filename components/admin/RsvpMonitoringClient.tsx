@@ -352,7 +352,7 @@ export default function RsvpMonitoringClient({
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-[#FAF7F2] border-b border-[#E5D1A7]/60 text-[11px] font-semibold uppercase tracking-wider text-[#4A6358]">
+              <tr className="bg-[#FAF7F2] border-b border-[#E5D1A7]/60 text-[11px] font-semibold uppercase tracking-wider text-[#4A6358] whitespace-nowrap">
                 <th className="py-3.5 px-5">Nama Tamu</th>
                 <th className="py-3.5 px-4">Kategori</th>
                 <th className="py-3.5 px-4">Status Kehadiran</th>
@@ -377,59 +377,65 @@ export default function RsvpMonitoringClient({
                     key={row.guestId}
                     className="hover:bg-[#FAF7F2]/60 transition-colors"
                   >
-                    <td className="py-4 px-5">
-                      <p className="font-semibold text-[#243830] text-sm">
+                    <td className="py-4 px-5 align-middle max-w-[220px] sm:max-w-[260px]">
+                      <p
+                        className="font-semibold text-[#243830] text-sm truncate"
+                        title={row.guestName}
+                      >
                         {row.guestName}
                       </p>
                       {row.phone && (
-                        <p className="text-[11px] text-[#4A6358] font-mono mt-0.5">
+                        <p className="text-[11px] text-[#4A6358] font-mono mt-0.5 truncate">
                           {row.phone}
                         </p>
                       )}
                     </td>
 
-                    <td className="py-4 px-4">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#FAF7F2] text-[#243830] border border-[#E5D1A7]">
+                    <td className="py-4 px-4 align-middle whitespace-nowrap">
+                      <span className="inline-flex items-center whitespace-nowrap px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#FAF7F2] text-[#243830] border border-[#E5D1A7]">
                         {row.category}
                       </span>
                     </td>
 
-                    <td className="py-4 px-4">
+                    <td className="py-4 px-4 align-middle whitespace-nowrap">
                       {row.status === "hadir" && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                          <CheckCircle2 className="w-3 h-3" />
+                        <span className="inline-flex items-center gap-1 whitespace-nowrap px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                          <CheckCircle2 className="w-3 h-3 shrink-0" />
                           Hadir
                         </span>
                       )}
                       {row.status === "tidak_hadir" && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-100 text-rose-800 border border-rose-200">
-                          <XCircle className="w-3 h-3" />
+                        <span className="inline-flex items-center gap-1 whitespace-nowrap px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-100 text-rose-800 border border-rose-200">
+                          <XCircle className="w-3 h-3 shrink-0" />
                           Tidak Hadir
                         </span>
                       )}
                       {row.status === "ragu" && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-800 border border-amber-200">
-                          <HelpCircle className="w-3 h-3" />
+                        <span className="inline-flex items-center gap-1 whitespace-nowrap px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-800 border border-amber-200">
+                          <HelpCircle className="w-3 h-3 shrink-0" />
                           Masih Ragu
                         </span>
                       )}
                       {row.status === "belum" && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-stone-100 text-stone-600 border border-stone-200">
-                          <Clock className="w-3 h-3" />
+                        <span className="inline-flex items-center gap-1 whitespace-nowrap px-2.5 py-1 rounded-full text-[11px] font-medium bg-stone-100 text-stone-600 border border-stone-200">
+                          <Clock className="w-3 h-3 shrink-0" />
                           Belum Konfirmasi
                         </span>
                       )}
                     </td>
 
-                    <td className="py-4 px-4 text-center">
+                    <td className="py-4 px-4 text-center align-middle whitespace-nowrap">
                       <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-[#FAF7F2] border border-[#E5D1A7]/60 font-semibold text-[#243830]">
                         {row.pax} / {row.maxPax} Pax
                       </span>
                     </td>
 
-                    <td className="py-4 px-4 max-w-xs">
+                    <td className="py-4 px-4 align-middle max-w-[240px] sm:max-w-xs">
                       {row.notes ? (
-                        <p className="text-xs text-[#222624] italic">
+                        <p
+                          className="text-xs text-[#222624] italic line-clamp-2 break-words"
+                          title={row.notes}
+                        >
                           &ldquo;{row.notes}&rdquo;
                         </p>
                       ) : (
@@ -437,7 +443,7 @@ export default function RsvpMonitoringClient({
                       )}
                     </td>
 
-                    <td className="py-4 px-5 text-right text-[#4A6358]">
+                    <td className="py-4 px-5 text-right align-middle whitespace-nowrap text-[#4A6358]">
                       {formatDateId(row.updatedAt)}
                     </td>
                   </tr>

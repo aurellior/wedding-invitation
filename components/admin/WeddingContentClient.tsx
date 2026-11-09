@@ -601,7 +601,7 @@ export default function WeddingContentClient({
       )}
 
       {/* Section Navigation Sub-Tabs */}
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
         {TABS.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -610,22 +610,24 @@ export default function WeddingContentClient({
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`flex min-h-11 flex-col items-start justify-between rounded-xl border p-3.5 text-left transition-colors ${
+              className={`flex min-h-14 cursor-pointer flex-col items-start justify-between rounded-xl border p-3.5 text-left transition-colors ${
                 isActive
-                  ? "border-[#243830] bg-[#243830] text-[#FAF7F2]"
+                  ? "border-[#243830] bg-[#243830] text-[#FAF7F2] shadow-xs"
                   : "border-[#C5A059]/35 bg-white text-[#222624] hover:bg-[#FAF7F2]"
               }`}
             >
-              <div className="flex items-center gap-2">
+              <div className="flex w-full items-center gap-2">
                 <Icon
                   className={`h-4 w-4 shrink-0 ${
                     isActive ? "text-[#E5D1A7]" : "text-[#8A6825]"
                   }`}
                 />
-                <span className="text-xs font-semibold">{tab.label}</span>
+                <span className="truncate text-xs font-semibold">
+                  {tab.label}
+                </span>
               </div>
               <span
-                className={`mt-1 text-[11px] leading-snug ${
+                className={`mt-1 line-clamp-1 text-[11px] leading-snug ${
                   isActive ? "text-[#E5D1A7]/85" : "text-[#4A6358]"
                 }`}
               >
@@ -653,7 +655,7 @@ export default function WeddingContentClient({
 
               <div className="mt-5 space-y-4">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div>
+                  <div className="flex flex-col justify-end">
                     <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
                       Nama Panggilan *
                     </label>
@@ -662,10 +664,10 @@ export default function WeddingContentClient({
                       required
                       value={config.couple.groom.nickname}
                       onChange={(e) => updateGroom("nickname", e.target.value)}
-                      className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                      className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 text-sm text-[#1C2B24]"
                     />
                   </div>
-                  <div>
+                  <div className="flex flex-col justify-end">
                     <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
                       Urutan Anak *
                     </label>
@@ -677,12 +679,12 @@ export default function WeddingContentClient({
                       onChange={(e) =>
                         updateGroom("childOrder", e.target.value)
                       }
-                      className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                      className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 text-sm text-[#1C2B24]"
                     />
                   </div>
                 </div>
 
-                <div>
+                <div className="flex flex-col justify-end">
                   <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
                     Nama Lengkap &amp; Gelar *
                   </label>
@@ -691,12 +693,12 @@ export default function WeddingContentClient({
                     required
                     value={config.couple.groom.fullName}
                     onChange={(e) => updateGroom("fullName", e.target.value)}
-                    className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                    className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 text-sm text-[#1C2B24]"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div>
+                  <div className="flex flex-col justify-end">
                     <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
                       Nama Ayah *
                     </label>
@@ -707,10 +709,10 @@ export default function WeddingContentClient({
                       onChange={(e) =>
                         updateGroom("fatherName", e.target.value)
                       }
-                      className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                      className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 text-sm text-[#1C2B24]"
                     />
                   </div>
-                  <div>
+                  <div className="flex flex-col justify-end">
                     <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
                       Nama Ibu *
                     </label>
@@ -721,12 +723,12 @@ export default function WeddingContentClient({
                       onChange={(e) =>
                         updateGroom("motherName", e.target.value)
                       }
-                      className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                      className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 text-sm text-[#1C2B24]"
                     />
                   </div>
                 </div>
 
-                <div>
+                <div className="flex flex-col justify-end">
                   <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
                     Username Instagram
                   </label>
@@ -735,7 +737,7 @@ export default function WeddingContentClient({
                     placeholder="@username"
                     value={config.couple.groom.instagram}
                     onChange={(e) => updateGroom("instagram", e.target.value)}
-                    className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                    className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 text-sm text-[#1C2B24]"
                   />
                 </div>
               </div>
@@ -754,7 +756,7 @@ export default function WeddingContentClient({
 
               <div className="mt-5 space-y-4">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div>
+                  <div className="flex flex-col justify-end">
                     <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
                       Nama Panggilan *
                     </label>
@@ -763,10 +765,10 @@ export default function WeddingContentClient({
                       required
                       value={config.couple.bride.nickname}
                       onChange={(e) => updateBride("nickname", e.target.value)}
-                      className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                      className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 text-sm text-[#1C2B24]"
                     />
                   </div>
-                  <div>
+                  <div className="flex flex-col justify-end">
                     <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
                       Urutan Anak *
                     </label>
@@ -778,12 +780,12 @@ export default function WeddingContentClient({
                       onChange={(e) =>
                         updateBride("childOrder", e.target.value)
                       }
-                      className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                      className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 text-sm text-[#1C2B24]"
                     />
                   </div>
                 </div>
 
-                <div>
+                <div className="flex flex-col justify-end">
                   <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
                     Nama Lengkap &amp; Gelar *
                   </label>
@@ -792,12 +794,12 @@ export default function WeddingContentClient({
                     required
                     value={config.couple.bride.fullName}
                     onChange={(e) => updateBride("fullName", e.target.value)}
-                    className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                    className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 text-sm text-[#1C2B24]"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div>
+                  <div className="flex flex-col justify-end">
                     <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
                       Nama Ayah *
                     </label>
@@ -808,10 +810,10 @@ export default function WeddingContentClient({
                       onChange={(e) =>
                         updateBride("fatherName", e.target.value)
                       }
-                      className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                      className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 text-sm text-[#1C2B24]"
                     />
                   </div>
-                  <div>
+                  <div className="flex flex-col justify-end">
                     <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
                       Nama Ibu *
                     </label>
@@ -822,12 +824,12 @@ export default function WeddingContentClient({
                       onChange={(e) =>
                         updateBride("motherName", e.target.value)
                       }
-                      className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                      className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 text-sm text-[#1C2B24]"
                     />
                   </div>
                 </div>
 
-                <div>
+                <div className="flex flex-col justify-end">
                   <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
                     Username Instagram
                   </label>
@@ -836,7 +838,7 @@ export default function WeddingContentClient({
                     placeholder="@username"
                     value={config.couple.bride.instagram}
                     onChange={(e) => updateBride("instagram", e.target.value)}
-                    className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                    className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 text-sm text-[#1C2B24]"
                   />
                 </div>
               </div>
@@ -855,7 +857,7 @@ export default function WeddingContentClient({
             </div>
 
             <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <div>
+              <div className="flex flex-col justify-end">
                 <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
                   Tampilan Hari &amp; Tanggal *
                 </label>
@@ -867,11 +869,11 @@ export default function WeddingContentClient({
                   onChange={(e) =>
                     updateCoupleMeta("weddingDateDisplay", e.target.value)
                   }
-                  className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                  className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 text-sm text-[#1C2B24]"
                 />
               </div>
 
-              <div>
+              <div className="flex flex-col justify-end">
                 <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
                   Tanggal Angka Singkat *
                 </label>
@@ -883,11 +885,11 @@ export default function WeddingContentClient({
                   onChange={(e) =>
                     updateCoupleMeta("shortDate", e.target.value)
                   }
-                  className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24] tabular-nums"
+                  className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 text-sm text-[#1C2B24] tabular-nums"
                 />
               </div>
 
-              <div>
+              <div className="flex flex-col justify-end">
                 <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
                   Target Countdown (ISO) *
                 </label>
@@ -899,11 +901,11 @@ export default function WeddingContentClient({
                   onChange={(e) =>
                     updateCoupleMeta("weddingDateIso", e.target.value)
                   }
-                  className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 font-mono text-xs text-[#1C2B24] tabular-nums"
+                  className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 font-mono text-xs text-[#1C2B24] tabular-nums"
                 />
               </div>
 
-              <div>
+              <div className="flex flex-col justify-end">
                 <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
                   Tagar / Hashtag *
                 </label>
@@ -913,7 +915,7 @@ export default function WeddingContentClient({
                   placeholder="#ArkaFoundHisNadia"
                   value={config.couple.hashtag}
                   onChange={(e) => updateCoupleMeta("hashtag", e.target.value)}
-                  className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                  className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 text-sm text-[#1C2B24]"
                 />
               </div>
             </div>
@@ -933,14 +935,17 @@ export default function WeddingContentClient({
                 <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8A6825]">
                   Acara 0{idx + 1} ({event.id.toUpperCase()})
                 </p>
-                <h2 className="mt-1 font-serif-luxury text-2xl font-semibold text-[#1C2B24]">
+                <h2
+                  className="mt-1 truncate font-serif-luxury text-2xl font-semibold text-[#1C2B24]"
+                  title={event.title}
+                >
                   {event.title}
                 </h2>
               </div>
 
               <div className="mt-5 space-y-4">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div>
+                  <div className="flex flex-col justify-end">
                     <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
                       Judul Acara *
                     </label>
@@ -951,10 +956,10 @@ export default function WeddingContentClient({
                       onChange={(e) =>
                         updateEvent(idx, "title", e.target.value)
                       }
-                      className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                      className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 text-sm text-[#1C2B24]"
                     />
                   </div>
-                  <div>
+                  <div className="flex flex-col justify-end">
                     <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
                       Subjudul Acara *
                     </label>
@@ -965,13 +970,13 @@ export default function WeddingContentClient({
                       onChange={(e) =>
                         updateEvent(idx, "subtitle", e.target.value)
                       }
-                      className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                      className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 text-sm text-[#1C2B24]"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div>
+                  <div className="flex flex-col justify-end">
                     <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
                       Hari &amp; Tanggal Acara *
                     </label>
@@ -982,10 +987,10 @@ export default function WeddingContentClient({
                       onChange={(e) =>
                         updateEvent(idx, "dateDisplay", e.target.value)
                       }
-                      className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                      className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 text-sm text-[#1C2B24]"
                     />
                   </div>
-                  <div>
+                  <div className="flex flex-col justify-end">
                     <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
                       Jam Pelaksanaan *
                     </label>
@@ -997,12 +1002,12 @@ export default function WeddingContentClient({
                       onChange={(e) =>
                         updateEvent(idx, "timeDisplay", e.target.value)
                       }
-                      className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24] tabular-nums"
+                      className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 text-sm text-[#1C2B24] tabular-nums"
                     />
                   </div>
                 </div>
 
-                <div>
+                <div className="flex flex-col justify-end">
                   <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
                     Nama Gedung / Venue *
                   </label>
@@ -1013,11 +1018,11 @@ export default function WeddingContentClient({
                     onChange={(e) =>
                       updateEvent(idx, "venueName", e.target.value)
                     }
-                    className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                    className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 text-sm text-[#1C2B24]"
                   />
                 </div>
 
-                <div>
+                <div className="flex flex-col justify-end">
                   <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
                     Alamat Lengkap Lokasi *
                   </label>
@@ -1032,7 +1037,7 @@ export default function WeddingContentClient({
                   />
                 </div>
 
-                <div>
+                <div className="flex flex-col justify-end">
                   <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
                     Tautan Navigasi Google Maps *
                   </label>
@@ -1043,11 +1048,11 @@ export default function WeddingContentClient({
                     onChange={(e) =>
                       updateEvent(idx, "googleMapsUrl", e.target.value)
                     }
-                    className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 font-mono text-xs text-[#1C2B24]"
+                    className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 font-mono text-xs text-[#1C2B24]"
                   />
                 </div>
 
-                <div>
+                <div className="flex flex-col justify-end">
                   <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
                     URL Embed Peta Google Maps (Iframe) *
                   </label>
@@ -1058,9 +1063,9 @@ export default function WeddingContentClient({
                     onChange={(e) =>
                       updateEvent(idx, "googleMapsEmbedUrl", e.target.value)
                     }
-                    className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 font-mono text-xs text-[#1C2B24]"
+                    className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 font-mono text-xs text-[#1C2B24]"
                   />
-                  <p className="mt-1 text-[11px] text-[#4A6358]">
+                  <p className="mt-1 text-[11px] text-[#4A6358] break-all">
                     Format cepat:{" "}
                     <code>
                       https://www.google.com/maps?q=Nama+Tempat&amp;output=embed
@@ -1068,7 +1073,7 @@ export default function WeddingContentClient({
                   </p>
                 </div>
 
-                <div>
+                <div className="flex flex-col justify-end">
                   <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
                     Keterangan Busana / Dress Code
                   </label>
@@ -1078,7 +1083,7 @@ export default function WeddingContentClient({
                     onChange={(e) =>
                       updateEvent(idx, "dressCode", e.target.value)
                     }
-                    className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                    className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 text-sm text-[#1C2B24]"
                   />
                 </div>
               </div>
@@ -1191,7 +1196,7 @@ export default function WeddingContentClient({
                     )}
                   </div>
 
-                  <div>
+                  <div className="flex flex-col justify-end">
                     <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
                       Nama Bank *
                     </label>
@@ -1202,12 +1207,12 @@ export default function WeddingContentClient({
                       onChange={(e) =>
                         updateBankAccount(idx, "bankName", e.target.value)
                       }
-                      className="min-h-10 w-full rounded-xl border border-[#C5A059]/45 bg-white px-3 py-2 text-sm text-[#1C2B24]"
+                      className="h-10 w-full rounded-xl border border-[#C5A059]/45 bg-white px-3 text-sm text-[#1C2B24]"
                     />
                   </div>
 
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <div>
+                    <div className="flex flex-col justify-end">
                       <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
                         Nomor Rekening *
                       </label>
@@ -1222,10 +1227,10 @@ export default function WeddingContentClient({
                             e.target.value
                           )
                         }
-                        className="min-h-10 w-full rounded-xl border border-[#C5A059]/45 bg-white px-3 py-2 font-mono text-sm text-[#1C2B24] tabular-nums"
+                        className="h-10 w-full rounded-xl border border-[#C5A059]/45 bg-white px-3 font-mono text-sm text-[#1C2B24] tabular-nums"
                       />
                     </div>
-                    <div>
+                    <div className="flex flex-col justify-end">
                       <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
                         Atas Nama Pemilik *
                       </label>
@@ -1240,12 +1245,12 @@ export default function WeddingContentClient({
                             e.target.value
                           )
                         }
-                        className="min-h-10 w-full rounded-xl border border-[#C5A059]/45 bg-white px-3 py-2 text-sm text-[#1C2B24]"
+                        className="h-10 w-full rounded-xl border border-[#C5A059]/45 bg-white px-3 text-sm text-[#1C2B24]"
                       />
                     </div>
                   </div>
 
-                  <div>
+                  <div className="flex flex-col justify-end">
                     <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
                       Kantor Cabang (Opsional)
                     </label>
@@ -1255,7 +1260,7 @@ export default function WeddingContentClient({
                       onChange={(e) =>
                         updateBankAccount(idx, "branch", e.target.value)
                       }
-                      className="min-h-10 w-full rounded-xl border border-[#C5A059]/45 bg-white px-3 py-2 text-sm text-[#1C2B24]"
+                      className="h-10 w-full rounded-xl border border-[#C5A059]/45 bg-white px-3 text-sm text-[#1C2B24]"
                     />
                   </div>
                 </div>
@@ -1276,7 +1281,7 @@ export default function WeddingContentClient({
               </div>
 
               <div className="mt-5 space-y-4">
-                <div>
+                <div className="flex flex-col justify-end">
                   <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
                     Nama Merchant QRIS *
                   </label>
@@ -1285,11 +1290,11 @@ export default function WeddingContentClient({
                     required
                     value={config.gifts.qris.merchantName}
                     onChange={(e) => updateQris("merchantName", e.target.value)}
-                    className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                    className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 text-sm text-[#1C2B24]"
                   />
                 </div>
 
-                <div>
+                <div className="flex flex-col justify-end">
                   <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
                     Nomor NMID *
                   </label>
@@ -1298,11 +1303,11 @@ export default function WeddingContentClient({
                     required
                     value={config.gifts.qris.nmid}
                     onChange={(e) => updateQris("nmid", e.target.value)}
-                    className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 font-mono text-sm text-[#1C2B24] tabular-nums"
+                    className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 font-mono text-sm text-[#1C2B24] tabular-nums"
                   />
                 </div>
 
-                <div>
+                <div className="flex flex-col justify-end">
                   <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
                     String Payload QRIS *
                   </label>
@@ -1311,7 +1316,7 @@ export default function WeddingContentClient({
                     required
                     value={config.gifts.qris.codePayload}
                     onChange={(e) => updateQris("codePayload", e.target.value)}
-                    className="w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 font-mono text-xs text-[#1C2B24]"
+                    className="w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2.5 font-mono text-xs text-[#1C2B24] break-all"
                   />
                 </div>
               </div>
@@ -1328,7 +1333,7 @@ export default function WeddingContentClient({
               </div>
 
               <div className="mt-5 space-y-4">
-                <div>
+                <div className="flex flex-col justify-end">
                   <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
                     Nama Penerima Paket *
                   </label>
@@ -1339,11 +1344,11 @@ export default function WeddingContentClient({
                     onChange={(e) =>
                       updateShippingAddress("recipient", e.target.value)
                     }
-                    className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
+                    className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 text-sm text-[#1C2B24]"
                   />
                 </div>
 
-                <div>
+                <div className="flex flex-col justify-end">
                   <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
                     Nomor Telepon Penerima / Kurir *
                   </label>
@@ -1354,11 +1359,11 @@ export default function WeddingContentClient({
                     onChange={(e) =>
                       updateShippingAddress("phone", e.target.value)
                     }
-                    className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 font-mono text-sm text-[#1C2B24] tabular-nums"
+                    className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 font-mono text-sm text-[#1C2B24] tabular-nums"
                   />
                 </div>
 
-                <div>
+                <div className="flex flex-col justify-end">
                   <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
                     Alamat Lengkap Pengiriman *
                   </label>
@@ -1514,11 +1519,14 @@ export default function WeddingContentClient({
               {/* Built-in Audio Preview Player when custom MP3 is active */}
               {config.audio.src.startsWith("/api/audio") && (
                 <div className="rounded-2xl border border-[#C5A059]/40 bg-[#1C2B24] p-4 text-[#FAF7F2]">
-                  <div className="mb-2 flex items-center justify-between text-xs">
-                    <span className="font-semibold text-[#E5D1A7]">
-                      Putar Pratinjau Lagu MP3 Terunggah:
+                  <div className="mb-2 flex items-center justify-between gap-3 text-xs">
+                    <span className="shrink-0 font-semibold text-[#E5D1A7]">
+                      Putar Pratinjau Lagu MP3:
                     </span>
-                    <span className="text-[11px] text-[#FAF7F2]/70">
+                    <span
+                      className="truncate text-[11px] text-[#FAF7F2]/70"
+                      title={`${config.audio.title} — ${config.audio.artist}`}
+                    >
                       {config.audio.title} — {config.audio.artist}
                     </span>
                   </div>
@@ -1642,8 +1650,8 @@ export default function WeddingContentClient({
                 </p>
               </div>
 
-              <div className="mt-5 rounded-2xl border border-[#C5A059]/30 bg-[#DCF8C6] p-4 text-[#111B21] shadow-md">
-                <pre className="whitespace-pre-wrap break-words font-sans text-xs leading-relaxed">
+              <div className="mt-5 overflow-hidden rounded-2xl border border-[#C5A059]/30 bg-[#DCF8C6] p-4 text-[#111B21] shadow-md">
+                <pre className="whitespace-pre-wrap break-all sm:break-words font-sans text-xs leading-relaxed">
                   {renderWhatsAppTemplate(
                     "Bpk. H. Ahmad Subarjo & Keluarga",
                     "https://wedding-invitation-eight-tau-88.vercel.app/?to=Bpk.%20H.%20Ahmad%20Subarjo%20%26%20Keluarga",

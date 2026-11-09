@@ -78,7 +78,7 @@ function CategoryBadge({ category }: { category: GuestCategory }) {
 
   return (
     <span
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${styles[category]}`}
+      className={`inline-flex items-center whitespace-nowrap px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${styles[category]}`}
     >
       {category}
     </span>
@@ -88,31 +88,31 @@ function CategoryBadge({ category }: { category: GuestCategory }) {
 function RsvpStatusBadge({ status, pax }: { status?: AttendanceStatus; pax?: number }) {
   if (status === "hadir") {
     return (
-      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
-        <CheckCircle2 className="w-3 h-3" />
+      <span className="inline-flex items-center gap-1 whitespace-nowrap px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+        <CheckCircle2 className="w-3 h-3 shrink-0" />
         Hadir ({pax ?? 1} Pax)
       </span>
     );
   }
   if (status === "tidak_hadir") {
     return (
-      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-100 text-rose-800 border border-rose-200">
-        <XCircle className="w-3 h-3" />
+      <span className="inline-flex items-center gap-1 whitespace-nowrap px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-100 text-rose-800 border border-rose-200">
+        <XCircle className="w-3 h-3 shrink-0" />
         Tidak Hadir
       </span>
     );
   }
   if (status === "ragu") {
     return (
-      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-800 border border-amber-200">
-        <HelpCircle className="w-3 h-3" />
+      <span className="inline-flex items-center gap-1 whitespace-nowrap px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-800 border border-amber-200">
+        <HelpCircle className="w-3 h-3 shrink-0" />
         Masih Ragu ({pax ?? 1} Pax)
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-stone-100 text-stone-600 border border-stone-200">
-      <Clock className="w-3 h-3" />
+    <span className="inline-flex items-center gap-1 whitespace-nowrap px-2.5 py-1 rounded-full text-[11px] font-medium bg-stone-100 text-stone-600 border border-stone-200">
+      <Clock className="w-3 h-3 shrink-0" />
       Belum RSVP
     </span>
   );
@@ -449,7 +449,7 @@ export default function GuestManagementClient({
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-[#FAF7F2] border-b border-[#E5D1A7]/60 text-[11px] font-semibold uppercase tracking-wider text-[#4A6358]">
+              <tr className="bg-[#FAF7F2] border-b border-[#E5D1A7]/60 text-[11px] font-semibold uppercase tracking-wider text-[#4A6358] whitespace-nowrap">
                 <th className="py-3.5 px-5">Nama Tamu</th>
                 <th className="py-3.5 px-4">Kategori</th>
                 <th className="py-3.5 px-4">No. WhatsApp</th>
@@ -487,25 +487,31 @@ export default function GuestManagementClient({
                       className="hover:bg-[#FAF7F2]/60 transition-colors"
                     >
                       {/* Nama Tamu */}
-                      <td className="py-4 px-5">
-                        <p className="font-semibold text-[#243830] text-sm">
+                      <td className="py-4 px-5 align-middle max-w-[220px] sm:max-w-[260px]">
+                        <p
+                          className="font-semibold text-[#243830] text-sm truncate"
+                          title={guest.name}
+                        >
                           {guest.name}
                         </p>
-                        <p className="text-[11px] text-[#4A6358]/80 font-mono mt-0.5">
+                        <p
+                          className="text-[11px] text-[#4A6358]/80 font-mono mt-0.5 truncate"
+                          title={`/?to=${encodeURIComponent(guest.name)}`}
+                        >
                           /?to={encodeURIComponent(guest.name)}
                         </p>
                       </td>
 
                       {/* Kategori */}
-                      <td className="py-4 px-4">
+                      <td className="py-4 px-4 align-middle whitespace-nowrap">
                         <CategoryBadge category={guest.category} />
                       </td>
 
                       {/* No. WhatsApp */}
-                      <td className="py-4 px-4">
+                      <td className="py-4 px-4 align-middle whitespace-nowrap">
                         {guest.phone ? (
                           <span className="inline-flex items-center gap-1.5 font-mono text-xs text-[#222624]">
-                            <Phone className="w-3 h-3 text-[#4A6358]" />
+                            <Phone className="w-3 h-3 text-[#4A6358] shrink-0" />
                             {guest.phone}
                           </span>
                         ) : (
@@ -516,14 +522,14 @@ export default function GuestManagementClient({
                       </td>
 
                       {/* Max Pax */}
-                      <td className="py-4 px-4 text-center">
+                      <td className="py-4 px-4 text-center align-middle whitespace-nowrap">
                         <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-[#FAF7F2] border border-[#E5D1A7]/60 font-semibold text-[#243830]">
                           {guest.max_pax} Orang
                         </span>
                       </td>
 
                       {/* Status RSVP */}
-                      <td className="py-4 px-4">
+                      <td className="py-4 px-4 align-middle whitespace-nowrap">
                         <RsvpStatusBadge
                           status={rsvp?.attendance_status}
                           pax={rsvp?.pax}
@@ -531,12 +537,12 @@ export default function GuestManagementClient({
                       </td>
 
                       {/* Status Undangan */}
-                      <td className="py-4 px-4">
+                      <td className="py-4 px-4 align-middle whitespace-nowrap">
                         <button
                           type="button"
                           onClick={() => handleToggleSentStatus(guest)}
                           title="Klik untuk mengubah status pengiriman"
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-colors cursor-pointer ${
+                          className={`inline-flex items-center gap-1.5 whitespace-nowrap px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-colors cursor-pointer ${
                             guest.invitation_sent
                               ? "bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100"
                               : "bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100"
@@ -544,12 +550,12 @@ export default function GuestManagementClient({
                         >
                           {guest.invitation_sent ? (
                             <>
-                              <CheckCircle2 className="w-3 h-3" />
+                              <CheckCircle2 className="w-3 h-3 shrink-0" />
                               Sudah Dikirim
                             </>
                           ) : (
                             <>
-                              <Clock className="w-3 h-3" />
+                              <Clock className="w-3 h-3 shrink-0" />
                               Belum Dikirim
                             </>
                           )}
@@ -557,16 +563,16 @@ export default function GuestManagementClient({
                       </td>
 
                       {/* Kolom Aksi */}
-                      <td className="py-4 px-5 text-right">
-                        <div className="inline-flex items-center justify-end gap-1.5 flex-wrap">
+                      <td className="py-4 px-5 text-right align-middle whitespace-nowrap">
+                        <div className="inline-flex items-center justify-end gap-1.5 whitespace-nowrap">
                           {/* Kirim WhatsApp */}
                           <button
                             type="button"
                             onClick={() => handleSendWhatsApp(guest)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
+                            className="inline-flex h-8 items-center gap-1.5 px-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
                             title="Kirim pesan undangan personal via WhatsApp"
                           >
-                            <Send className="w-3.5 h-3.5" />
+                            <Send className="w-3.5 h-3.5 shrink-0" />
                             <span>Kirim WhatsApp</span>
                           </button>
 
@@ -574,19 +580,19 @@ export default function GuestManagementClient({
                           <button
                             type="button"
                             onClick={() => handleCopyInviteLink(guest)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#FAF7F2] hover:bg-[#F2ECE1] text-[#243830] border border-[#E5D1A7] text-xs font-medium transition-colors cursor-pointer"
+                            className="inline-flex h-8 items-center gap-1 px-2.5 rounded-xl bg-[#FAF7F2] hover:bg-[#F2ECE1] text-[#243830] border border-[#E5D1A7] text-xs font-medium transition-colors cursor-pointer"
                             title="Salin link personal ?to="
                           >
                             {isCopied ? (
                               <>
-                                <Check className="w-3.5 h-3.5 text-emerald-700" />
+                                <Check className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
                                 <span className="text-emerald-700 font-semibold">
                                   Tersalin
                                 </span>
                               </>
                             ) : (
                               <>
-                                <Copy className="w-3.5 h-3.5 text-[#C5A059]" />
+                                <Copy className="w-3.5 h-3.5 text-[#C5A059] shrink-0" />
                                 <span>Salin Link</span>
                               </>
                             )}
@@ -597,7 +603,7 @@ export default function GuestManagementClient({
                             href={previewHref}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="p-1.5 rounded-xl bg-[#FAF7F2] hover:bg-[#F2ECE1] text-[#243830] border border-[#E5D1A7] transition-colors"
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-[#FAF7F2] hover:bg-[#F2ECE1] text-[#243830] border border-[#E5D1A7] transition-colors"
                             title="Buka pratinjau undangan tamu di tab baru"
                           >
                             <ExternalLink className="w-3.5 h-3.5" />
@@ -607,7 +613,7 @@ export default function GuestManagementClient({
                           <button
                             type="button"
                             onClick={() => openEditModal(guest)}
-                            className="p-1.5 rounded-xl bg-[#FAF7F2] hover:bg-[#F2ECE1] text-[#243830] border border-[#E5D1A7] transition-colors cursor-pointer"
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-[#FAF7F2] hover:bg-[#F2ECE1] text-[#243830] border border-[#E5D1A7] transition-colors cursor-pointer"
                             title="Edit data tamu"
                           >
                             <Pencil className="w-3.5 h-3.5" />
@@ -617,7 +623,7 @@ export default function GuestManagementClient({
                           <button
                             type="button"
                             onClick={() => handleDeleteGuest(guest)}
-                            className="p-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition-colors cursor-pointer"
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition-colors cursor-pointer"
                             title="Hapus tamu"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -636,9 +642,9 @@ export default function GuestManagementClient({
       {/* Modal Tambah / Edit Tamu */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl border border-[#E5D1A7] shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="px-6 py-5 bg-[#243830] text-[#FAF7F2] flex items-center justify-between">
-              <div>
+          <div className="bg-white rounded-3xl border border-[#E5D1A7] shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="px-6 py-5 bg-[#243830] text-[#FAF7F2] flex items-center justify-between gap-4">
+              <div className="min-w-0">
                 <h2 className="font-serif-luxury text-2xl font-semibold">
                   {editingGuest ? "Edit Data Tamu" : "Tambah Tamu Undangan"}
                 </h2>
@@ -649,7 +655,7 @@ export default function GuestManagementClient({
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="p-1.5 rounded-xl text-[#FAF7F2]/80 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                className="p-1.5 rounded-xl text-[#FAF7F2]/80 hover:text-white hover:bg-white/10 transition-colors cursor-pointer shrink-0"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -663,7 +669,7 @@ export default function GuestManagementClient({
                 </div>
               )}
 
-              <div>
+              <div className="flex flex-col justify-end">
                 <label className="block text-xs font-semibold uppercase tracking-wider text-[#243830] mb-1.5">
                   Nama Lengkap Tamu / Keluarga *
                 </label>
@@ -673,7 +679,7 @@ export default function GuestManagementClient({
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
                   placeholder="Contoh: Dr. Andi Wijaya & Partner"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#E5D1A7] bg-[#FAF7F2]/60 text-sm text-[#222624] focus:outline-none focus:ring-2 focus:ring-[#C5A059] focus:bg-white"
+                  className="h-11 w-full px-3.5 rounded-xl border border-[#E5D1A7] bg-[#FAF7F2]/60 text-sm text-[#222624] focus:outline-none focus:ring-2 focus:ring-[#C5A059] focus:bg-white"
                 />
                 {formName.trim() && (
                   <p className="text-[11px] text-[#4A6358] mt-1 font-mono truncate">
@@ -683,7 +689,7 @@ export default function GuestManagementClient({
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
+                <div className="flex flex-col justify-end">
                   <label className="block text-xs font-semibold uppercase tracking-wider text-[#243830] mb-1.5">
                     Kategori / Grup *
                   </label>
@@ -692,7 +698,7 @@ export default function GuestManagementClient({
                     onChange={(e) =>
                       setFormCategory(e.target.value as GuestCategory)
                     }
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#E5D1A7] bg-[#FAF7F2]/60 text-sm text-[#222624] focus:outline-none focus:ring-2 focus:ring-[#C5A059] focus:bg-white"
+                    className="h-11 w-full px-3.5 rounded-xl border border-[#E5D1A7] bg-[#FAF7F2]/60 text-sm text-[#222624] focus:outline-none focus:ring-2 focus:ring-[#C5A059] focus:bg-white"
                   >
                     {CATEGORIES.map((cat) => (
                       <option key={cat} value={cat}>
@@ -702,7 +708,7 @@ export default function GuestManagementClient({
                   </select>
                 </div>
 
-                <div>
+                <div className="flex flex-col justify-end">
                   <label className="block text-xs font-semibold uppercase tracking-wider text-[#243830] mb-1.5">
                     Kuota Maksimal (Max Pax) *
                   </label>
@@ -717,12 +723,12 @@ export default function GuestManagementClient({
                         Math.max(1, Math.min(10, Number(e.target.value) || 1))
                       )
                     }
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#E5D1A7] bg-[#FAF7F2]/60 text-sm text-[#222624] focus:outline-none focus:ring-2 focus:ring-[#C5A059] focus:bg-white"
+                    className="h-11 w-full px-3.5 rounded-xl border border-[#E5D1A7] bg-[#FAF7F2]/60 text-sm text-[#222624] focus:outline-none focus:ring-2 focus:ring-[#C5A059] focus:bg-white"
                   />
                 </div>
               </div>
 
-              <div>
+              <div className="flex flex-col justify-end">
                 <label className="block text-xs font-semibold uppercase tracking-wider text-[#243830] mb-1.5">
                   Nomor WhatsApp
                 </label>
@@ -731,7 +737,7 @@ export default function GuestManagementClient({
                   value={formPhone}
                   onChange={(e) => setFormPhone(e.target.value)}
                   placeholder="Contoh: 081234567890 atau 6281234567890"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#E5D1A7] bg-[#FAF7F2]/60 text-sm text-[#222624] focus:outline-none focus:ring-2 focus:ring-[#C5A059] focus:bg-white"
+                  className="h-11 w-full px-3.5 rounded-xl border border-[#E5D1A7] bg-[#FAF7F2]/60 text-sm text-[#222624] focus:outline-none focus:ring-2 focus:ring-[#C5A059] focus:bg-white"
                 />
                 <p className="text-[11px] text-[#4A6358] mt-1">
                   Otomatis diformat ke kode negara Indonesia (628...) saat dikirim.
@@ -742,14 +748,14 @@ export default function GuestManagementClient({
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2.5 rounded-xl border border-[#E5D1A7] text-xs font-semibold text-[#4A6358] hover:text-[#243830] hover:bg-[#FAF7F2] transition-colors cursor-pointer"
+                  className="h-10 px-4 rounded-xl border border-[#E5D1A7] text-xs font-semibold text-[#4A6358] hover:text-[#243830] hover:bg-[#FAF7F2] transition-colors cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-5 py-2.5 rounded-xl bg-[#243830] hover:bg-[#1a2923] text-[#FAF7F2] text-xs font-semibold shadow-sm transition-colors disabled:opacity-50 cursor-pointer"
+                  className="h-10 px-5 rounded-xl bg-[#243830] hover:bg-[#1a2923] text-[#FAF7F2] text-xs font-semibold shadow-sm transition-colors disabled:opacity-50 cursor-pointer"
                 >
                   {submitting
                     ? "Menyimpan..."
