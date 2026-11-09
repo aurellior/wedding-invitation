@@ -1,12 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
 import {
   CalendarHeart,
   Gift,
   Heart,
-  LayoutDashboard,
   MessageSquareHeart,
   UserCheck,
 } from "lucide-react";
@@ -48,7 +46,7 @@ export default function InvitationClientShell({
         onOpenInvitation={() => setIsCoverOpen(true)}
       />
 
-      {/* Subtle Top Bar with Guest Indicator & Admin Panel Link */}
+      {/* Subtle Top Bar with Guest Indicator */}
       <header className="sticky top-0 z-30 border-b border-[#C5A059]/25 bg-[#FAF7F2]/90 px-4 py-3 backdrop-blur-md sm:px-8">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 text-xs text-[#243830]">
@@ -56,21 +54,13 @@ export default function InvitationClientShell({
               A &amp; N
             </span>
             <span className="h-3.5 w-[1px] bg-[#C5A059]/40" />
-            <span className="truncate max-w-[180px] sm:max-w-xs text-[#4A6358]">
+            <span className="truncate max-w-[240px] sm:max-w-md text-[#4A6358]">
               Kepada:{" "}
               <strong className="font-semibold text-[#1C2B24]">
                 {guestName}
               </strong>
             </span>
           </div>
-
-          <Link
-            href="/admin"
-            className="inline-flex items-center gap-1.5 rounded-full border border-[#C5A059]/40 bg-[#F2ECE1] px-3.5 py-1.5 text-[11px] font-semibold tracking-wide text-[#243830] transition-colors hover:bg-[#243830] hover:text-[#FAF7F2]"
-          >
-            <LayoutDashboard className="h-3.5 w-3.5 text-[#C5A059]" />
-            <span>Admin Panel</span>
-          </Link>
         </div>
       </header>
 
