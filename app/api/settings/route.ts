@@ -78,6 +78,11 @@ const weddingConfigSchema = z.object({
     artist: z.string().trim().min(1),
     src: z.string().trim().min(1),
   }),
+  whatsappTemplate: z
+    .string()
+    .trim()
+    .min(1, "Template pesan WhatsApp tidak boleh kosong")
+    .default(DEFAULT_WEDDING_CONFIG.whatsappTemplate),
 });
 
 export async function GET() {

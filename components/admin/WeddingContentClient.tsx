@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Save,
   RotateCcw,
@@ -10,6 +10,7 @@ import {
   Calendar,
   CreditCard,
   Music,
+  MessageCircle,
   Plus,
   Trash2,
   CheckCircle2,
@@ -18,13 +19,21 @@ import {
   RefreshCw,
   Sparkles,
 } from "lucide-react";
-import type {
-  BankAccount,
-  WeddingContentConfig,
-  WeddingEventDetail,
+import {
+  DEFAULT_WHATSAPP_TEMPLATE,
+  renderWhatsAppTemplate,
+  type BankAccount,
+  type WeddingContentConfig,
+  type WeddingEventDetail,
 } from "@/lib/config/wedding-config";
 
-type ContentTabId = "couple" | "quote" | "events" | "gifts" | "audio";
+type ContentTabId =
+  | "couple"
+  | "quote"
+  | "events"
+  | "gifts"
+  | "audio"
+  | "whatsapp";
 
 const TABS: {
   id: ContentTabId;
@@ -62,6 +71,26 @@ const TABS: {
     subtitle: "Judul lagu, artis & file audio MP3",
     icon: Music,
   },
+  {
+    id: "whatsapp",
+    label: "6. Template Pesan WA",
+    subtitle: "Format teks undangan WhatsApp otomatis",
+    icon: MessageCircle,
+  },
+];
+
+const WHATSAPP_TOKENS: { token: string; desc: string }[] = [
+  { token: "{nama_tamu}", desc: "Nama Tamu" },
+  { token: "{link_undangan}", desc: "Tautan Undangan Unik" },
+  { token: "{tanggal_acara}", desc: "Hari & Tanggal" },
+  { token: "{waktu_akad}", desc: "Jam Akad Nikah" },
+  { token: "{waktu_resepsi}", desc: "Jam Resepsi" },
+  { token: "{lokasi_acara}", desc: "Nama Gedung/Venue" },
+  { token: "{alamat_acara}", desc: "Alamat Lengkap" },
+  { token: "{mempelai_pria}", desc: "Panggilan Pria" },
+  { token: "{mempelai_wanita}", desc: "Panggilan Wanita" },
+  { token: "{mempelai_pria_lengkap}", desc: "Nama Lengkap Pria" },
+  { token: "{mempelai_wanita_lengkap}", desc: "Nama Lengkap Wanita" },
 ];
 
 export default function WeddingContentClient({
@@ -70,6 +99,7 @@ export default function WeddingContentClient({
   initialConfig: WeddingContentConfig;
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [config, setConfig] = useState<WeddingContentConfig>(initialConfig);
   const [activeTab, setActiveTab] = useState<ContentTabId>("couple");
   const [saving, setSaving] = useState(false);
@@ -78,6 +108,13 @@ export default function WeddingContentClient({
     type: "success" | "error";
     text: string;
   } | null>(null);
+
+  useEffect(() => {
+    const requestedTab = searchParams.get("tab") as ContentTabId | null;
+    if (requestedTab && TABS.some((t) => t.id === requestedTab)) {
+      setActiveTab(requestedTab);
+    }
+  }, [searchParams]);
 
   const updateGroom = (
     field: keyof WeddingContentConfig["couple"]["groom"],
@@ -416,7 +453,7 @@ export default function WeddingContentClient({
       )}
 
       {/* Section Navigation Sub-Tabs */}
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         {TABS.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -1252,6 +1289,136 @@ export default function WeddingContentClient({
             sintesis melodi piano romantis bawaan tanpa memunculkan error pada
             peramban tamu.
           </p>
+        </div>
+      )}
+
+      {/* TAB 6: TEMPLATE PESAN WHATSAPP */}
+      {activeTab === "whatsapp" && (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+          {/* Template Editor */}
+          <div className="rounded-2xl border border-[#C5A059]/40 bg-white p-6 shadow-xs lg:col-span-7">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#F2ECE1] pb-3.5">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8A6825]">
+                  Pengiriman Undangan Personal
+                </p>
+                <h2 className="mt-1 font-serif-luxury text-2xl font-semibold text-[#1C2B24]">
+                  Template Pesan WhatsApp
+                </h2>
+              </div>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setConfig((prev) => ({
+                    ...prev,
+                    whatsappTemplate: DEFAULT_WHATSAPP_TEMPLATE,
+                  }))
+                }
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3 py-2 text-xs font-semibold text-[#243830] transition-colors hover:bg-[#F2ECE1]"
+              >
+                <RotateCcw className="h-3.5 w-3.5 text-[#C5A059]" />
+                <span>Kembalikan Format WA Standar</span>
+              </button>
+            </div>
+
+            <div className="mt-4">
+              <p className="text-xs leading-relaxed text-[#4A6358]">
+                Klik variabel di bawah ini untuk menyisipkan kode otomatis ke
+                dalam template pesan. Saat tombol{" "}
+                <strong>Kirim WhatsApp</strong> diklik di menu Tamu, variabel
+                tersebut akan otomatis diganti dengan nama tamu dan tautan
+                undangan uniknya.
+              </p>
+
+              {/* Clickable Placeholder Chips */}
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {WHATSAPP_TOKENS.map((item) => (
+                  <button
+                    key={item.token}
+                    type="button"
+                    onClick={() =>
+                      setConfig((prev) => ({
+                        ...prev,
+                        whatsappTemplate: `${prev.whatsappTemplate ?? DEFAULT_WHATSAPP_TEMPLATE} ${item.token}`,
+                      }))
+                    }
+                    className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-[#C5A059]/40 bg-[#FAF7F2] px-2.5 py-1.5 text-[11px] font-medium text-[#243830] transition-colors hover:bg-[#243830] hover:text-[#FAF7F2]"
+                    title={`Sisipkan ${item.desc}`}
+                  >
+                    <code className="font-mono font-semibold text-[#8A6825] group-hover:text-[#E5D1A7]">
+                      {item.token}
+                    </code>
+                    <span className="text-[10px] opacity-75">
+                      ({item.desc})
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              <div className="mt-4">
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
+                  Isi Template Pesan WhatsApp *
+                </label>
+                <textarea
+                  rows={16}
+                  required
+                  value={config.whatsappTemplate ?? DEFAULT_WHATSAPP_TEMPLATE}
+                  onChange={(e) =>
+                    setConfig((prev) => ({
+                      ...prev,
+                      whatsappTemplate: e.target.value,
+                    }))
+                  }
+                  className="w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] p-4 font-sans text-xs leading-relaxed text-[#1C2B24] focus:border-[#243830] focus:bg-white focus:outline-none"
+                />
+                <p className="mt-1.5 text-[11px] text-[#4A6358]">
+                  Tips: Gunakan tanda bintang <code>*teks*</code> untuk huruf
+                  tebal (bold) dan garis bawah <code>_teks_</code> untuk huruf
+                  miring (italic) di WhatsApp.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Live WhatsApp Bubble Preview */}
+          <div className="rounded-2xl border border-[#C5A059]/40 bg-[#1C2B24] p-6 text-[#FAF7F2] shadow-xs lg:col-span-5 flex flex-col justify-between">
+            <div>
+              <div className="border-b border-white/10 pb-3.5">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#E5D1A7]">
+                  Pratinjau Langsung (Live Preview)
+                </p>
+                <h3 className="mt-1 font-serif-luxury text-2xl font-semibold text-white">
+                  Simulasi Tampilan di WhatsApp
+                </h3>
+                <p className="mt-0.5 text-xs text-[#FAF7F2]/70">
+                  Contoh untuk tamu:{" "}
+                  <strong className="text-[#E5D1A7]">
+                    Bpk. H. Ahmad Subarjo &amp; Keluarga
+                  </strong>
+                </p>
+              </div>
+
+              <div className="mt-5 rounded-2xl border border-[#C5A059]/30 bg-[#DCF8C6] p-4 text-[#111B21] shadow-md">
+                <pre className="whitespace-pre-wrap break-words font-sans text-xs leading-relaxed">
+                  {renderWhatsAppTemplate(
+                    "Bpk. H. Ahmad Subarjo & Keluarga",
+                    "https://wedding-invitation-eight-tau-88.vercel.app/?to=Bpk.%20H.%20Ahmad%20Subarjo%20%26%20Keluarga",
+                    config
+                  )}
+                </pre>
+                <div className="mt-2 flex items-center justify-end gap-1 text-[10px] text-emerald-900/70">
+                  <span>12.00 WIB</span>
+                  <span>✓✓</span>
+                </div>
+              </div>
+            </div>
+
+            <p className="mt-4 text-[11px] leading-relaxed text-[#E5D1A7]/80">
+              Jangan lupa klik tombol <strong>Simpan Perubahan</strong> di kanan
+              atas setelah selesai mengubah format pesan WhatsApp.
+            </p>
+          </div>
         </div>
       )}
     </form>

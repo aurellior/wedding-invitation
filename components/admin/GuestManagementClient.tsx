@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Search,
@@ -29,6 +30,7 @@ import type {
 } from "@/types/wedding";
 import {
   DEFAULT_WEDDING_CONFIG,
+  renderWhatsAppTemplate,
   type WeddingContentConfig,
 } from "@/lib/config/wedding-config";
 
@@ -62,34 +64,7 @@ export function buildWhatsAppMessage(
   invitationUrl: string,
   config: WeddingContentConfig = DEFAULT_WEDDING_CONFIG
 ): string {
-  const akad = config.events[0] ?? DEFAULT_WEDDING_CONFIG.events[0];
-  const resepsi = config.events[1] ?? akad;
-
-  return [
-    `Kepada Yth. *${guestName}*`,
-    `Di Tempat`,
-    ``,
-    `Assalamu’alaikum Warahmatullahi Wabarakatuh / Salam Sejahtera.`,
-    ``,
-    `Tanpa mengurangi rasa hormat, perkenankan kami mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberikan doa restu pada acara pernikahan kami:`,
-    ``,
-    `*${config.couple.groom.fullName}*`,
-    `&`,
-    `*${config.couple.bride.fullName}*`,
-    ``,
-    `📅 *Hari/Tanggal:* ${config.couple.weddingDateDisplay}`,
-    `🕌 *${akad.title}:* ${akad.timeDisplay}`,
-    `🥂 *${resepsi.title}:* ${resepsi.timeDisplay}`,
-    `📍 *Lokasi:* ${resepsi.venueName}`,
-    ``,
-    `Silakan buka tautan undangan digital personal berikut untuk informasi lengkap & konfirmasi kehadiran (RSVP):`,
-    `${invitationUrl}`,
-    ``,
-    `Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir.`,
-    ``,
-    `Kami yang berbahagia,`,
-    `*${config.couple.groom.nickname} & ${config.couple.bride.nickname}*`,
-  ].join("\n");
+  return renderWhatsAppTemplate(guestName, invitationUrl, config);
 }
 
 function CategoryBadge({ category }: { category: GuestCategory }) {
@@ -403,14 +378,24 @@ export default function GuestManagementClient({
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={openAddModal}
-          className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#243830] hover:bg-[#1a2923] text-[#FAF7F2] text-xs font-semibold shadow-sm transition-all cursor-pointer shrink-0"
-        >
-          <UserPlus className="w-4 h-4 text-[#C5A059]" />
-          Tambah Tamu Undangan
-        </button>
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          <Link
+            href="/admin/content?tab=whatsapp"
+            className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-[#C5A059]/50 bg-[#FAF7F2] hover:bg-[#F2ECE1] text-[#243830] text-xs font-semibold transition-all"
+          >
+            <Pencil className="w-3.5 h-3.5 text-[#C5A059]" />
+            Edit Template Pesan WA
+          </Link>
+
+          <button
+            type="button"
+            onClick={openAddModal}
+            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#243830] hover:bg-[#1a2923] text-[#FAF7F2] text-xs font-semibold shadow-sm transition-all cursor-pointer"
+          >
+            <UserPlus className="w-4 h-4 text-[#C5A059]" />
+            Tambah Tamu Undangan
+          </button>
+        </div>
       </div>
 
       {/* Filter & Search Bar */}

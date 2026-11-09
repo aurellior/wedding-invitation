@@ -63,7 +63,34 @@ export interface WeddingContentConfig {
     artist: string;
     src: string;
   };
+  whatsappTemplate: string;
 }
+
+export const DEFAULT_WHATSAPP_TEMPLATE = [
+  "Kepada Yth. *{nama_tamu}*",
+  "Di Tempat",
+  "",
+  "Assalamu’alaikum Warahmatullahi Wabarakatuh / Salam Sejahtera.",
+  "",
+  "Tanpa mengurangi rasa hormat, perkenankan kami mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberikan doa restu pada acara pernikahan kami:",
+  "",
+  "*{mempelai_pria_lengkap}*",
+  "&",
+  "*{mempelai_wanita_lengkap}*",
+  "",
+  "📅 *Hari/Tanggal:* {tanggal_acara}",
+  "🕌 *Akad Nikah:* {waktu_akad}",
+  "🥂 *Resepsi:* {waktu_resepsi}",
+  "📍 *Lokasi:* {lokasi_acara}",
+  "",
+  "Silakan buka tautan undangan digital personal berikut untuk informasi lengkap & konfirmasi kehadiran (RSVP):",
+  "{link_undangan}",
+  "",
+  "Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir.",
+  "",
+  "Kami yang berbahagia,",
+  "*{mempelai_pria} & {mempelai_wanita}*",
+].join("\n");
 
 export const DEFAULT_WEDDING_CONFIG: WeddingContentConfig = {
   couple: {
@@ -166,6 +193,7 @@ export const DEFAULT_WEDDING_CONFIG: WeddingContentConfig = {
     artist: "Instrumental Chamber Ensemble",
     src: "/audio/wedding-theme.mp3",
   },
+  whatsappTemplate: DEFAULT_WHATSAPP_TEMPLATE,
 };
 
 export const WEDDING_CONFIG = DEFAULT_WEDDING_CONFIG;
@@ -229,7 +257,45 @@ export function mergeWithDefaultConfig(
       ...DEFAULT_WEDDING_CONFIG.audio,
       ...(partial.audio ?? {}),
     },
+    whatsappTemplate:
+      typeof partial.whatsappTemplate === "string" &&
+      partial.whatsappTemplate.trim().length > 0
+        ? partial.whatsappTemplate
+        : DEFAULT_WHATSAPP_TEMPLATE,
   };
+}
+
+export function renderWhatsAppTemplate(
+  guestName: string,
+  invitationUrl: string,
+  config: WeddingContentConfig = DEFAULT_WEDDING_CONFIG
+): string {
+  const akad = config.events[0] ?? DEFAULT_WEDDING_CONFIG.events[0];
+  const resepsi = config.events[1] ?? akad;
+  const rawTemplate =
+    config.whatsappTemplate && config.whatsappTemplate.trim().length > 0
+      ? config.whatsappTemplate
+      : DEFAULT_WHATSAPP_TEMPLATE;
+
+  const replacements: Record<string, string> = {
+    "{nama_tamu}": guestName,
+    "{link_undangan}": invitationUrl,
+    "{mempelai_pria}": config.couple.groom.nickname,
+    "{mempelai_wanita}": config.couple.bride.nickname,
+    "{mempelai_pria_lengkap}": config.couple.groom.fullName,
+    "{mempelai_wanita_lengkap}": config.couple.bride.fullName,
+    "{tanggal_acara}": config.couple.weddingDateDisplay,
+    "{waktu_akad}": akad.timeDisplay,
+    "{waktu_resepsi}": resepsi.timeDisplay,
+    "{lokasi_acara}": resepsi.venueName,
+    "{alamat_acara}": resepsi.venueAddress,
+  };
+
+  let output = rawTemplate;
+  for (const [token, value] of Object.entries(replacements)) {
+    output = output.split(token).join(value);
+  }
+  return output;
 }
 
 export function buildGoogleCalendarUrl(
