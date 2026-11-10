@@ -43,43 +43,43 @@ const TABS: {
   subtitle: string;
   icon: React.ComponentType<{ className?: string }>;
 }[] = [
-  {
-    id: "couple",
-    label: "1. Mempelai & Tanggal",
-    subtitle: "Nama mempelai, orang tua, tanggal & hashtag",
-    icon: Users,
-  },
-  {
-    id: "events",
-    label: "2. Acara & Alamat Lokasi",
-    subtitle: "Akad nikah, resepsi, gedung & Google Maps",
-    icon: Calendar,
-  },
-  {
-    id: "quote",
-    label: "3. Kutipan & Ayat",
-    subtitle: "Teks Arab, terjemahan & sumber surat",
-    icon: BookOpen,
-  },
-  {
-    id: "gifts",
-    label: "4. Rekening, QRIS & Kado",
-    subtitle: "Daftar rekening bank, QRIS & alamat kiriman",
-    icon: CreditCard,
-  },
-  {
-    id: "audio",
-    label: "5. Musik Latar",
-    subtitle: "Judul lagu, artis & file audio MP3",
-    icon: Music,
-  },
-  {
-    id: "whatsapp",
-    label: "6. Template Pesan WA",
-    subtitle: "Format teks undangan WhatsApp otomatis",
-    icon: MessageCircle,
-  },
-];
+    {
+      id: "couple",
+      label: "1. Mempelai & Tanggal",
+      subtitle: "Nama mempelai, orang tua, tanggal & hashtag",
+      icon: Users,
+    },
+    {
+      id: "events",
+      label: "2. Acara & Alamat Lokasi",
+      subtitle: "Akad nikah, resepsi, gedung & Google Maps",
+      icon: Calendar,
+    },
+    {
+      id: "quote",
+      label: "3. Kutipan & Ayat",
+      subtitle: "Teks Arab, terjemahan & sumber surat",
+      icon: BookOpen,
+    },
+    {
+      id: "gifts",
+      label: "4. Rekening, QRIS & Kado",
+      subtitle: "Daftar rekening bank, QRIS & alamat kiriman",
+      icon: CreditCard,
+    },
+    {
+      id: "audio",
+      label: "5. Musik Latar",
+      subtitle: "Judul lagu, artis & file audio MP3",
+      icon: Music,
+    },
+    {
+      id: "whatsapp",
+      label: "6. Template Pesan WA",
+      subtitle: "Format teks undangan WhatsApp otomatis",
+      icon: MessageCircle,
+    },
+  ];
 
 const WHATSAPP_TOKENS: { token: string; desc: string }[] = [
   { token: "{nama_tamu}", desc: "Nama Tamu" },
@@ -187,7 +187,7 @@ export default function WeddingContentClient({
           ...config.audio,
           title:
             config.audio.title === "Clair de Lune, Romantic Piano Suite" &&
-            cleanTitleFromFile
+              cleanTitleFromFile
               ? cleanTitleFromFile
               : config.audio.title,
           src: finalAudioSrc,
@@ -593,11 +593,10 @@ export default function WeddingContentClient({
       {feedback && (
         <div
           role={feedback.type === "error" ? "alert" : "status"}
-          className={`flex items-start gap-2.5 rounded-xl border p-4 text-xs ${
-            feedback.type === "success"
+          className={`flex items-start gap-2.5 rounded-xl border p-4 text-xs ${feedback.type === "success"
               ? "border-emerald-700/40 bg-emerald-50 text-emerald-950"
               : "border-rose-600/40 bg-rose-50 text-rose-900"
-          }`}
+            }`}
         >
           {feedback.type === "success" ? (
             <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
@@ -620,26 +619,23 @@ export default function WeddingContentClient({
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`flex min-h-14 cursor-pointer flex-col items-start justify-between rounded-xl border p-3.5 text-left transition-colors ${
-                isActive
+              className={`flex min-h-14 cursor-pointer flex-col items-start justify-between rounded-xl border p-3.5 text-left transition-colors ${isActive
                   ? "border-[#243830] bg-[#243830] text-[#FAF7F2] shadow-xs"
                   : "border-[#C5A059]/35 bg-white text-[#222624] hover:bg-[#FAF7F2]"
-              }`}
+                }`}
             >
               <div className="flex w-full items-center gap-2">
                 <Icon
-                  className={`h-4 w-4 shrink-0 ${
-                    isActive ? "text-[#E5D1A7]" : "text-[#8A6825]"
-                  }`}
+                  className={`h-4 w-4 shrink-0 ${isActive ? "text-[#E5D1A7]" : "text-[#8A6825]"
+                    }`}
                 />
                 <span className="truncate text-xs font-semibold">
                   {tab.label}
                 </span>
               </div>
               <span
-                className={`mt-1 line-clamp-1 text-[11px] leading-snug ${
-                  isActive ? "text-[#E5D1A7]/85" : "text-[#4A6358]"
-                }`}
+                className={`mt-1 line-clamp-1 text-[11px] leading-snug ${isActive ? "text-[#E5D1A7]/85" : "text-[#4A6358]"
+                  }`}
               >
                 {tab.subtitle}
               </span>
@@ -1083,19 +1079,7 @@ export default function WeddingContentClient({
                   </p>
                 </div>
 
-                <div className="flex flex-col justify-end">
-                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
-                    Keterangan Busana / Dress Code
-                  </label>
-                  <input
-                    type="text"
-                    value={event.dressCode ?? ""}
-                    onChange={(e) =>
-                      updateEvent(idx, "dressCode", e.target.value)
-                    }
-                    className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 text-sm text-[#1C2B24]"
-                  />
-                </div>
+
               </div>
             </div>
           ))}
@@ -1476,11 +1460,10 @@ export default function WeddingContentClient({
                 </label>
 
                 <label
-                  className={`flex min-h-40 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-6 text-center transition-all ${
-                    uploadingAudio
+                  className={`flex min-h-40 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-6 text-center transition-all ${uploadingAudio
                       ? "border-[#C5A059] bg-[#FAF7F2]"
                       : "border-[#C5A059]/50 bg-[#FAF7F2]/60 hover:border-[#243830] hover:bg-[#F2ECE1]/60"
-                  }`}
+                    }`}
                 >
                   <input
                     type="file"
