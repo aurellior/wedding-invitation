@@ -1,4 +1,5 @@
 import React from "react";
+import { notFound } from "next/navigation";
 import { Heart, Instagram, Sparkles } from "lucide-react";
 import {
   findGuestByName,
@@ -18,18 +19,18 @@ interface InvitationPageProps {
   searchParams: Promise<{ to?: string | string[] }>;
 }
 
-function decodeGuestParameter(rawParam?: string | string[]): string {
+function decodeGuestParameter(rawParam?: string | string[]): string | null {
   const firstValue = Array.isArray(rawParam) ? rawParam[0] : rawParam;
   if (!firstValue || typeof firstValue !== "string") {
-    return "Tamu Undangan";
+    return null;
   }
 
   try {
     const decoded = decodeURIComponent(firstValue.replace(/\+/g, " ")).trim();
-    return decoded.length > 0 ? decoded : "Tamu Undangan";
+    return decoded.length > 0 ? decoded : null;
   } catch {
     const fallback = firstValue.trim();
-    return fallback.length > 0 ? fallback : "Tamu Undangan";
+    return fallback.length > 0 ? fallback : null;
   }
 }
 
@@ -39,20 +40,23 @@ export default async function InvitationPage({
   const params = await searchParams;
   const rawGuestName = decodeGuestParameter(params.to);
 
+  if (!rawGuestName) {
+    notFound();
+  }
+
+  const registeredGuest = await findGuestByName(rawGuestName);
+  if (!registeredGuest) {
+    notFound();
+  }
+
   // Server-side lookups for Strict Invite-Only RSVP, initial Wishes, & Dynamic Wedding Config
-  const [registeredGuest, wishes, config] = await Promise.all([
-    rawGuestName !== "Tamu Undangan"
-      ? findGuestByName(rawGuestName)
-      : Promise.resolve(null),
+  const [initialRsvp, wishes, config] = await Promise.all([
+    getRsvpByGuestId(registeredGuest.id),
     getWishes(),
     getWeddingConfig(),
   ]);
 
-  const initialRsvp = registeredGuest
-    ? await getRsvpByGuestId(registeredGuest.id)
-    : null;
-
-  const displayGuestName = registeredGuest?.name ?? rawGuestName;
+  const displayGuestName = registeredGuest.name;
 
   return (
     <InvitationClientShell
