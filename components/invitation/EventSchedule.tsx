@@ -188,29 +188,30 @@ export default function EventSchedule({
                   </div>
 
 
+                </div>
 
-                  {/* Action Buttons */}
-                  <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-                    <a
-                      href={buildGoogleCalendarUrl(event, config.couple)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#243830] px-4 py-3 text-xs font-medium tracking-wide text-[#FAF7F2] shadow-sm transition-colors hover:bg-[#1C2B24]"
-                    >
-                      <CalendarPlus className="h-4 w-4 text-[#E5D1A7]" />
-                      <span>Add to Google Calendar</span>
-                    </a>
+                {/* Action Buttons */}
+                <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+                  <a
+                    href={buildGoogleCalendarUrl(event, config.couple)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#243830] px-4 py-3 text-xs font-medium tracking-wide text-[#FAF7F2] shadow-sm transition-colors hover:bg-[#1C2B24]"
+                  >
+                    <CalendarPlus className="h-4 w-4 text-[#E5D1A7]" />
+                    <span>Add to Google Calendar</span>
+                  </a>
 
-                    <a
-                      href={event.googleMapsUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-[#C5A059]/50 bg-[#FAF7F2] px-4 py-3 text-xs font-semibold tracking-wide text-[#243830] transition-colors hover:bg-[#F2ECE1]"
-                    >
-                      <Navigation className="h-4 w-4 text-[#C5A059]" />
-                      <span>Petunjuk Lokasi</span>
-                    </a>
-                  </div>
+                  <a
+                    href={event.googleMapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-[#C5A059]/50 bg-[#FAF7F2] px-4 py-3 text-xs font-semibold tracking-wide text-[#243830] transition-colors hover:bg-[#F2ECE1]"
+                  >
+                    <Navigation className="h-4 w-4 text-[#C5A059]" />
+                    <span>Petunjuk Lokasi</span>
+                  </a>
+                </div>
               </motion.div>
             )
           )}
