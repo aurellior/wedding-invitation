@@ -255,7 +255,7 @@ export default function EventSchedule({
 
           <div className="relative h-72 w-full overflow-hidden rounded-2xl border border-[#C5A059]/25 sm:h-80">
             <iframe
-              title="Lokasi Pernikahan The Dharmawangsa Jakarta"
+              title={`Lokasi Pernikahan ${primaryEvent.venueName}`}
               src={primaryEvent.googleMapsEmbedUrl}
               className="h-full w-full border-0"
               loading="lazy"

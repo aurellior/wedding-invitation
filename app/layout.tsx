@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
-import { WEDDING_CONFIG } from "@/lib/config/wedding-config";
+import { getWeddingConfig } from "@/lib/supabase/repository";
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
@@ -16,10 +16,13 @@ const jakarta = Plus_Jakarta_Sans({
   variable: "--font-sans",
 });
 
-export const metadata: Metadata = {
-  title: `The Wedding of ${WEDDING_CONFIG.couple.groom.nickname} & ${WEDDING_CONFIG.couple.bride.nickname} — ${WEDDING_CONFIG.couple.weddingDateDisplay}`,
-  description: `Undangan Pernikahan Digital ${WEDDING_CONFIG.couple.groom.fullName} & ${WEDDING_CONFIG.couple.bride.fullName}. ${WEDDING_CONFIG.couple.weddingDateDisplay}.`,
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const config = await getWeddingConfig();
+  return {
+    title: `The Wedding of ${config.couple.groom.nickname} & ${config.couple.bride.nickname} — ${config.couple.weddingDateDisplay}`,
+    description: `Undangan Pernikahan Digital ${config.couple.groom.fullName} & ${config.couple.bride.fullName}. ${config.couple.weddingDateDisplay}.`,
+  };
+}
 
 export default function RootLayout({
   children,

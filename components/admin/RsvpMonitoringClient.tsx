@@ -18,6 +18,10 @@ import type {
   GuestCategory,
   RsvpRecord,
 } from "@/types/wedding";
+import {
+  DEFAULT_WEDDING_CONFIG,
+  type WeddingContentConfig,
+} from "@/lib/config/wedding-config";
 
 type FilterStatus =
   | "Semua"
@@ -56,9 +60,11 @@ function formatDateId(iso: string | null): string {
 export default function RsvpMonitoringClient({
   guests,
   rsvps,
+  weddingConfig = DEFAULT_WEDDING_CONFIG,
 }: {
   guests: Guest[];
   rsvps: RsvpRecord[];
+  weddingConfig?: WeddingContentConfig;
 }) {
   const [statusFilter, setStatusFilter] = useState<FilterStatus>("Semua");
   const [searchQuery, setSearchQuery] = useState("");
@@ -192,9 +198,15 @@ export default function RsvpMonitoringClient({
     const csvString = "\uFEFF" + csvLines.join("\n");
     const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
+    const groomSlug = weddingConfig.couple.groom.nickname
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-");
+    const brideSlug = weddingConfig.couple.bride.nickname
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-");
     const link = document.createElement("a");
     link.href = url;
-    link.download = `rekap-rsvp-arka-nadia-${new Date()
+    link.download = `rekap-rsvp-${groomSlug}-${brideSlug}-${new Date()
       .toISOString()
       .slice(0, 10)}.csv`;
     document.body.appendChild(link);

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -65,6 +65,14 @@ const NAV_ITEMS: NavItem[] = [
     icon: MessageSquareHeart,
   },
 ];
+
+export const AdminConfigContext = createContext<WeddingContentConfig>(
+  DEFAULT_WEDDING_CONFIG
+);
+
+export function useAdminConfig(): WeddingContentConfig {
+  return useContext(AdminConfigContext);
+}
 
 export default function AdminSidebar({
   children,
@@ -139,7 +147,11 @@ export default function AdminSidebar({
 
   // Render login page without the back-office sidebar chrome
   if (pathname === "/admin/login") {
-    return <>{children}</>;
+    return (
+      <AdminConfigContext.Provider value={config}>
+        {children}
+      </AdminConfigContext.Provider>
+    );
   }
 
   const activeOrPendingPath = pendingPath ?? pathname;

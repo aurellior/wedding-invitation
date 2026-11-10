@@ -13,9 +13,10 @@ import {
   EyeOff,
   ArrowLeft,
 } from "lucide-react";
-import { WEDDING_CONFIG } from "@/lib/config/wedding-config";
+import { useAdminConfig } from "@/components/admin/AdminSidebar";
 
 function AdminLoginForm() {
+  const config = useAdminConfig();
   const router = useRouter();
   const searchParams = useSearchParams();
   const nextPath = searchParams.get("next") || "/admin";
@@ -90,8 +91,8 @@ function AdminLoginForm() {
               Wedding Back-Office
             </div>
             <h1 className="font-serif-luxury text-3xl sm:text-4xl font-semibold text-[#243830]">
-              {WEDDING_CONFIG.couple.groom.nickname} &amp;{" "}
-              {WEDDING_CONFIG.couple.bride.nickname}
+              {config.couple.groom.nickname} &amp;{" "}
+              {config.couple.bride.nickname}
             </h1>
             <p className="text-xs text-[#4A6358] mt-1.5">
               Portal Manajemen Tamu, RSVP &amp; Pengiriman Undangan WhatsApp
