@@ -186,8 +186,6 @@ export default function EventSchedule({
                       </div>
                     </div>
                   </div>
-
-
                 </div>
 
                 {/* Action Buttons */}

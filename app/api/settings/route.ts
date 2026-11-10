@@ -34,7 +34,6 @@ const eventSchema = z.object({
     .string()
     .trim()
     .min(1, "Tautan embed Google Maps wajib diisi"),
-  dressCode: z.string().trim().optional(),
 });
 
 const bankAccountSchema = z.object({

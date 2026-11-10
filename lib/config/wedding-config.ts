@@ -18,7 +18,6 @@ export interface WeddingEventDetail {
   venueAddress: string;
   googleMapsUrl: string;
   googleMapsEmbedUrl: string;
-  dressCode?: string;
 }
 
 export interface PersonProfile {
@@ -138,7 +137,6 @@ export const DEFAULT_WEDDING_CONFIG: WeddingContentConfig = {
         "https://maps.google.com/?q=The+Dharmawangsa+Jakarta+Kebayoran+Baru",
       googleMapsEmbedUrl:
         "https://www.google.com/maps?q=The+Dharmawangsa+Jakarta&output=embed",
-      dressCode: "Busana Formal / Batik Nuansa Sage & Ivory",
     },
     {
       id: "resepsi",
@@ -155,7 +153,6 @@ export const DEFAULT_WEDDING_CONFIG: WeddingContentConfig = {
         "https://maps.google.com/?q=The+Dharmawangsa+Jakarta+Kebayoran+Baru",
       googleMapsEmbedUrl:
         "https://www.google.com/maps?q=The+Dharmawangsa+Jakarta&output=embed",
-      dressCode: "Formal Attire / Earthy Botanical Palette",
     },
   ],
   gifts: {

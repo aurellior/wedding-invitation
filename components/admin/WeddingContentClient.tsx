@@ -1078,8 +1078,6 @@ export default function WeddingContentClient({
                     </code>
                   </p>
                 </div>
-
-
               </div>
             </div>
           ))}
