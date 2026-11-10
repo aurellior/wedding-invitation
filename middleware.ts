@@ -10,16 +10,12 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // 1. Check local/session cookie authentication set by /api/admin/auth
-  const sessionCookie = request.cookies.get("wedding_admin_session")?.value;
-  let isAuthenticated = sessionCookie === "authenticated";
-
-  // 2. Also check Supabase Auth session when environment variables are configured
+  // Verify Supabase Auth session via @supabase/ssr
+  let isAuthenticated = false;
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (
-    !isAuthenticated &&
     supabaseUrl &&
     supabaseAnonKey &&
     supabaseUrl.startsWith("http")
@@ -60,7 +56,7 @@ export async function middleware(request: NextRequest) {
         isAuthenticated = true;
       }
     } catch {
-      // Fallback gracefully if Supabase connection fails
+      isAuthenticated = false;
     }
   }
 

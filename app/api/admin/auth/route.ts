@@ -6,7 +6,10 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 const SESSION_COOKIE_NAME = "wedding_admin_session";
 
 const loginSchema = z.object({
-  email: z.string().trim().optional(),
+  email: z
+    .string({ required_error: "Email admin wajib diisi." })
+    .trim()
+    .email("Format email admin tidak valid."),
   password: z
     .string({ required_error: "Kata sandi admin wajib diisi." })
     .min(1, "Kata sandi admin tidak boleh kosong."),
@@ -28,38 +31,33 @@ export async function POST(request: NextRequest) {
     }
 
     const { email, password } = parsed.data;
-    let isAuthenticated = false;
 
-    if (isSupabaseConfigured() && email) {
-      const supabase = await createServerSupabaseClient();
-      if (supabase) {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (!error && data.session) {
-          isAuthenticated = true;
-        }
-      }
+    if (!isSupabaseConfigured()) {
+      return NextResponse.json(
+        {
+          error:
+            "Layanan autentikasi Supabase belum dikonfigurasi (NEXT_PUBLIC_SUPABASE_URL & NEXT_PUBLIC_SUPABASE_ANON_KEY wajib diisi).",
+        },
+        { status: 500 }
+      );
     }
 
-    if (!isAuthenticated) {
-      const fallbackPassword = process.env.ADMIN_PASSWORD || "wedding2026";
-      const configuredEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
-      const normalizedEmail = email?.trim().toLowerCase();
-
-      const emailMatches =
-        !normalizedEmail ||
-        !configuredEmail ||
-        normalizedEmail === configuredEmail ||
-        normalizedEmail === "admin@wedding.id";
-
-      if (password === fallbackPassword && emailMatches) {
-        isAuthenticated = true;
-      }
+    const supabase = await createServerSupabaseClient();
+    if (!supabase) {
+      return NextResponse.json(
+        {
+          error: "Gagal menghubungkan ke layanan autentikasi Supabase.",
+        },
+        { status: 500 }
+      );
     }
 
-    if (!isAuthenticated) {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error || !data.session) {
       return NextResponse.json(
         {
           error: "Email atau kata sandi admin tidak valid.",

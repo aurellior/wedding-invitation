@@ -52,18 +52,17 @@ Definisi spesifikasi multi-agent tersedia di dalam direktori `.agents/agents/`:
 2. Buka di browser:
    - **Undangan Publik (Umum)**: `http://localhost:3000`
    - **Undangan Publik (Tamu Terdaftar - Strict Invite-Only)**: `http://localhost:3000/?to=Budi%20Santoso`
-   - **Admin Dashboard**: `http://localhost:3000/admin` (Password demo default: `wedding2026`)
+   - **Admin Dashboard**: `http://localhost:3000/admin` (Login via Supabase Auth)
 
 ---
 
 ## Cara Deploy ke Vercel dengan Supabase (PostgreSQL)
 
 1. Buat proyek baru di [Supabase](https://supabase.com), buka menu **SQL Editor**, lalu jalankan isi file `supabase/migrations/001_initial_schema.sql`.
-2. Push repositori ini ke GitHub dan import ke [Vercel](https://vercel.com).
-3. Tambahkan *Environment Variables* berikut di pengaturan proyek Vercel:
+2. Buat akun admin di Supabase Dashboard melalui menu **Authentication > Users** (Add user / Create user dengan email & password admin Anda).
+3. Push repositori ini ke GitHub dan import ke [Vercel](https://vercel.com).
+4. Tambahkan *Environment Variables* berikut di pengaturan proyek Vercel:
    - `NEXT_PUBLIC_SUPABASE_URL` = URL proyek Supabase Anda
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY` = Anon/Public Key Supabase Anda
-   - `ADMIN_EMAIL` = Email login admin (contoh: `admin@wedding.id`)
-   - `ADMIN_PASSWORD` = Password login admin Anda
-4. Klik **Deploy**.
+5. Klik **Deploy**.
 
