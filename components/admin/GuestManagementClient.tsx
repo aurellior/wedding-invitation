@@ -415,11 +415,10 @@ export default function GuestManagementClient({
                 key={cat}
                 type="button"
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
-                  active
+                className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${active
                     ? "bg-[#243830] text-[#FAF7F2] shadow-xs"
                     : "bg-[#FAF7F2] text-[#4A6358] hover:bg-[#F2ECE1] hover:text-[#243830]"
-                }`}
+                  }`}
               >
                 {cat}
               </button>
@@ -550,11 +549,10 @@ export default function GuestManagementClient({
                           type="button"
                           onClick={() => handleToggleSentStatus(guest)}
                           title="Klik untuk mengubah status pengiriman"
-                          className={`inline-flex items-center gap-1.5 whitespace-nowrap px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-colors cursor-pointer ${
-                            guest.invitation_sent
+                          className={`inline-flex items-center gap-1.5 whitespace-nowrap px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-colors cursor-pointer ${guest.invitation_sent
                               ? "bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100"
                               : "bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100"
-                          }`}
+                            }`}
                         >
                           {guest.invitation_sent ? (
                             <>
@@ -601,7 +599,7 @@ export default function GuestManagementClient({
                             ) : (
                               <>
                                 <Copy className="w-3.5 h-3.5 text-[#C5A059] shrink-0" />
-                                <span>Salin Link</span>
+
                               </>
                             )}
                           </button>
@@ -768,8 +766,8 @@ export default function GuestManagementClient({
                   {submitting
                     ? "Menyimpan..."
                     : editingGuest
-                    ? "Simpan Perubahan"
-                    : "Tambahkan Tamu"}
+                      ? "Simpan Perubahan"
+                      : "Tambahkan Tamu"}
                 </button>
               </div>
             </form>
