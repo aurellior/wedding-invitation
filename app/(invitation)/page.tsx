@@ -1,5 +1,4 @@
 import React from "react";
-import { notFound } from "next/navigation";
 import { Heart, Instagram, Sparkles } from "lucide-react";
 import {
   findGuestByName,
@@ -40,23 +39,21 @@ export default async function InvitationPage({
   const params = await searchParams;
   const rawGuestName = decodeGuestParameter(params.to);
 
-  if (!rawGuestName) {
-    notFound();
-  }
-
-  const registeredGuest = await findGuestByName(rawGuestName);
-  if (!registeredGuest) {
-    notFound();
-  }
+  const registeredGuest = rawGuestName
+    ? await findGuestByName(rawGuestName)
+    : null;
 
   // Server-side lookups for Strict Invite-Only RSVP, initial Wishes, & Dynamic Wedding Config
   const [initialRsvp, wishes, config] = await Promise.all([
-    getRsvpByGuestId(registeredGuest.id),
+    registeredGuest
+      ? getRsvpByGuestId(registeredGuest.id)
+      : Promise.resolve(null),
     getWishes(),
     getWeddingConfig(),
   ]);
 
-  const displayGuestName = registeredGuest.name;
+  const displayGuestName =
+    registeredGuest?.name ?? (rawGuestName || "Tamu Undangan");
 
   return (
     <InvitationClientShell
