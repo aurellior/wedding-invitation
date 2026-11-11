@@ -369,15 +369,14 @@ export default function RsvpMonitoringClient({
                 <th className="py-3.5 px-4">Kategori</th>
                 <th className="py-3.5 px-4">Status Kehadiran</th>
                 <th className="py-3.5 px-4 text-center">Jumlah Pax</th>
-                <th className="py-3.5 px-4">Catatan Tamu</th>
-                <th className="py-3.5 px-5 text-right">Waktu Konfirmasi</th>
+                <th className="py-3.5 px-5">Catatan Tamu</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#FAF7F2] text-xs">
               {filteredRows.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={5}
                     className="py-12 px-6 text-center text-[#4A6358]"
                   >
                     Tidak ada data RSVP yang sesuai dengan filter.
@@ -444,7 +443,7 @@ export default function RsvpMonitoringClient({
                       </span>
                     </td>
 
-                    <td className="py-4 px-4 align-middle max-w-[240px] sm:max-w-xs">
+                    <td className="py-4 px-5 align-middle">
                       {row.notes ? (
                         <p
                           className="text-xs text-[#222624] italic line-clamp-2 break-words"
@@ -455,10 +454,6 @@ export default function RsvpMonitoringClient({
                       ) : (
                         <span className="text-[#4A6358]/50">—</span>
                       )}
-                    </td>
-
-                    <td className="py-4 px-5 text-right align-middle whitespace-nowrap text-[#4A6358]">
-                      {formatDateId(row.updatedAt)}
                     </td>
                   </tr>
                 ))
