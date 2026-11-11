@@ -5,16 +5,10 @@ export function DashboardOverviewSkeleton() {
     <div className="space-y-8 animate-pulse" aria-busy="true" aria-label="Memuat data dashboard...">
       {/* Hero Banner Skeleton */}
       <div className="rounded-3xl bg-[#243830]/90 p-6 sm:p-8 border border-[#C5A059]/30">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-          <div className="space-y-3 flex-1">
-            <div className="h-6 w-48 rounded-full bg-white/15" />
-            <div className="h-9 w-80 max-w-full rounded-xl bg-white/20" />
-            <div className="h-4 w-96 max-w-full rounded-lg bg-white/10" />
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-40 rounded-xl bg-white/10" />
-            <div className="h-10 w-44 rounded-xl bg-[#C5A059]/40" />
-          </div>
+        <div className="space-y-3">
+          <div className="h-6 w-48 rounded-full bg-white/15" />
+          <div className="h-9 w-80 max-w-full rounded-xl bg-white/20" />
+          <div className="h-4 w-96 max-w-full rounded-lg bg-white/10" />
         </div>
       </div>
 
@@ -163,6 +157,68 @@ export function AdminTablePageSkeleton() {
             </div>
           ))}
         </div>
+      </div>
+    </div>
+  );
+}
+
+export function AdminContentPageSkeleton() {
+  return (
+    <div
+      className="space-y-6 animate-pulse"
+      aria-busy="true"
+      aria-label="Memuat pengaturan konten undangan..."
+    >
+      {/* Page Header Skeleton without top buttons */}
+      <div className="rounded-2xl border border-[#E5D1A7]/60 bg-white p-6 shadow-xs space-y-2.5">
+        <div className="h-4 w-44 rounded-full bg-[#243830]/10" />
+        <div className="h-8 w-72 max-w-full rounded-xl bg-[#243830]/15" />
+        <div className="h-3.5 w-96 max-w-full rounded bg-[#243830]/10" />
+      </div>
+
+      {/* 6 Tabs Skeleton */}
+      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div
+            key={i}
+            className="flex min-h-14 flex-col justify-between rounded-xl border border-[#C5A059]/30 bg-white p-3.5 space-y-2"
+          >
+            <div className="flex items-center gap-2">
+              <div className="h-4 w-4 rounded bg-[#243830]/10" />
+              <div className="h-4 w-32 rounded bg-[#243830]/15" />
+            </div>
+            <div className="h-3 w-48 rounded bg-[#243830]/10" />
+          </div>
+        ))}
+      </div>
+
+      {/* Form Content Card Skeleton */}
+      <div className="rounded-2xl border border-[#E5D1A7]/60 bg-white p-6 shadow-xs space-y-6">
+        <div className="space-y-2 border-b border-[#FAF7F2] pb-4">
+          <div className="h-6 w-48 rounded bg-[#243830]/15" />
+          <div className="h-3.5 w-72 rounded bg-[#243830]/10" />
+        </div>
+
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="space-y-2">
+              <div className="h-3.5 w-32 rounded bg-[#243830]/10" />
+              <div className="h-11 w-full rounded-xl bg-[#FAF7F2] border border-[#E5D1A7]/40" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Bottom Action Bar Skeleton with Save Button */}
+      <div className="flex flex-col gap-3 rounded-2xl border border-[#E5D1A7]/70 bg-white p-5 shadow-xs sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2.5">
+          <div className="h-7 w-7 rounded-lg bg-[#C5A059]/15" />
+          <div className="space-y-1.5">
+            <div className="h-4 w-44 rounded bg-[#243830]/15" />
+            <div className="h-3 w-64 rounded bg-[#243830]/10" />
+          </div>
+        </div>
+        <div className="h-11 w-44 rounded-xl bg-[#243830]/20" />
       </div>
     </div>
   );

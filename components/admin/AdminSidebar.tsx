@@ -22,6 +22,7 @@ import {
   type WeddingContentConfig,
 } from "@/lib/config/wedding-config";
 import {
+  AdminContentPageSkeleton,
   AdminTablePageSkeleton,
   DashboardOverviewSkeleton,
 } from "@/components/admin/AdminSkeleton";
@@ -382,6 +383,8 @@ export default function AdminSidebar({
           {isNavigating ? (
             pendingPath === "/admin" ? (
               <DashboardOverviewSkeleton />
+            ) : pendingPath === "/admin/content" ? (
+              <AdminContentPageSkeleton />
             ) : (
               <AdminTablePageSkeleton />
             )
