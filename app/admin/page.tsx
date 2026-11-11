@@ -5,22 +5,18 @@ import {
   UserCheck,
   UsersRound,
   MessageSquareHeart,
-  Send,
   ArrowUpRight,
   CheckCircle2,
   XCircle,
   HelpCircle,
   Clock,
   Sparkles,
-  Database,
 } from "lucide-react";
 import {
   getGuests,
   getRsvps,
   getWeddingConfig,
   getWishes,
-  isPostgresConfigured,
-  isSupabaseConfigured,
 } from "@/lib/supabase/repository";
 import type { AttendanceStatus } from "@/types/wedding";
 
@@ -100,8 +96,6 @@ export default async function AdminDashboardPage() {
     totalWishes: wishes.length,
   };
 
-  const cloudDbActive = isSupabaseConfigured() || isPostgresConfigured();
-
   const invitationsSentCount = guests.filter((g) => g.invitation_sent).length;
   const totalMaxPaxQuota = guests.reduce((sum, g) => sum + (g.max_pax || 0), 0);
   const unsureRsvpsCount = rsvps.filter(
@@ -125,42 +119,21 @@ export default async function AdminDashboardPage() {
       <div className="relative overflow-hidden rounded-3xl bg-[#243830] text-[#FAF7F2] p-6 sm:p-8 shadow-lg border border-[#C5A059]/30">
         <div className="pointer-events-none absolute -right-20 -top-20 w-72 h-72 rounded-full bg-[#C5A059]/15 blur-3xl" />
 
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/15 text-[#E5D1A7] text-xs font-medium mb-3">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>
-                Overview Pernikahan {config.couple.groom.nickname} &amp;{" "}
-                {config.couple.bride.nickname}
-              </span>
-            </div>
-            <h1 className="font-serif-luxury text-3xl sm:text-4xl font-semibold text-white">
-              Ringkasan Back-Office &amp; Kehadiran Tamu
-            </h1>
-            <p className="text-xs sm:text-sm text-[#FAF7F2]/80 mt-1.5 max-w-2xl">
-              Pantau statistik undangan, kuota kursi (pax), status konfirmasi
-              RSVP, dan pengiriman pesan WhatsApp personal secara real-time.
-            </p>
+        <div className="relative z-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/15 text-[#E5D1A7] text-xs font-medium mb-3">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>
+              Overview Pernikahan {config.couple.groom.nickname} &amp;{" "}
+              {config.couple.bride.nickname}
+            </span>
           </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/10 border border-white/15 text-xs text-[#E5D1A7]">
-              <Database className="w-3.5 h-3.5" />
-              <span>
-                Storage:{" "}
-                <strong className="text-white">
-                  {cloudDbActive ? "PostgreSQL Cloud" : "Local Persistent DB"}
-                </strong>
-              </span>
-            </div>
-            <Link
-              href="/admin/guests"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#C5A059] hover:bg-[#d1ae68] text-[#243830] text-xs font-semibold shadow-sm transition-all"
-            >
-              <Send className="w-3.5 h-3.5" />
-              Kelola &amp; Kirim Undangan WA
-            </Link>
-          </div>
+          <h1 className="font-serif-luxury text-3xl sm:text-4xl font-semibold text-white">
+            Ringkasan Back-Office &amp; Kehadiran Tamu
+          </h1>
+          <p className="text-xs sm:text-sm text-[#FAF7F2]/80 mt-1.5 max-w-2xl">
+            Pantau statistik undangan, kuota kursi (pax), status konfirmasi
+            RSVP, dan pengiriman pesan WhatsApp personal secara real-time.
+          </p>
         </div>
       </div>
 
