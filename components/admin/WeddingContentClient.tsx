@@ -594,8 +594,8 @@ export default function WeddingContentClient({
         <div
           role={feedback.type === "error" ? "alert" : "status"}
           className={`flex items-start gap-2.5 rounded-xl border p-4 text-xs ${feedback.type === "success"
-              ? "border-emerald-700/40 bg-emerald-50 text-emerald-950"
-              : "border-rose-600/40 bg-rose-50 text-rose-900"
+            ? "border-emerald-700/40 bg-emerald-50 text-emerald-950"
+            : "border-rose-600/40 bg-rose-50 text-rose-900"
             }`}
         >
           {feedback.type === "success" ? (
@@ -620,8 +620,8 @@ export default function WeddingContentClient({
               type="button"
               onClick={() => setActiveTab(tab.id)}
               className={`flex min-h-14 cursor-pointer flex-col items-start justify-between rounded-xl border p-3.5 text-left transition-colors ${isActive
-                  ? "border-[#243830] bg-[#243830] text-[#FAF7F2] shadow-xs"
-                  : "border-[#C5A059]/35 bg-white text-[#222624] hover:bg-[#FAF7F2]"
+                ? "border-[#243830] bg-[#243830] text-[#FAF7F2] shadow-xs"
+                : "border-[#C5A059]/35 bg-white text-[#222624] hover:bg-[#FAF7F2]"
                 }`}
             >
               <div className="flex w-full items-center gap-2">
@@ -1459,8 +1459,8 @@ export default function WeddingContentClient({
 
                 <label
                   className={`flex min-h-40 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-6 text-center transition-all ${uploadingAudio
-                      ? "border-[#C5A059] bg-[#FAF7F2]"
-                      : "border-[#C5A059]/50 bg-[#FAF7F2]/60 hover:border-[#243830] hover:bg-[#F2ECE1]/60"
+                    ? "border-[#C5A059] bg-[#FAF7F2]"
+                    : "border-[#C5A059]/50 bg-[#FAF7F2]/60 hover:border-[#243830] hover:bg-[#F2ECE1]/60"
                     }`}
                 >
                   <input
@@ -1657,12 +1657,57 @@ export default function WeddingContentClient({
             </div>
 
             <p className="mt-4 text-[11px] leading-relaxed text-[#E5D1A7]/80">
-              Jangan lupa klik tombol <strong>Simpan Perubahan</strong> di kanan
-              atas setelah selesai mengubah format pesan WhatsApp.
+              Jangan lupa klik tombol <strong>Simpan Perubahan</strong> di bawah
+              setelah selesai mengubah format pesan WhatsApp.
             </p>
           </div>
         </div>
       )}
+
+      {/* Floating Bottom Action Bar */}
+      <div className="sticky bottom-4 z-20 flex flex-col gap-3 rounded-2xl border border-[#E5D1A7]/70 bg-white/95 p-4 shadow-lg backdrop-blur-md sm:flex-row sm:items-center sm:justify-between sm:p-5">
+        <div className="flex items-center gap-2.5 text-xs text-[#4A6358]">
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#C5A059]/15 text-[#C5A059]">
+            <Sparkles className="h-4 w-4" />
+          </div>
+          <div>
+            <p className="font-semibold text-[#243830]">Selesai mengubah pengaturan?</p>
+            <p className="text-[11px] text-[#4A6358]">
+              Simpan perubahan agar data terbaru langsung tampil pada undangan online.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-end gap-2.5">
+          <button
+            type="button"
+            disabled={resetting || saving}
+            onClick={() => setIsResetConfirmOpen(true)}
+            className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-stone-300 bg-white px-4 py-2.5 text-xs font-semibold text-[#4A6358] transition-colors hover:bg-stone-50 hover:text-[#1C2B24] disabled:opacity-50"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+            <span>{resetting ? "Mereset..." : "Reset Default"}</span>
+          </button>
+
+          <button
+            type="submit"
+            disabled={saving}
+            className="inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#243830] px-6 py-2.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#FAF7F2] shadow-sm transition-colors hover:bg-[#1C2B24] disabled:opacity-60"
+          >
+            {saving ? (
+              <>
+                <RefreshCw className="h-4 w-4 animate-spin text-[#E5D1A7]" />
+                <span>Menyimpan...</span>
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4 text-[#E5D1A7]" />
+                <span>Simpan Perubahan</span>
+              </>
+            )}
+          </button>
+        </div>
+      </div>
 
       {/* Modal Konfirmasi Reset Default */}
       <ConfirmModal
