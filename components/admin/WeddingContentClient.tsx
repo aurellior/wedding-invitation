@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Save,
   RotateCcw,
@@ -18,6 +19,7 @@ import {
   RefreshCw,
   Sparkles,
   Upload,
+  X,
 } from "lucide-react";
 import {
   DEFAULT_WHATSAPP_TEMPLATE,
@@ -112,6 +114,15 @@ export default function WeddingContentClient({
     type: "success" | "error";
     text: string;
   } | null>(null);
+
+  // Auto-dismiss popup notifikasi setelah 4.5 detik
+  useEffect(() => {
+    if (!feedback) return;
+    const timer = setTimeout(() => {
+      setFeedback(null);
+    }, 4500);
+    return () => clearTimeout(timer);
+  }, [feedback]);
 
   // Modal confirmation states
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
@@ -478,7 +489,7 @@ export default function WeddingContentClient({
         type: "success",
         text:
           result.message ||
-          "Perubahan konten undangan berhasil disimpan dan aktif di halaman utama.",
+          "Perubahan konten undangan berhasil disimpan dan langsung aktif di halaman undangan.",
       });
       router.refresh();
     } catch {
@@ -545,26 +556,6 @@ export default function WeddingContentClient({
           tautan Google Maps, hingga nomor rekening amplop digital.
         </p>
       </div>
-
-      {/* Feedback Banner */}
-      {feedback && (
-        <div
-          role={feedback.type === "error" ? "alert" : "status"}
-          className={`flex items-start gap-2.5 rounded-xl border p-4 text-xs ${feedback.type === "success"
-            ? "border-emerald-700/40 bg-emerald-50 text-emerald-950"
-            : "border-rose-600/40 bg-rose-50 text-rose-900"
-            }`}
-        >
-          {feedback.type === "success" ? (
-            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
-          ) : (
-            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-700" />
-          )}
-          <div className="flex-1">
-            <p className="font-semibold">{feedback.text}</p>
-          </div>
-        </div>
-      )}
 
       {/* Section Navigation Sub-Tabs */}
       <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
@@ -1711,6 +1702,49 @@ export default function WeddingContentClient({
         cancelText="Batal"
         variant="danger"
       />
+
+      {/* Floating Popup Notification (Toast) */}
+      <AnimatePresence>
+        {feedback && (
+          <motion.div
+            initial={{ opacity: 0, y: 40, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            role={feedback.type === "error" ? "alert" : "status"}
+            className={`fixed bottom-6 z-50 flex items-center gap-3 rounded-2xl border p-4 shadow-2xl backdrop-blur-md left-4 right-4 sm:left-auto sm:right-6 sm:max-w-md ${
+              feedback.type === "success"
+                ? "border-[#C5A059]/60 bg-[#1C2B24]/95 text-[#FAF7F2]"
+                : "border-rose-500/60 bg-rose-950/95 text-white"
+            }`}
+          >
+            {feedback.type === "success" ? (
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#C5A059]/20 text-[#E5D1A7]">
+                <CheckCircle2 className="h-5 w-5 text-[#C5A059]" />
+              </div>
+            ) : (
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-rose-500/25 text-rose-300">
+                <AlertCircle className="h-5 w-5 text-rose-400" />
+              </div>
+            )}
+
+            <div className="flex-1 pr-1">
+              <p className="text-xs font-medium leading-relaxed">
+                {feedback.text}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setFeedback(null)}
+              aria-label="Tutup notifikasi"
+              className="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-lg text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </form>
   );
 }
