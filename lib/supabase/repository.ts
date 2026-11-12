@@ -33,9 +33,20 @@ async function getPrivilegedSupabaseClient() {
 
 export { isSupabaseConfigured };
 
+function getRawPostgresConnectionString(): string {
+  return (
+    process.env.SUPABASE_POSTGRES_URL?.trim() ||
+    process.env.SUPABASE_POSTGRES_PRISMA_URL?.trim() ||
+    process.env.SUPABASE_POSTGRES_URL_NON_POOLING?.trim() ||
+    process.env.DATABASE_URL_POOLED?.trim() ||
+    process.env.POSTGRES_URL?.trim() ||
+    process.env.DATABASE_URL?.trim() ||
+    ""
+  );
+}
+
 export function isPostgresConfigured(): boolean {
-  const url =
-    process.env.POSTGRES_URL?.trim() || process.env.DATABASE_URL?.trim() || "";
+  const url = getRawPostgresConnectionString();
   return Boolean(
     url &&
       (url.startsWith("postgres://") || url.startsWith("postgresql://")) &&
@@ -230,10 +241,22 @@ function getPgPool(): Pool | null {
   }
 
   if (!globalForPg.__weddingPgPool) {
-    const connectionString =
-      process.env.DATABASE_URL_POOLED?.trim() ||
-      process.env.POSTGRES_URL?.trim() ||
-      process.env.DATABASE_URL?.trim();
+    let connectionString = getRawPostgresConnectionString();
+    const useStrictSsl =
+      Boolean(process.env.DATABASE_CA_CERT) ||
+      process.env.POSTGRES_STRICT_SSL === "true";
+
+    // pg v8+ treats ?sslmode=require as verify-full; strip sslmode when using relaxed SSL
+    if (!useStrictSsl && connectionString) {
+      try {
+        const parsed = new URL(connectionString);
+        parsed.searchParams.delete("sslmode");
+        connectionString = parsed.toString();
+      } catch {
+        // Keep original string if URL parsing fails
+      }
+    }
+
     globalForPg.__weddingPgPool = new Pool({
       connectionString,
       max: 10,
