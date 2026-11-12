@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import { getWeddingConfig } from "@/lib/supabase/repository";
+import { getPreviewToken } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
@@ -19,5 +20,10 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const config = await getWeddingConfig();
-  return <AdminSidebar config={config}>{children}</AdminSidebar>;
+  const previewToken = getPreviewToken();
+  return (
+    <AdminSidebar config={config} previewToken={previewToken}>
+      {children}
+    </AdminSidebar>
+  );
 }

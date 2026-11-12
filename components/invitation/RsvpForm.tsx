@@ -18,6 +18,7 @@ export interface RsvpFormProps {
   guestName: string;
   registeredGuest: Guest | null;
   initialRsvp: RsvpRecord | null;
+  isPreviewMode?: boolean;
 }
 
 const ATTENDANCE_OPTIONS: {
@@ -45,6 +46,7 @@ const ATTENDANCE_OPTIONS: {
 export default function RsvpForm({
   registeredGuest,
   initialRsvp,
+  isPreviewMode = false,
 }: RsvpFormProps) {
   const [savedRsvp, setSavedRsvp] = useState<RsvpRecord | null>(initialRsvp);
   const [attendanceStatus, setAttendanceStatus] = useState<AttendanceStatus>(
@@ -85,6 +87,26 @@ export default function RsvpForm({
     setIsSubmitting(true);
     setErrorMsg(null);
     setSuccessMsg(null);
+
+    if (isPreviewMode) {
+      const nowIso = new Date().toISOString();
+      const simulatedRsvp: RsvpRecord = {
+        id: "preview-rsvp",
+        guest_id: registeredGuest.id,
+        guest_name: registeredGuest.name,
+        attendance_status: attendanceStatus,
+        pax: attendanceStatus === "tidak_hadir" ? 0 : pax,
+        notes: notes.trim() || null,
+        created_at: nowIso,
+        updated_at: nowIso,
+      };
+      setSavedRsvp(simulatedRsvp);
+      setSuccessMsg(
+        "Simulasi Preview Berhasil! (Data tidak disimpan ke database karena Anda sedang dalam Mode Preview Admin)."
+      );
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       const response = await fetch("/api/rsvp", {

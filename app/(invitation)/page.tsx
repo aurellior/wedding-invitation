@@ -1,4 +1,5 @@
 import React from "react";
+import { notFound } from "next/navigation";
 import { Heart, Instagram, Sparkles } from "lucide-react";
 import {
   findGuestByName,
@@ -6,6 +7,8 @@ import {
   getWeddingConfig,
   getWishes,
 } from "@/lib/supabase/repository";
+import { hasPreviewAccess } from "@/lib/supabase/server";
+import type { Guest } from "@/types/wedding";
 import InvitationClientShell from "@/components/invitation/InvitationClientShell";
 import EventSchedule from "@/components/invitation/EventSchedule";
 import RsvpForm from "@/components/invitation/RsvpForm";
@@ -15,7 +18,7 @@ import GiftSection from "@/components/invitation/GiftSection";
 export const dynamic = "force-dynamic";
 
 interface InvitationPageProps {
-  searchParams: Promise<{ to?: string | string[] }>;
+  searchParams: Promise<{ to?: string | string[]; preview?: string | string[] }>;
 }
 
 function decodeGuestParameter(rawParam?: string | string[]): string | null {
@@ -43,13 +46,36 @@ export default async function InvitationPage({
     ? await findGuestByName(rawGuestName)
     : null;
 
+  let isPreviewMode = false;
+  if (!registeredGuest) {
+    isPreviewMode = await hasPreviewAccess(params.preview);
+    if (!isPreviewMode) {
+      notFound();
+    }
+  }
+
   // Redact phone number before passing guest object to client components
-  const publicSafeGuest = registeredGuest
+  const publicSafeGuest: Guest | null = registeredGuest
     ? {
         ...registeredGuest,
         phone: "",
       }
     : null;
+
+  const previewSimGuest: Guest | null = isPreviewMode
+    ? {
+        id: "00000000-0000-4000-8000-000000000000",
+        name: rawGuestName || "Bapak/Ibu Tamu Kehormatan",
+        slug: "bapak-ibu-tamu-kehormatan",
+        phone: "",
+        category: "VIP",
+        max_pax: 2,
+        invitation_sent: false,
+        created_at: new Date().toISOString(),
+      }
+    : null;
+
+  const effectiveGuest = publicSafeGuest ?? previewSimGuest;
 
   // Server-side lookups for Strict Invite-Only RSVP, initial Wishes, & Dynamic Wedding Config
   const [initialRsvp, wishes, config] = await Promise.all([
@@ -61,13 +87,14 @@ export default async function InvitationPage({
   ]);
 
   const displayGuestName =
-    registeredGuest?.name ?? (rawGuestName || "Tamu Undangan");
+    effectiveGuest?.name ?? (rawGuestName || "Bapak/Ibu Tamu Kehormatan");
 
   return (
     <InvitationClientShell
       guestName={displayGuestName}
-      guestCategory={registeredGuest?.category ?? null}
-      isRegistered={Boolean(registeredGuest)}
+      guestCategory={effectiveGuest?.category ?? null}
+      isRegistered={Boolean(effectiveGuest)}
+      isPreviewMode={isPreviewMode}
       config={config}
     >
       {/* 1. HERO SECTION */}
@@ -238,8 +265,9 @@ export default async function InvitationPage({
       {/* 4. STRICT INVITE-ONLY RSVP FORM */}
       <RsvpForm
         guestName={displayGuestName}
-        registeredGuest={publicSafeGuest}
+        registeredGuest={effectiveGuest}
         initialRsvp={initialRsvp}
+        isPreviewMode={isPreviewMode}
       />
 
       {/* 5. REALTIME & OPTIMISTIC WISH WALL */}

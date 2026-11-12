@@ -1,3 +1,4 @@
+import { createHmac, timingSafeEqual } from "crypto";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import {
   createClient as createSupabaseJsClient,
@@ -10,6 +11,53 @@ import { isAuthorizedAdminEmail } from "./auth-helpers";
 import { isSupabaseConfigured } from "./client";
 
 export { isAuthorizedAdminEmail };
+
+/**
+ * Generates a deterministic HMAC preview token so admin preview links
+ * work reliably without exposing public guestless access.
+ */
+export function getPreviewToken(): string {
+  const secret =
+    process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() ||
+    "wedding-invitation-local-preview-secret";
+
+  return createHmac("sha256", secret)
+    .update("wedding-invitation-admin-preview-v1")
+    .digest("hex")
+    .slice(0, 16);
+}
+
+/**
+ * Checks whether the current request is allowed to bypass strict guest list 404
+ * for invitation previewing (either via valid HMAC preview token or active Admin session).
+ */
+export async function hasPreviewAccess(
+  rawPreviewParam?: string | string[]
+): Promise<boolean> {
+  const tokenCandidate = Array.isArray(rawPreviewParam)
+    ? rawPreviewParam[0]
+    : rawPreviewParam;
+
+  if (tokenCandidate && typeof tokenCandidate === "string") {
+    const expected = getPreviewToken();
+    const candidateBuf = Buffer.from(tokenCandidate.trim());
+    const expectedBuf = Buffer.from(expected);
+    if (
+      candidateBuf.length === expectedBuf.length &&
+      timingSafeEqual(candidateBuf, expectedBuf)
+    ) {
+      return true;
+    }
+
+    if (!isSupabaseConfigured() && tokenCandidate.trim() === "true") {
+      return true;
+    }
+  }
+
+  const auth = await requireAdminAuth();
+  return auth.authorized;
+}
 
 /**
  * Creates a server-side Supabase client bound to Next.js App Router cookies

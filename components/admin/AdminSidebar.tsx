@@ -78,14 +78,20 @@ export function useAdminConfig(): WeddingContentConfig {
 export default function AdminSidebar({
   children,
   config = DEFAULT_WEDDING_CONFIG,
+  previewToken = "",
 }: {
   children: React.ReactNode;
   config?: WeddingContentConfig;
+  previewToken?: string;
 }) {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+
+  const previewUrl = previewToken
+    ? `/?to=Bapak%2FIbu%20Tamu%20Kehormatan&preview=${encodeURIComponent(previewToken)}`
+    : "/?to=Bapak%2FIbu%20Tamu%20Kehormatan&preview=true";
 
   // Navigation progress & instant skeleton transition state
   const [pendingPath, setPendingPath] = useState<string | null>(null);
@@ -328,7 +334,7 @@ export default function AdminSidebar({
           </div>
 
           <Link
-            href="/"
+            href={previewUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-[#FAF7F2] text-xs font-medium transition-colors border border-white/10"
@@ -368,7 +374,7 @@ export default function AdminSidebar({
 
           <div className="flex items-center gap-3">
             <Link
-              href="/?to=Bapak%2FIbu%20Tamu%20Kehormatan"
+              href={previewUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-[#C5A059]/50 bg-[#FAF7F2] hover:bg-[#F2ECE1] text-[#243830] text-xs font-medium transition-colors"
