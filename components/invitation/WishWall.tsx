@@ -11,7 +11,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import type { AttendanceStatus, Guest, WishRecord } from "@/types/wedding";
+import type { Guest, WishRecord } from "@/types/wedding";
 
 export interface WishWallProps {
   initialWishes: WishRecord[];
@@ -48,33 +48,6 @@ function formatIndonesianDate(isoString: string): string {
   }
 }
 
-function renderAttendanceBadge(badge?: AttendanceStatus | null) {
-  if (!badge) return null;
-
-  if (badge === "hadir") {
-    return (
-      <span className="inline-flex items-center gap-1 rounded-full border border-emerald-700/25 bg-emerald-900/10 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-900">
-        <CheckCircle2 className="h-3 w-3 text-emerald-700" />
-        Hadir
-      </span>
-    );
-  }
-
-  if (badge === "tidak_hadir") {
-    return (
-      <span className="inline-flex items-center gap-1 rounded-full border border-rose-700/25 bg-rose-900/10 px-2.5 py-0.5 text-[10px] font-semibold text-rose-900">
-        Berhalangan
-      </span>
-    );
-  }
-
-  return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-amber-700/25 bg-amber-900/10 px-2.5 py-0.5 text-[10px] font-semibold text-amber-900">
-      Masih Ragu
-    </span>
-  );
-}
-
 export default function WishWall({
   initialWishes,
   defaultSenderName,
@@ -85,8 +58,6 @@ export default function WishWall({
     registeredGuest?.name ??
       (defaultSenderName !== "Tamu Undangan" ? defaultSenderName : "")
   );
-  const [attendanceBadge, setAttendanceBadge] =
-    useState<AttendanceStatus>("hadir");
   const [message, setMessage] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -153,7 +124,7 @@ export default function WishWall({
       guest_id: registeredGuest?.id ?? null,
       sender_name: cleanSender,
       message: cleanMessage,
-      attendance_badge: attendanceBadge,
+      attendance_badge: null,
       created_at: new Date().toISOString(),
       isOptimistic: true,
     };
@@ -172,7 +143,6 @@ export default function WishWall({
           guest_id: registeredGuest?.id ?? null,
           sender_name: cleanSender,
           message: cleanMessage,
-          attendance_badge: attendanceBadge,
         }),
       });
 
@@ -278,27 +248,6 @@ export default function WishWall({
                         : "bg-[#FAF7F2]"
                     }`}
                   />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="wish-attendance"
-                    className="block text-xs font-semibold uppercase tracking-wider text-[#243830]"
-                  >
-                    Keterangan Kehadiran
-                  </label>
-                  <select
-                    id="wish-attendance"
-                    value={attendanceBadge}
-                    onChange={(e) =>
-                      setAttendanceBadge(e.target.value as AttendanceStatus)
-                    }
-                    className="mt-1.5 w-full rounded-xl border border-[#C5A059]/40 bg-[#FAF7F2] px-4 py-2.5 text-sm text-[#1C2B24] focus:outline-none focus:ring-2 focus:ring-[#C5A059]/40"
-                  >
-                    <option value="hadir">Hadir</option>
-                    <option value="tidak_hadir">Berhalangan Hadir</option>
-                    <option value="ragu">Masih Ragu</option>
-                  </select>
                 </div>
 
                 <div>
@@ -413,7 +362,6 @@ export default function WishWall({
                               {wish.sender_name}
                             </h4>
                             <div className="flex items-center gap-2">
-                              {renderAttendanceBadge(wish.attendance_badge)}
                               {wish.isOptimistic && (
                                 <span className="inline-flex items-center gap-1 text-[10px] italic text-[#4A6358]">
                                   <Clock className="h-3 w-3 animate-pulse text-[#C5A059]" />
