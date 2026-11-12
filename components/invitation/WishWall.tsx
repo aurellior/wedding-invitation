@@ -11,6 +11,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { formatDateId } from "@/lib/utils/format";
 import type { Guest, WishRecord } from "@/types/wedding";
 
 export interface WishWallProps {
@@ -33,21 +34,6 @@ function getInitials(name: string): string {
   return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
 }
 
-function formatIndonesianDate(isoString: string): string {
-  try {
-    const date = new Date(isoString);
-    return new Intl.DateTimeFormat("id-ID", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(date);
-  } catch {
-    return "Baru saja";
-  }
-}
-
 export default function WishWall({
   initialWishes,
   defaultSenderName,
@@ -59,6 +45,7 @@ export default function WishWall({
       (defaultSenderName !== "Tamu Undangan" ? defaultSenderName : "")
   );
   const [message, setMessage] = useState<string>("");
+  const [website, setWebsite] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -143,6 +130,7 @@ export default function WishWall({
           guest_id: registeredGuest?.id ?? null,
           sender_name: cleanSender,
           message: cleanMessage,
+          website,
         }),
       });
 
@@ -227,6 +215,17 @@ export default function WishWall({
               </div>
 
               <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+                {/* Honeypot anti-bot field */}
+                <input
+                  type="text"
+                  name="website"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
+                  className="hidden"
+                />
                 <div>
                   <label
                     htmlFor="wish-sender-name"
@@ -376,7 +375,7 @@ export default function WishWall({
                           </p>
 
                           <p className="mt-2.5 text-[11px] text-[#4A6358]">
-                            {formatIndonesianDate(wish.created_at)}
+                            {formatDateId(wish.created_at, "Baru saja")}
                           </p>
                         </div>
                       </div>

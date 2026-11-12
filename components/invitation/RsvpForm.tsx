@@ -59,6 +59,7 @@ export default function RsvpForm({
     return 1;
   });
   const [notes, setNotes] = useState<string>(initialRsvp?.notes ?? "");
+  const [website, setWebsite] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -97,6 +98,7 @@ export default function RsvpForm({
           attendance_status: attendanceStatus,
           pax: attendanceStatus === "tidak_hadir" ? 0 : pax,
           notes: notes.trim() || null,
+          website,
         }),
       });
 
@@ -232,6 +234,17 @@ export default function RsvpForm({
 
               {/* Form */}
               <form onSubmit={handleSubmit} className="mt-6 space-y-6">
+                {/* Honeypot anti-bot field */}
+                <input
+                  type="text"
+                  name="website"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
+                  className="hidden"
+                />
                 {/* Locked Guest Name */}
                 <div>
                   <label

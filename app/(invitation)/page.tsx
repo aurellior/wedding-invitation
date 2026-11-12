@@ -43,12 +43,20 @@ export default async function InvitationPage({
     ? await findGuestByName(rawGuestName)
     : null;
 
+  // Redact phone number before passing guest object to client components
+  const publicSafeGuest = registeredGuest
+    ? {
+        ...registeredGuest,
+        phone: "",
+      }
+    : null;
+
   // Server-side lookups for Strict Invite-Only RSVP, initial Wishes, & Dynamic Wedding Config
   const [initialRsvp, wishes, config] = await Promise.all([
     registeredGuest
       ? getRsvpByGuestId(registeredGuest.id)
       : Promise.resolve(null),
-    getWishes(),
+    getWishes(100),
     getWeddingConfig(),
   ]);
 
@@ -230,7 +238,7 @@ export default async function InvitationPage({
       {/* 4. STRICT INVITE-ONLY RSVP FORM */}
       <RsvpForm
         guestName={displayGuestName}
-        registeredGuest={registeredGuest}
+        registeredGuest={publicSafeGuest}
         initialRsvp={initialRsvp}
       />
 
@@ -238,7 +246,7 @@ export default async function InvitationPage({
       <WishWall
         initialWishes={wishes}
         defaultSenderName={displayGuestName}
-        registeredGuest={registeredGuest}
+        registeredGuest={publicSafeGuest}
       />
 
       {/* 6. DIGITAL ENVELOPE GIFT SECTION */}

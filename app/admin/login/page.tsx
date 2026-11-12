@@ -19,7 +19,11 @@ function AdminLoginForm() {
   const config = useAdminConfig();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const nextPath = searchParams.get("next") || "/admin";
+  const rawNext = searchParams.get("next") || "/admin";
+  const nextPath =
+    rawNext.startsWith("/admin") && !rawNext.startsWith("//")
+      ? rawNext
+      : "/admin";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

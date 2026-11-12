@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { checkRateLimit } from "@/lib/security/rate-limit";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
-
-const SESSION_COOKIE_NAME = "wedding_admin_session";
+import {
+  createServerSupabaseClient,
+  isAuthorizedAdminEmail,
+} from "@/lib/supabase/server";
 
 const loginSchema = z.object({
   email: z
@@ -16,6 +18,15 @@ const loginSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  const rate = checkRateLimit(request, {
+    namespace: "admin-login",
+    limit: 5,
+    windowMs: 60_000,
+  });
+  if (!rate.allowed) {
+    return rate.response;
+  }
+
   try {
     const rawBody: unknown = await request.json();
     const parsed = loginSchema.safeParse(rawBody);
@@ -57,7 +68,7 @@ export async function POST(request: NextRequest) {
       password,
     });
 
-    if (error || !data.session) {
+    if (error || !data.session || !data.user) {
       return NextResponse.json(
         {
           error: "Email atau kata sandi admin tidak valid.",
@@ -66,29 +77,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const response = NextResponse.json({
+    if (!isAuthorizedAdminEmail(data.user.email)) {
+      await supabase.auth.signOut();
+      return NextResponse.json(
+        {
+          error: "Akun ini tidak memiliki hak akses administrator.",
+        },
+        { status: 403 }
+      );
+    }
+
+    return NextResponse.json({
       success: true,
       message: "Login admin berhasil.",
     });
-
-    response.cookies.set({
-      name: SESSION_COOKIE_NAME,
-      value: "authenticated",
-      path: "/",
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 60 * 60 * 24 * 7,
-    });
-
-    return response;
   } catch (error) {
+    console.error("POST /api/admin/auth error:", error);
     return NextResponse.json(
       {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Terjadi kesalahan saat proses autentikasi admin.",
+        error: "Terjadi kesalahan saat proses autentikasi admin.",
       },
       { status: 500 }
     );
@@ -104,28 +111,15 @@ export async function DELETE() {
       }
     }
 
-    const response = NextResponse.json({
+    return NextResponse.json({
       success: true,
       message: "Logout berhasil.",
     });
-
-    response.cookies.set({
-      name: SESSION_COOKIE_NAME,
-      value: "",
-      path: "/",
-      httpOnly: true,
-      sameSite: "lax",
-      maxAge: 0,
-    });
-
-    return response;
   } catch (error) {
+    console.error("DELETE /api/admin/auth error:", error);
     return NextResponse.json(
       {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Terjadi kesalahan saat proses logout.",
+        error: "Terjadi kesalahan saat proses logout.",
       },
       { status: 500 }
     );

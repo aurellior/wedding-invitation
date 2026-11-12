@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { checkRateLimit, sanitizePlainText } from "@/lib/security/rate-limit";
 import {
   findGuestById,
   findGuestByName,
   getRsvps,
   upsertRsvp,
 } from "@/lib/supabase/repository";
+import { requireAdminAuth } from "@/lib/supabase/server";
 
 const rsvpPayloadSchema = z.object({
-  guest_id: z.string().trim().optional().nullable(),
+  guest_id: z.string().trim().uuid().optional().nullable(),
   guest_name: z
     .string({ required_error: "Nama tamu wajib diisi." })
     .trim()
@@ -30,19 +32,23 @@ const rsvpPayloadSchema = z.object({
     .max(300, "Catatan maksimal 300 karakter.")
     .optional()
     .nullable(),
+  website: z.string().optional(), // Honeypot anti-bot field
 });
 
 export async function GET() {
+  const auth = await requireAdminAuth();
+  if (!auth.authorized) {
+    return auth.response;
+  }
+
   try {
     const data = await getRsvps();
     return NextResponse.json({ data });
   } catch (error) {
+    console.error("GET /api/rsvp error:", error);
     return NextResponse.json(
       {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Gagal memuat data konfirmasi kehadiran.",
+        error: "Gagal memuat data konfirmasi kehadiran.",
       },
       { status: 500 }
     );
@@ -50,6 +56,15 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const rate = checkRateLimit(request, {
+    namespace: "rsvp-submit",
+    limit: 10,
+    windowMs: 60_000,
+  });
+  if (!rate.allowed) {
+    return rate.response;
+  }
+
   try {
     const rawBody: unknown = await request.json();
     const parsed = rsvpPayloadSchema.safeParse(rawBody);
@@ -65,7 +80,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { guest_id, guest_name, attendance_status, pax, notes } = parsed.data;
+    const { guest_id, guest_name, attendance_status, pax, notes, website } =
+      parsed.data;
+
+    // Silent reject if bot filled the honeypot field
+    if (website && website.trim().length > 0) {
+      return NextResponse.json({
+        data: null,
+        message: "Konfirmasi kehadiran berhasil disimpan.",
+      });
+    }
 
     // Strict Invite-Only lookup: check guest_id first if provided, fallback to guest_name
     const matchedGuest =
@@ -77,6 +101,19 @@ export async function POST(request: NextRequest) {
         {
           error:
             "Maaf, fitur RSVP khusus untuk tamu yang terdaftar pada daftar undangan resmi.",
+        },
+        { status: 403 }
+      );
+    }
+
+    // Prevent cross-guest IDOR when guest_id is supplied manually
+    if (
+      guest_id &&
+      matchedGuest.name.trim().toLowerCase() !== guest_name.trim().toLowerCase()
+    ) {
+      return NextResponse.json(
+        {
+          error: "Identitas tamu tidak sesuai dengan tautan undangan.",
         },
         { status: 403 }
       );
@@ -104,12 +141,14 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const sanitizedNotes = notes ? sanitizePlainText(notes) : null;
+
     const record = await upsertRsvp({
       guest_id: matchedGuest.id,
       guest_name: matchedGuest.name,
       attendance_status,
       pax: finalPax,
-      notes: notes ?? null,
+      notes: sanitizedNotes || null,
     });
 
     return NextResponse.json({
@@ -117,12 +156,10 @@ export async function POST(request: NextRequest) {
       message: "Konfirmasi kehadiran berhasil disimpan.",
     });
   } catch (error) {
+    console.error("POST /api/rsvp error:", error);
     return NextResponse.json(
       {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Terjadi kesalahan saat menyimpan konfirmasi kehadiran.",
+        error: "Terjadi kesalahan saat menyimpan konfirmasi kehadiran.",
       },
       { status: 500 }
     );

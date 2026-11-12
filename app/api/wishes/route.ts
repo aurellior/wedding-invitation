@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { checkRateLimit, sanitizePlainText } from "@/lib/security/rate-limit";
 import {
   createWish,
   deleteWish,
@@ -8,25 +9,12 @@ import {
   getRsvpByGuestId,
   getWishes,
 } from "@/lib/supabase/repository";
+import { requireAdminAuth } from "@/lib/supabase/server";
 
-/**
- * Strips script blocks, HTML tags, inline event handlers, and dangerous URL protocols
- * to prevent Cross-Site Scripting (XSS) in guestbook wishes.
- */
-function sanitizeText(input: string): string {
-  return input
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
-    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "")
-    .replace(/<[^>]*>/g, "")
-    .replace(/\bon\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "")
-    .replace(/(?:javascript|data|vbscript)\s*:/gi, "")
-    .replace(/[<>]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
+const uuidSchema = z.string().trim().uuid("Format ID ucapan tidak valid.");
 
 const createWishSchema = z.object({
-  guest_id: z.string().trim().optional().nullable(),
+  guest_id: z.string().trim().uuid().optional().nullable(),
   sender_name: z
     .string({ required_error: "Nama pengirim wajib diisi." })
     .trim()
@@ -41,19 +29,18 @@ const createWishSchema = z.object({
     .enum(["hadir", "tidak_hadir", "ragu"])
     .optional()
     .nullable(),
+  website: z.string().optional(), // Honeypot anti-bot field
 });
 
 export async function GET() {
   try {
-    const data = await getWishes();
+    const data = await getWishes(100);
     return NextResponse.json({ data });
   } catch (error) {
+    console.error("GET /api/wishes error:", error);
     return NextResponse.json(
       {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Gagal memuat daftar ucapan.",
+        error: "Gagal memuat daftar ucapan.",
       },
       { status: 500 }
     );
@@ -61,6 +48,15 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const rate = checkRateLimit(request, {
+    namespace: "wishes-submit",
+    limit: 5,
+    windowMs: 60_000,
+  });
+  if (!rate.allowed) {
+    return rate.response;
+  }
+
   try {
     const rawBody: unknown = await request.json();
     const parsed = createWishSchema.safeParse(rawBody);
@@ -76,8 +72,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const sanitizedSender = sanitizeText(parsed.data.sender_name);
-    const sanitizedMessage = sanitizeText(parsed.data.message);
+    if (parsed.data.website && parsed.data.website.trim().length > 0) {
+      return NextResponse.json(
+        {
+          data: null,
+          message: "Terima kasih atas ucapan dan doa restu Anda.",
+        },
+        { status: 201 }
+      );
+    }
+
+    const sanitizedSender = sanitizePlainText(parsed.data.sender_name);
+    const sanitizedMessage = sanitizePlainText(parsed.data.message);
 
     if (!sanitizedSender || !sanitizedMessage) {
       return NextResponse.json(
@@ -108,23 +114,18 @@ export async function POST(request: NextRequest) {
       attendance_badge: badge,
     });
 
-    const wishes = await getWishes();
-
     return NextResponse.json(
       {
         data: createdWish,
-        wishes,
         message: "Terima kasih atas ucapan dan doa restu Anda.",
       },
       { status: 201 }
     );
   } catch (error) {
+    console.error("POST /api/wishes error:", error);
     return NextResponse.json(
       {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Terjadi kesalahan saat menyimpan ucapan.",
+        error: "Terjadi kesalahan saat menyimpan ucapan.",
       },
       { status: 500 }
     );
@@ -132,6 +133,11 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  const auth = await requireAdminAuth();
+  if (!auth.authorized) {
+    return auth.response;
+  }
+
   try {
     let targetId = request.nextUrl.searchParams.get("id")?.trim() ?? "";
 
@@ -146,14 +152,15 @@ export async function DELETE(request: NextRequest) {
       }
     }
 
-    if (!targetId) {
+    const parsedId = uuidSchema.safeParse(targetId);
+    if (!parsedId.success) {
       return NextResponse.json(
-        { error: "ID ucapan wajib disertakan untuk penghapusan." },
+        { error: "ID ucapan tidak valid atau wajib disertakan untuk penghapusan." },
         { status: 400 }
       );
     }
 
-    const deleted = await deleteWish(targetId);
+    const deleted = await deleteWish(parsedId.data);
     if (!deleted) {
       return NextResponse.json(
         { error: "Data ucapan tidak ditemukan." },
@@ -163,12 +170,10 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    console.error("DELETE /api/wishes error:", error);
     return NextResponse.json(
       {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Gagal menghapus ucapan.",
+        error: "Gagal menghapus ucapan.",
       },
       { status: 500 }
     );

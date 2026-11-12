@@ -54,6 +54,7 @@ export default function AudioController({
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const synthIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const tooltipTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const noteIndexRef = useRef<number>(0);
   const isMutedRef = useRef<boolean>(false);
 
@@ -109,6 +110,16 @@ export default function AudioController({
     subOsc.start(now);
     osc.stop(now + 1.9);
     subOsc.stop(now + 1.9);
+
+    osc.onended = () => {
+      try {
+        osc.disconnect();
+        subOsc.disconnect();
+        gain.disconnect();
+      } catch {
+        // Ignore already disconnected nodes
+      }
+    };
   }, []);
 
   const startSynthFallback = useCallback(() => {
@@ -202,15 +213,29 @@ export default function AudioController({
     const handleUnlockAudio = () => {
       void startPlayback();
       setShowTooltip(true);
-      const timer = setTimeout(() => setShowTooltip(false), 4500);
-      return () => clearTimeout(timer);
+      if (tooltipTimerRef.current) {
+        clearTimeout(tooltipTimerRef.current);
+      }
+      tooltipTimerRef.current = setTimeout(() => setShowTooltip(false), 4500);
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        pausePlayback();
+      }
     };
 
     window.addEventListener("wedding:unlock-audio", handleUnlockAudio);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => {
       window.removeEventListener("wedding:unlock-audio", handleUnlockAudio);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      if (tooltipTimerRef.current) {
+        clearTimeout(tooltipTimerRef.current);
+        tooltipTimerRef.current = null;
+      }
     };
-  }, [startPlayback]);
+  }, [startPlayback, pausePlayback]);
 
   useEffect(() => {
     if (isOpened && !isPlaying) {

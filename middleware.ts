@@ -1,5 +1,15 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { isAuthorizedAdminEmail } from "@/lib/supabase/auth-helpers";
+
+function isProtectedApiRequest(pathname: string, method: string): boolean {
+  if (pathname.startsWith("/api/guests")) return true;
+  if (pathname.startsWith("/api/rsvp") && method === "GET") return true;
+  if (pathname.startsWith("/api/settings") && method !== "GET") return true;
+  if (pathname.startsWith("/api/audio") && method !== "GET") return true;
+  if (pathname.startsWith("/api/wishes") && method === "DELETE") return true;
+  return false;
+}
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
@@ -9,9 +19,16 @@ export async function middleware(request: NextRequest) {
   });
 
   const { pathname } = request.nextUrl;
+  const method = request.method.toUpperCase();
+  const needsAdminAuth =
+    pathname.startsWith("/admin") || isProtectedApiRequest(pathname, method);
+
+  if (!needsAdminAuth) {
+    return response;
+  }
 
   // Verify Supabase Auth session via @supabase/ssr
-  let isAuthenticated = false;
+  let isAuthenticatedAdmin = false;
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -52,24 +69,35 @@ export async function middleware(request: NextRequest) {
         data: { user },
       } = await supabase.auth.getUser();
 
-      if (user) {
-        isAuthenticated = true;
+      if (user && isAuthorizedAdminEmail(user.email)) {
+        isAuthenticatedAdmin = true;
       }
     } catch {
-      isAuthenticated = false;
+      isAuthenticatedAdmin = false;
     }
+  }
+
+  // Protect administrative API routes with 401 JSON
+  if (pathname.startsWith("/api/")) {
+    if (!isAuthenticatedAdmin) {
+      return NextResponse.json(
+        { error: "Unauthorized: Sesi admin diperlukan." },
+        { status: 401 }
+      );
+    }
+    return response;
   }
 
   // Allow public access to /admin/login, or redirect to /admin if already authenticated
   if (pathname === "/admin/login") {
-    if (isAuthenticated) {
+    if (isAuthenticatedAdmin) {
       return NextResponse.redirect(new URL("/admin", request.url));
     }
     return response;
   }
 
   // Protect all other /admin/* routes
-  if (pathname.startsWith("/admin") && !isAuthenticated) {
+  if (pathname.startsWith("/admin") && !isAuthenticatedAdmin) {
     const loginUrl = new URL("/admin/login", request.url);
     loginUrl.searchParams.set("next", pathname);
     return NextResponse.redirect(loginUrl);
@@ -79,5 +107,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/api/:path*"],
 };

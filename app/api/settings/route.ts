@@ -9,6 +9,43 @@ import {
   getWeddingConfig,
   updateWeddingConfig,
 } from "@/lib/supabase/repository";
+import { requireAdminAuth } from "@/lib/supabase/server";
+
+const safeHttpsUrlSchema = z
+  .string()
+  .trim()
+  .url("Format URL tidak valid.")
+  .refine((val) => {
+    try {
+      const parsed = new URL(val);
+      return parsed.protocol === "https:";
+    } catch {
+      return false;
+    }
+  }, "Tautan wajib menggunakan protokol aman (https://).");
+
+const safeGoogleMapsEmbedSchema = safeHttpsUrlSchema.refine((val) => {
+  try {
+    const parsed = new URL(val);
+    return (
+      parsed.hostname === "www.google.com" ||
+      parsed.hostname === "maps.google.com"
+    );
+  } catch {
+    return false;
+  }
+}, "URL Embed Google Maps harus berasal dari domain resmi google.com.");
+
+const safeAudioSrcSchema = z
+  .string()
+  .trim()
+  .refine(
+    (val) =>
+      val === "" ||
+      val.startsWith("/api/audio") ||
+      val.startsWith("https://"),
+    "Sumber audio hanya boleh kosong, /api/audio, atau URL https://."
+  );
 
 const personSchema = z.object({
   nickname: z.string().trim().min(1, "Nama panggilan wajib diisi"),
@@ -29,11 +66,8 @@ const eventSchema = z.object({
   endIso: z.string().trim().min(1),
   venueName: z.string().trim().min(1, "Nama tempat/gedung wajib diisi"),
   venueAddress: z.string().trim().min(1, "Alamat lokasi wajib diisi"),
-  googleMapsUrl: z.string().trim().min(1, "Tautan Google Maps wajib diisi"),
-  googleMapsEmbedUrl: z
-    .string()
-    .trim()
-    .min(1, "Tautan embed Google Maps wajib diisi"),
+  googleMapsUrl: safeHttpsUrlSchema,
+  googleMapsEmbedUrl: safeGoogleMapsEmbedSchema,
 });
 
 const bankAccountSchema = z.object({
@@ -65,7 +99,7 @@ const weddingConfigSchema = z.object({
   audio: z.object({
     title: z.string().trim(),
     artist: z.string().trim(),
-    src: z.string().trim(),
+    src: safeAudioSrcSchema,
   }),
   whatsappTemplate: z
     .string()
@@ -88,6 +122,11 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
+  const auth = await requireAdminAuth();
+  if (!auth.authorized) {
+    return auth.response;
+  }
+
   try {
     const body = (await request.json()) as {
       resetToDefault?: boolean;
@@ -139,4 +178,3 @@ export async function PUT(request: Request) {
     );
   }
 }
-

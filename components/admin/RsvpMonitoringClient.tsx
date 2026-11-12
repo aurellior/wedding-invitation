@@ -22,6 +22,9 @@ import {
   DEFAULT_WEDDING_CONFIG,
   type WeddingContentConfig,
 } from "@/lib/config/wedding-config";
+import { escapeCsvCell } from "@/lib/security/rate-limit";
+import { formatDateId } from "@/lib/utils/format";
+import { AttendanceStatusBadge } from "./AttendanceStatusBadge";
 
 type FilterStatus =
   | "Semua"
@@ -40,21 +43,6 @@ interface CombinedRsvpRow {
   pax: number;
   notes: string;
   updatedAt: string | null;
-}
-
-function formatDateId(iso: string | null): string {
-  if (!iso) return "—";
-  try {
-    return new Intl.DateTimeFormat("id-ID", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(new Date(iso));
-  } catch {
-    return iso;
-  }
 }
 
 export default function RsvpMonitoringClient({
@@ -172,13 +160,8 @@ export default function RsvpMonitoringClient({
       return "Belum Konfirmasi";
     };
 
-    const escapeCsv = (val: string | number) => {
-      const str = String(val ?? "");
-      return `"${str.replace(/"/g, '""')}"`;
-    };
-
     const csvLines = [
-      headers.map(escapeCsv).join(","),
+      headers.map(escapeCsvCell).join(","),
       ...filteredRows.map((row) =>
         [
           row.guestName,
@@ -190,7 +173,7 @@ export default function RsvpMonitoringClient({
           row.notes || "-",
           row.updatedAt ? formatDateId(row.updatedAt) : "-",
         ]
-          .map(escapeCsv)
+          .map(escapeCsvCell)
           .join(",")
       ),
     ];
@@ -411,30 +394,10 @@ export default function RsvpMonitoringClient({
                     </td>
 
                     <td className="py-4 px-4 align-middle whitespace-nowrap">
-                      {row.status === "hadir" && (
-                        <span className="inline-flex items-center gap-1 whitespace-nowrap px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                          <CheckCircle2 className="w-3 h-3 shrink-0" />
-                          Hadir
-                        </span>
-                      )}
-                      {row.status === "tidak_hadir" && (
-                        <span className="inline-flex items-center gap-1 whitespace-nowrap px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-100 text-rose-800 border border-rose-200">
-                          <XCircle className="w-3 h-3 shrink-0" />
-                          Tidak Hadir
-                        </span>
-                      )}
-                      {row.status === "ragu" && (
-                        <span className="inline-flex items-center gap-1 whitespace-nowrap px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-800 border border-amber-200">
-                          <HelpCircle className="w-3 h-3 shrink-0" />
-                          Masih Ragu
-                        </span>
-                      )}
-                      {row.status === "belum" && (
-                        <span className="inline-flex items-center gap-1 whitespace-nowrap px-2.5 py-1 rounded-full text-[11px] font-medium bg-stone-100 text-stone-600 border border-stone-200">
-                          <Clock className="w-3 h-3 shrink-0" />
-                          Belum Konfirmasi
-                        </span>
-                      )}
+                      <AttendanceStatusBadge
+                        status={row.status}
+                        pendingLabel="Belum Konfirmasi"
+                      />
                     </td>
 
                     <td className="py-4 px-4 text-center align-middle whitespace-nowrap">

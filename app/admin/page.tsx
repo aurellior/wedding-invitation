@@ -6,68 +6,18 @@ import {
   UsersRound,
   MessageSquareHeart,
   ArrowUpRight,
-  CheckCircle2,
-  XCircle,
-  HelpCircle,
-  Clock,
   Sparkles,
 } from "lucide-react";
+import { AttendanceStatusBadge } from "@/components/admin/AttendanceStatusBadge";
+import { formatDateId } from "@/lib/utils/format";
 import {
   getGuests,
   getRsvps,
   getWeddingConfig,
   getWishes,
 } from "@/lib/supabase/repository";
-import type { AttendanceStatus } from "@/types/wedding";
 
 export const dynamic = "force-dynamic";
-
-function formatDateId(iso: string): string {
-  try {
-    return new Intl.DateTimeFormat("id-ID", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(new Date(iso));
-  } catch {
-    return iso;
-  }
-}
-
-function StatusBadge({ status }: { status?: AttendanceStatus | null }) {
-  if (status === "hadir") {
-    return (
-      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
-        <CheckCircle2 className="w-3 h-3" />
-        Hadir
-      </span>
-    );
-  }
-  if (status === "tidak_hadir") {
-    return (
-      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-100 text-rose-800 border border-rose-200">
-        <XCircle className="w-3 h-3" />
-        Tidak Hadir
-      </span>
-    );
-  }
-  if (status === "ragu") {
-    return (
-      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-800 border border-amber-200">
-        <HelpCircle className="w-3 h-3" />
-        Masih Ragu
-      </span>
-    );
-  }
-  return (
-    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-stone-100 text-stone-600 border border-stone-200">
-      <Clock className="w-3 h-3" />
-      Menunggu
-    </span>
-  );
-}
 
 export default async function AdminDashboardPage() {
   const [guests, rsvps, wishes, config] = await Promise.all([
@@ -402,7 +352,7 @@ export default async function AdminDashboardPage() {
                       >
                         {rsvp.guest_name}
                       </p>
-                      <StatusBadge status={rsvp.attendance_status} />
+                      <AttendanceStatusBadge status={rsvp.attendance_status} />
                     </div>
                     {rsvp.notes && (
                       <p
@@ -467,7 +417,7 @@ export default async function AdminDashboardPage() {
                         {wish.sender_name}
                       </p>
                       {wish.attendance_badge && (
-                        <StatusBadge status={wish.attendance_badge} />
+                        <AttendanceStatusBadge status={wish.attendance_badge} />
                       )}
                     </div>
                     <span className="text-[11px] text-[#4A6358]/70 shrink-0 whitespace-nowrap">

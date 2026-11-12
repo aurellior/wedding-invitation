@@ -8,6 +8,7 @@ import {
   getGuests,
   updateGuest,
 } from "@/lib/supabase/repository";
+import { requireAdminAuth } from "@/lib/supabase/server";
 
 const guestCategoryEnum = z.enum([
   "VIP",
@@ -16,6 +17,8 @@ const guestCategoryEnum = z.enum([
   "Rekan Kerja",
   "Umum",
 ]);
+
+const uuidSchema = z.string().trim().uuid("Format ID tamu tidak valid.");
 
 const createGuestSchema = z.object({
   name: z
@@ -39,7 +42,7 @@ const createGuestSchema = z.object({
 });
 
 const updateGuestSchema = z.object({
-  id: z.string({ required_error: "ID tamu wajib diisi." }).trim().min(1),
+  id: uuidSchema,
   name: z.string().trim().min(2).max(120).optional(),
   category: guestCategoryEnum.optional(),
   phone: z.string().trim().max(30).optional(),
@@ -48,6 +51,11 @@ const updateGuestSchema = z.object({
 });
 
 export async function GET() {
+  const auth = await requireAdminAuth();
+  if (!auth.authorized) {
+    return auth.response;
+  }
+
   try {
     const [data, metrics] = await Promise.all([
       getGuests(),
@@ -55,12 +63,10 @@ export async function GET() {
     ]);
     return NextResponse.json({ data, metrics });
   } catch (error) {
+    console.error("GET /api/guests error:", error);
     return NextResponse.json(
       {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Gagal memuat daftar tamu undangan.",
+        error: "Gagal memuat daftar tamu undangan.",
       },
       { status: 500 }
     );
@@ -68,6 +74,11 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const auth = await requireAdminAuth();
+  if (!auth.authorized) {
+    return auth.response;
+  }
+
   try {
     const rawBody: unknown = await request.json();
     const parsed = createGuestSchema.safeParse(rawBody);
@@ -102,12 +113,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ data: guest }, { status: 201 });
   } catch (error) {
+    console.error("POST /api/guests error:", error);
     return NextResponse.json(
       {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Gagal menambahkan tamu undangan.",
+        error: "Gagal menambahkan tamu undangan.",
       },
       { status: 500 }
     );
@@ -115,6 +124,11 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
+  const auth = await requireAdminAuth();
+  if (!auth.authorized) {
+    return auth.response;
+  }
+
   try {
     const rawBody: unknown = await request.json();
     const parsed = updateGuestSchema.safeParse(rawBody);
@@ -154,12 +168,10 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json({ data: updated });
   } catch (error) {
+    console.error("PATCH /api/guests error:", error);
     return NextResponse.json(
       {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Gagal memperbarui data tamu.",
+        error: "Gagal memperbarui data tamu.",
       },
       { status: 500 }
     );
@@ -167,6 +179,11 @@ export async function PATCH(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  const auth = await requireAdminAuth();
+  if (!auth.authorized) {
+    return auth.response;
+  }
+
   try {
     let targetId = request.nextUrl.searchParams.get("id")?.trim() ?? "";
 
@@ -181,14 +198,15 @@ export async function DELETE(request: NextRequest) {
       }
     }
 
-    if (!targetId) {
+    const parsedId = uuidSchema.safeParse(targetId);
+    if (!parsedId.success) {
       return NextResponse.json(
-        { error: "ID tamu wajib disertakan untuk penghapusan." },
+        { error: "ID tamu tidak valid atau wajib disertakan untuk penghapusan." },
         { status: 400 }
       );
     }
 
-    const deleted = await deleteGuest(targetId);
+    const deleted = await deleteGuest(parsedId.data);
     if (!deleted) {
       return NextResponse.json(
         { error: "Data tamu tidak ditemukan." },
@@ -198,12 +216,10 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    console.error("DELETE /api/guests error:", error);
     return NextResponse.json(
       {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Gagal menghapus data tamu.",
+        error: "Gagal menghapus data tamu.",
       },
       { status: 500 }
     );

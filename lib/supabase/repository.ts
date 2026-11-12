@@ -1,7 +1,9 @@
 import { randomUUID } from "crypto";
 import fs from "fs";
 import path from "path";
+import { cache } from "react";
 import { Pool } from "pg";
+import { z } from "zod";
 import type {
   AttendanceStatus,
   DashboardMetrics,
@@ -16,7 +18,18 @@ import {
   type WeddingContentConfig,
 } from "@/lib/config/wedding-config";
 import { isSupabaseConfigured } from "./client";
-import { createServerSupabaseClient } from "./server";
+import {
+  createServerSupabaseClient,
+  createServiceRoleSupabaseClient,
+} from "./server";
+
+const uuidSchema = z.string().uuid();
+
+async function getPrivilegedSupabaseClient() {
+  return (
+    createServiceRoleSupabaseClient() ?? (await createServerSupabaseClient())
+  );
+}
 
 export { isSupabaseConfigured };
 
@@ -226,7 +239,9 @@ function getPgPool(): Pool | null {
       max: 10,
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 5000,
-      ssl: { rejectUnauthorized: false },
+      ssl: process.env.DATABASE_CA_CERT
+        ? { ca: process.env.DATABASE_CA_CERT, rejectUnauthorized: true }
+        : { rejectUnauthorized: process.env.POSTGRES_STRICT_SSL === "true" },
     });
   }
 
@@ -250,36 +265,44 @@ async function ensurePostgresSchema(forceInit = false): Promise<Pool | null> {
           id UUID PRIMARY KEY,
           name TEXT NOT NULL,
           slug TEXT NOT NULL,
-          category TEXT NOT NULL DEFAULT 'Umum',
+          category TEXT NOT NULL DEFAULT 'Umum' CHECK (category IN ('VIP', 'Keluarga', 'Sahabat', 'Rekan Kerja', 'Umum')),
           phone TEXT NOT NULL DEFAULT '',
-          max_pax INT NOT NULL DEFAULT 2,
+          max_pax INT NOT NULL DEFAULT 2 CHECK (max_pax >= 1 AND max_pax <= 10),
           invitation_sent BOOLEAN NOT NULL DEFAULT false,
           created_at TIMESTAMPTZ NOT NULL DEFAULT now()
         );
         CREATE UNIQUE INDEX IF NOT EXISTS guests_name_normalized_uidx
           ON public.guests (LOWER(TRIM(name)));
-        CREATE INDEX IF NOT EXISTS guests_slug_idx
+        CREATE UNIQUE INDEX IF NOT EXISTS guests_slug_uidx
           ON public.guests (slug);
+        CREATE INDEX IF NOT EXISTS guests_created_at_desc_idx
+          ON public.guests (created_at DESC);
 
         CREATE TABLE IF NOT EXISTS public.rsvps (
           id UUID PRIMARY KEY,
           guest_id UUID NOT NULL UNIQUE REFERENCES public.guests(id) ON DELETE CASCADE,
           guest_name TEXT NOT NULL,
           attendance_status TEXT NOT NULL CHECK (attendance_status IN ('hadir', 'tidak_hadir', 'ragu')),
-          pax INT NOT NULL DEFAULT 1,
+          pax INT NOT NULL DEFAULT 1 CHECK (pax >= 0 AND pax <= 10),
           notes TEXT,
           updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
           created_at TIMESTAMPTZ NOT NULL DEFAULT now()
         );
+        CREATE INDEX IF NOT EXISTS rsvps_attendance_status_idx
+          ON public.rsvps (attendance_status);
+        CREATE INDEX IF NOT EXISTS rsvps_updated_at_desc_idx
+          ON public.rsvps (updated_at DESC);
 
         CREATE TABLE IF NOT EXISTS public.wishes (
           id UUID PRIMARY KEY,
           guest_id UUID REFERENCES public.guests(id) ON DELETE SET NULL,
           sender_name TEXT NOT NULL,
           message TEXT NOT NULL,
-          attendance_badge TEXT,
+          attendance_badge TEXT CHECK (attendance_badge IN ('hadir', 'tidak_hadir', 'ragu') OR attendance_badge IS NULL),
           created_at TIMESTAMPTZ NOT NULL DEFAULT now()
         );
+        CREATE INDEX IF NOT EXISTS wishes_created_at_desc_idx
+          ON public.wishes (created_at DESC);
 
         CREATE TABLE IF NOT EXISTS public.wedding_settings (
           id TEXT PRIMARY KEY,
@@ -288,60 +311,66 @@ async function ensurePostgresSchema(forceInit = false): Promise<Pool | null> {
         );
       `);
 
-      const { rows } = await pool.query<{ count: string }>(
-        `SELECT COUNT(*)::text AS count FROM public.guests`
-      );
-      const guestCount = Number(rows[0]?.count ?? "0");
+      const allowDemoSeed =
+        process.env.NODE_ENV !== "production" ||
+        process.env.ENABLE_DEMO_SEED === "true";
 
-      if (guestCount === 0) {
-        for (const g of INITIAL_SEED_DATA.guests) {
-          await pool.query(
-            `INSERT INTO public.guests (id, name, slug, category, phone, max_pax, invitation_sent, created_at)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-             ON CONFLICT DO NOTHING`,
-            [
-              g.id,
-              g.name,
-              g.slug,
-              g.category,
-              g.phone,
-              g.max_pax,
-              g.invitation_sent,
-              g.created_at,
-            ]
-          );
-        }
-        for (const r of INITIAL_SEED_DATA.rsvps) {
-          await pool.query(
-            `INSERT INTO public.rsvps (id, guest_id, guest_name, attendance_status, pax, notes, updated_at, created_at)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-             ON CONFLICT (guest_id) DO NOTHING`,
-            [
-              r.id,
-              r.guest_id,
-              r.guest_name,
-              r.attendance_status,
-              r.pax,
-              r.notes ?? null,
-              r.updated_at,
-              r.created_at,
-            ]
-          );
-        }
-        for (const w of INITIAL_SEED_DATA.wishes) {
-          await pool.query(
-            `INSERT INTO public.wishes (id, guest_id, sender_name, message, attendance_badge, created_at)
-             VALUES ($1, $2, $3, $4, $5, $6)
-             ON CONFLICT DO NOTHING`,
-            [
-              w.id,
-              w.guest_id ?? null,
-              w.sender_name,
-              w.message,
-              w.attendance_badge ?? null,
-              w.created_at,
-            ]
-          );
+      if (allowDemoSeed) {
+        const { rows } = await pool.query<{ count: string }>(
+          `SELECT COUNT(*)::text AS count FROM public.guests`
+        );
+        const guestCount = Number(rows[0]?.count ?? "0");
+
+        if (guestCount === 0) {
+          for (const g of INITIAL_SEED_DATA.guests) {
+            await pool.query(
+              `INSERT INTO public.guests (id, name, slug, category, phone, max_pax, invitation_sent, created_at)
+               VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+               ON CONFLICT DO NOTHING`,
+              [
+                g.id,
+                g.name,
+                g.slug,
+                g.category,
+                g.phone,
+                g.max_pax,
+                g.invitation_sent,
+                g.created_at,
+              ]
+            );
+          }
+          for (const r of INITIAL_SEED_DATA.rsvps) {
+            await pool.query(
+              `INSERT INTO public.rsvps (id, guest_id, guest_name, attendance_status, pax, notes, updated_at, created_at)
+               VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+               ON CONFLICT (guest_id) DO NOTHING`,
+              [
+                r.id,
+                r.guest_id,
+                r.guest_name,
+                r.attendance_status,
+                r.pax,
+                r.notes ?? null,
+                r.updated_at,
+                r.created_at,
+              ]
+            );
+          }
+          for (const w of INITIAL_SEED_DATA.wishes) {
+            await pool.query(
+              `INSERT INTO public.wishes (id, guest_id, sender_name, message, attendance_badge, created_at)
+               VALUES ($1, $2, $3, $4, $5, $6)
+               ON CONFLICT DO NOTHING`,
+              [
+                w.id,
+                w.guest_id ?? null,
+                w.sender_name,
+                w.message,
+                w.attendance_badge ?? null,
+                w.created_at,
+              ]
+            );
+          }
         }
       }
     })().catch((err) => {
@@ -471,7 +500,7 @@ function writeLocalDb(db: LocalDatabaseSchema): void {
 
 export async function getGuests(): Promise<Guest[]> {
   if (isSupabaseConfigured()) {
-    const supabase = await createServerSupabaseClient();
+    const supabase = await getPrivilegedSupabaseClient();
     if (supabase) {
       const { data, error } = await supabase
         .from("guests")
@@ -505,7 +534,7 @@ export async function getGuests(): Promise<Guest[]> {
 
 export async function findGuestByName(name: string): Promise<Guest | null> {
   const trimmed = name.trim();
-  if (!trimmed) {
+  if (!trimmed || trimmed.length > 120) {
     return null;
   }
 
@@ -513,21 +542,30 @@ export async function findGuestByName(name: string): Promise<Guest | null> {
   const normalizedSlug = slugifyName(trimmed);
 
   if (isSupabaseConfigured()) {
-    const supabase = await createServerSupabaseClient();
+    const supabase = await getPrivilegedSupabaseClient();
     if (supabase) {
-      const { data, error } = await supabase
+      // Parameterized separate queries prevent PostgREST filter injection in .or()
+      const { data: bySlug } = await supabase
         .from("guests")
         .select("*")
-        .or(`slug.eq.${normalizedSlug},name.ilike.${trimmed}`);
+        .eq("slug", normalizedSlug)
+        .limit(1)
+        .maybeSingle();
 
-      if (!error && data && data.length > 0) {
-        const exactMatch =
-          (data as Guest[]).find(
-            (g) =>
-              g.name.trim().toLowerCase() === normalizedName ||
-              g.slug === normalizedSlug
-          ) ?? (data[0] as Guest);
-        return exactMatch;
+      if (bySlug) {
+        return bySlug as Guest;
+      }
+
+      const escapedLike = trimmed.replace(/[%_\\]/g, "\\$&");
+      const { data: byName } = await supabase
+        .from("guests")
+        .select("*")
+        .ilike("name", escapedLike)
+        .limit(1)
+        .maybeSingle();
+
+      if (byName && byName.name.trim().toLowerCase() === normalizedName) {
+        return byName as Guest;
       }
     }
   }
@@ -537,9 +575,9 @@ export async function findGuestByName(name: string): Promise<Guest | null> {
     try {
       const { rows } = await pool.query(
         `SELECT * FROM public.guests
-         WHERE LOWER(TRIM(name)) = $1 OR slug = $2
+         WHERE slug = $1 OR LOWER(TRIM(name)) = $2
          LIMIT 1`,
-        [normalizedName, normalizedSlug]
+        [normalizedSlug, normalizedName]
       );
       if (rows[0]) {
         return mapGuestRow(rows[0]);
@@ -552,25 +590,26 @@ export async function findGuestByName(name: string): Promise<Guest | null> {
   const db = readLocalDb();
   const found = db.guests.find(
     (g) =>
-      g.name.trim().toLowerCase() === normalizedName ||
-      g.slug === normalizedSlug
+      g.slug === normalizedSlug ||
+      g.name.trim().toLowerCase() === normalizedName
   );
   return found ?? null;
 }
 
 export async function findGuestById(id: string): Promise<Guest | null> {
-  const trimmedId = id.trim();
-  if (!trimmedId) {
+  const parsedId = uuidSchema.safeParse(id.trim());
+  if (!parsedId.success) {
     return null;
   }
+  const validUuid = parsedId.data;
 
   if (isSupabaseConfigured()) {
-    const supabase = await createServerSupabaseClient();
+    const supabase = await getPrivilegedSupabaseClient();
     if (supabase) {
       const { data, error } = await supabase
         .from("guests")
         .select("*")
-        .eq("id", trimmedId)
+        .eq("id", validUuid)
         .maybeSingle();
 
       if (!error && data) {
@@ -583,8 +622,8 @@ export async function findGuestById(id: string): Promise<Guest | null> {
   if (pool) {
     try {
       const { rows } = await pool.query(
-        `SELECT * FROM public.guests WHERE id::text = $1 LIMIT 1`,
-        [trimmedId]
+        `SELECT * FROM public.guests WHERE id = $1::uuid LIMIT 1`,
+        [validUuid]
       );
       if (rows[0]) {
         return mapGuestRow(rows[0]);
@@ -595,7 +634,7 @@ export async function findGuestById(id: string): Promise<Guest | null> {
   }
 
   const db = readLocalDb();
-  return db.guests.find((g) => g.id === trimmedId) ?? null;
+  return db.guests.find((g) => g.id === validUuid) ?? null;
 }
 
 export async function createGuest(input: {
@@ -605,11 +644,12 @@ export async function createGuest(input: {
   max_pax: number;
 }): Promise<Guest> {
   const cleanName = input.name.trim();
-  const slug = slugifyName(cleanName);
+  const baseSlug = slugifyName(cleanName) || `guest-${Date.now()}`;
+  const slug = baseSlug;
   const cleanPhone = input.phone.trim();
 
   if (isSupabaseConfigured()) {
-    const supabase = await createServerSupabaseClient();
+    const supabase = await getPrivilegedSupabaseClient();
     if (supabase) {
       const { data, error } = await supabase
         .from("guests")
@@ -691,7 +731,7 @@ export async function updateGuest(
   }
 
   if (isSupabaseConfigured()) {
-    const supabase = await createServerSupabaseClient();
+    const supabase = await getPrivilegedSupabaseClient();
     if (supabase) {
       const { data, error } = await supabase
         .from("guests")
@@ -729,13 +769,13 @@ export async function updateGuest(
       const { rows } = await pool.query(
         `UPDATE public.guests
          SET name = $1, slug = $2, category = $3, phone = $4, max_pax = $5, invitation_sent = $6
-         WHERE id::text = $7
+         WHERE id = $7::uuid
          RETURNING *`,
         [nextName, nextSlug, nextCategory, nextPhone, nextMaxPax, nextSent, id]
       );
       if (updates.name) {
         await pool.query(
-          `UPDATE public.rsvps SET guest_name = $1 WHERE guest_id::text = $2`,
+          `UPDATE public.rsvps SET guest_name = $1 WHERE guest_id = $2::uuid`,
           [updates.name, id]
         );
       }
@@ -770,10 +810,19 @@ export async function updateGuest(
 }
 
 export async function deleteGuest(id: string): Promise<boolean> {
+  const parsedId = uuidSchema.safeParse(id.trim());
+  if (!parsedId.success) {
+    return false;
+  }
+  const validUuid = parsedId.data;
+
   if (isSupabaseConfigured()) {
-    const supabase = await createServerSupabaseClient();
+    const supabase = await getPrivilegedSupabaseClient();
     if (supabase) {
-      const { error } = await supabase.from("guests").delete().eq("id", id);
+      const { error } = await supabase
+        .from("guests")
+        .delete()
+        .eq("id", validUuid);
       if (!error) {
         return true;
       }
@@ -784,8 +833,8 @@ export async function deleteGuest(id: string): Promise<boolean> {
   if (pool) {
     try {
       const result = await pool.query(
-        `DELETE FROM public.guests WHERE id::text = $1`,
-        [id]
+        `DELETE FROM public.guests WHERE id = $1::uuid`,
+        [validUuid]
       );
       return (result.rowCount ?? 0) > 0;
     } catch (err) {
@@ -795,15 +844,15 @@ export async function deleteGuest(id: string): Promise<boolean> {
 
   const db = readLocalDb();
   const prevLen = db.guests.length;
-  db.guests = db.guests.filter((g) => g.id !== id);
+  db.guests = db.guests.filter((g) => g.id !== validUuid);
 
   if (db.guests.length === prevLen) {
     return false;
   }
 
-  db.rsvps = db.rsvps.filter((r) => r.guest_id !== id);
+  db.rsvps = db.rsvps.filter((r) => r.guest_id !== validUuid);
   db.wishes = db.wishes.map((w) =>
-    w.guest_id === id ? { ...w, guest_id: null } : w
+    w.guest_id === validUuid ? { ...w, guest_id: null } : w
   );
   writeLocalDb(db);
   return true;
@@ -815,7 +864,7 @@ export async function deleteGuest(id: string): Promise<boolean> {
 
 export async function getRsvps(): Promise<RsvpRecord[]> {
   if (isSupabaseConfigured()) {
-    const supabase = await createServerSupabaseClient();
+    const supabase = await getPrivilegedSupabaseClient();
     if (supabase) {
       const { data, error } = await supabase
         .from("rsvps")
@@ -850,17 +899,19 @@ export async function getRsvps(): Promise<RsvpRecord[]> {
 export async function getRsvpByGuestId(
   guestId: string
 ): Promise<RsvpRecord | null> {
-  if (!guestId.trim()) {
+  const parsedId = uuidSchema.safeParse(guestId.trim());
+  if (!parsedId.success) {
     return null;
   }
+  const validUuid = parsedId.data;
 
   if (isSupabaseConfigured()) {
-    const supabase = await createServerSupabaseClient();
+    const supabase = await getPrivilegedSupabaseClient();
     if (supabase) {
       const { data, error } = await supabase
         .from("rsvps")
         .select("*")
-        .eq("guest_id", guestId)
+        .eq("guest_id", validUuid)
         .maybeSingle();
 
       if (!error && data) {
@@ -873,8 +924,8 @@ export async function getRsvpByGuestId(
   if (pool) {
     try {
       const { rows } = await pool.query(
-        `SELECT * FROM public.rsvps WHERE guest_id::text = $1 LIMIT 1`,
-        [guestId]
+        `SELECT * FROM public.rsvps WHERE guest_id = $1::uuid LIMIT 1`,
+        [validUuid]
       );
       if (rows[0]) {
         return mapRsvpRow(rows[0]);
@@ -885,7 +936,7 @@ export async function getRsvpByGuestId(
   }
 
   const db = readLocalDb();
-  return db.rsvps.find((r) => r.guest_id === guestId) ?? null;
+  return db.rsvps.find((r) => r.guest_id === validUuid) ?? null;
 }
 
 export async function upsertRsvp(input: {
@@ -901,7 +952,7 @@ export async function upsertRsvp(input: {
   const cleanNotes = input.notes?.trim() ? input.notes.trim() : null;
 
   if (isSupabaseConfigured()) {
-    const supabase = await createServerSupabaseClient();
+    const supabase = await getPrivilegedSupabaseClient();
     if (supabase) {
       const { data, error } = await supabase
         .from("rsvps")
@@ -997,14 +1048,17 @@ export async function upsertRsvp(input: {
 // WISHES REPOSITORY FUNCTIONS
 // ============================================================================
 
-export async function getWishes(): Promise<WishRecord[]> {
+export async function getWishes(limit = 100): Promise<WishRecord[]> {
+  const safeLimit = Math.max(1, Math.min(500, Math.floor(limit)));
+
   if (isSupabaseConfigured()) {
-    const supabase = await createServerSupabaseClient();
+    const supabase = await getPrivilegedSupabaseClient();
     if (supabase) {
       const { data, error } = await supabase
         .from("wishes")
         .select("*")
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(safeLimit);
 
       if (!error && data) {
         return data as WishRecord[];
@@ -1016,7 +1070,8 @@ export async function getWishes(): Promise<WishRecord[]> {
   if (pool) {
     try {
       const { rows } = await pool.query(
-        `SELECT * FROM public.wishes ORDER BY created_at DESC`
+        `SELECT * FROM public.wishes ORDER BY created_at DESC LIMIT $1`,
+        [safeLimit]
       );
       return rows.map(mapWishRow);
     } catch (err) {
@@ -1025,10 +1080,12 @@ export async function getWishes(): Promise<WishRecord[]> {
   }
 
   const db = readLocalDb();
-  return [...db.wishes].sort(
-    (a, b) =>
-      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-  );
+  return [...db.wishes]
+    .sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    )
+    .slice(0, safeLimit);
 }
 
 export async function createWish(input: {
@@ -1040,7 +1097,7 @@ export async function createWish(input: {
   const nowIso = new Date().toISOString();
 
   if (isSupabaseConfigured()) {
-    const supabase = await createServerSupabaseClient();
+    const supabase = await getPrivilegedSupabaseClient();
     if (supabase) {
       const { data, error } = await supabase
         .from("wishes")
@@ -1100,10 +1157,19 @@ export async function createWish(input: {
 }
 
 export async function deleteWish(id: string): Promise<boolean> {
+  const parsedId = uuidSchema.safeParse(id.trim());
+  if (!parsedId.success) {
+    return false;
+  }
+  const validUuid = parsedId.data;
+
   if (isSupabaseConfigured()) {
-    const supabase = await createServerSupabaseClient();
+    const supabase = await getPrivilegedSupabaseClient();
     if (supabase) {
-      const { error } = await supabase.from("wishes").delete().eq("id", id);
+      const { error } = await supabase
+        .from("wishes")
+        .delete()
+        .eq("id", validUuid);
       if (!error) {
         return true;
       }
@@ -1114,8 +1180,8 @@ export async function deleteWish(id: string): Promise<boolean> {
   if (pool) {
     try {
       const result = await pool.query(
-        `DELETE FROM public.wishes WHERE id::text = $1`,
-        [id]
+        `DELETE FROM public.wishes WHERE id = $1::uuid`,
+        [validUuid]
       );
       return (result.rowCount ?? 0) > 0;
     } catch (err) {
@@ -1125,7 +1191,7 @@ export async function deleteWish(id: string): Promise<boolean> {
 
   const db = readLocalDb();
   const prevLen = db.wishes.length;
-  db.wishes = db.wishes.filter((w) => w.id !== id);
+  db.wishes = db.wishes.filter((w) => w.id !== validUuid);
   if (db.wishes.length === prevLen) {
     return false;
   }
@@ -1187,45 +1253,49 @@ async function ensureWeddingSettingsTable(pool: Pool): Promise<void> {
   `);
 }
 
-export async function getWeddingConfig(): Promise<WeddingContentConfig> {
-  if (isSupabaseConfigured()) {
-    const supabase = await createServerSupabaseClient();
-    if (supabase) {
-      const { data, error } = await supabase
-        .from("wedding_settings")
-        .select("config")
-        .eq("id", "default")
-        .maybeSingle();
+export const getWeddingConfig = cache(
+  async (): Promise<WeddingContentConfig> => {
+    if (isSupabaseConfigured()) {
+      const supabase = await getPrivilegedSupabaseClient();
+      if (supabase) {
+        const { data, error } = await supabase
+          .from("wedding_settings")
+          .select("config")
+          .eq("id", "default")
+          .maybeSingle();
 
-      if (!error && data && data.config) {
-        return mergeWithDefaultConfig(
-          data.config as Partial<WeddingContentConfig>
-        );
+        if (!error && data && data.config) {
+          return mergeWithDefaultConfig(
+            data.config as Partial<WeddingContentConfig>
+          );
+        }
       }
     }
-  }
 
-  const pool = await ensurePostgresSchema();
-  if (pool) {
-    try {
-      const { rows } = await pool.query<{ config: Partial<WeddingContentConfig> }>(
-        `SELECT config FROM public.wedding_settings WHERE id = 'default' LIMIT 1`
-      );
-      if (rows[0]?.config) {
-        return mergeWithDefaultConfig(rows[0].config);
-      }
-    } catch {
+    const pool = await ensurePostgresSchema();
+    if (pool) {
       try {
-        await ensureWeddingSettingsTable(pool);
-      } catch (initErr) {
-        console.error("Postgres ensureWeddingSettingsTable error:", initErr);
+        const { rows } = await pool.query<{
+          config: Partial<WeddingContentConfig>;
+        }>(
+          `SELECT config FROM public.wedding_settings WHERE id = 'default' LIMIT 1`
+        );
+        if (rows[0]?.config) {
+          return mergeWithDefaultConfig(rows[0].config);
+        }
+      } catch {
+        try {
+          await ensureWeddingSettingsTable(pool);
+        } catch (initErr) {
+          console.error("Postgres ensureWeddingSettingsTable error:", initErr);
+        }
       }
     }
-  }
 
-  const db = readLocalDb();
-  return mergeWithDefaultConfig(db.config);
-}
+    const db = readLocalDb();
+    return mergeWithDefaultConfig(db.config);
+  }
+);
 
 export async function updateWeddingConfig(
   nextConfig: Partial<WeddingContentConfig>
@@ -1234,7 +1304,7 @@ export async function updateWeddingConfig(
   const nowIso = new Date().toISOString();
 
   if (isSupabaseConfigured()) {
-    const supabase = await createServerSupabaseClient();
+    const supabase = await getPrivilegedSupabaseClient();
     if (supabase) {
       const { data, error } = await supabase
         .from("wedding_settings")
@@ -1303,6 +1373,7 @@ async function ensureWeddingAudioTable(pool: Pool): Promise<void> {
       audio_data BYTEA NOT NULL,
       updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
     );
+    ALTER TABLE public.wedding_audio ENABLE ROW LEVEL SECURITY;
   `);
 }
 

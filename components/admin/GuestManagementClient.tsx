@@ -15,15 +15,12 @@ import {
   X,
   CheckCircle2,
   Clock,
-  XCircle,
-  HelpCircle,
   Phone,
   Users,
   Sparkles,
   AlertCircle,
 } from "lucide-react";
 import type {
-  AttendanceStatus,
   Guest,
   GuestCategory,
   RsvpRecord,
@@ -33,6 +30,8 @@ import {
   renderWhatsAppTemplate,
   type WeddingContentConfig,
 } from "@/lib/config/wedding-config";
+import { normalizeIndonesianPhone } from "@/lib/utils/format";
+import { AttendanceStatusBadge } from "./AttendanceStatusBadge";
 import { ConfirmModal } from "./ConfirmModal";
 
 const CATEGORIES: GuestCategory[] = [
@@ -43,21 +42,14 @@ const CATEGORIES: GuestCategory[] = [
   "Umum",
 ];
 
-export function normalizeIndonesianPhone(rawPhone: string): string {
-  const digits = rawPhone.replace(/[^\d]/g, "");
-  if (!digits) return "";
-  if (digits.startsWith("0")) {
-    return `62${digits.slice(1)}`;
-  }
-  if (digits.startsWith("8")) {
-    return `62${digits}`;
-  }
-  return digits;
-}
+export { normalizeIndonesianPhone };
 
 export function buildPersonalizedUrl(origin: string, guestName: string): string {
-  const baseUrl = origin || "http://localhost:3000";
-  return `${baseUrl}/?to=${encodeURIComponent(guestName.trim())}`;
+  const baseUrl =
+    origin ||
+    process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
+    "http://localhost:3000";
+  return `${baseUrl.replace(/\/+$/, "")}/?to=${encodeURIComponent(guestName.trim())}`;
 }
 
 export function buildWhatsAppMessage(
@@ -82,39 +74,6 @@ function CategoryBadge({ category }: { category: GuestCategory }) {
       className={`inline-flex items-center whitespace-nowrap px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${styles[category]}`}
     >
       {category}
-    </span>
-  );
-}
-
-function RsvpStatusBadge({ status, pax }: { status?: AttendanceStatus; pax?: number }) {
-  if (status === "hadir") {
-    return (
-      <span className="inline-flex items-center gap-1 whitespace-nowrap px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
-        <CheckCircle2 className="w-3 h-3 shrink-0" />
-        Hadir ({pax ?? 1} Pax)
-      </span>
-    );
-  }
-  if (status === "tidak_hadir") {
-    return (
-      <span className="inline-flex items-center gap-1 whitespace-nowrap px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-100 text-rose-800 border border-rose-200">
-        <XCircle className="w-3 h-3 shrink-0" />
-        Tidak Hadir
-      </span>
-    );
-  }
-  if (status === "ragu") {
-    return (
-      <span className="inline-flex items-center gap-1 whitespace-nowrap px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-800 border border-amber-200">
-        <HelpCircle className="w-3 h-3 shrink-0" />
-        Masih Ragu ({pax ?? 1} Pax)
-      </span>
-    );
-  }
-  return (
-    <span className="inline-flex items-center gap-1 whitespace-nowrap px-2.5 py-1 rounded-full text-[11px] font-medium bg-stone-100 text-stone-600 border border-stone-200">
-      <Clock className="w-3 h-3 shrink-0" />
-      Belum RSVP
     </span>
   );
 }
@@ -537,9 +496,11 @@ export default function GuestManagementClient({
 
                       {/* Status RSVP */}
                       <td className="py-4 px-4 align-middle whitespace-nowrap">
-                        <RsvpStatusBadge
+                        <AttendanceStatusBadge
                           status={rsvp?.attendance_status}
                           pax={rsvp?.pax}
+                          pendingLabel="Belum RSVP"
+                          showPax
                         />
                       </td>
 
