@@ -1,5 +1,4 @@
 export type GuestCategory =
-  | "VIP"
   | "Keluarga"
   | "Sahabat"
   | "Rekan Kerja"

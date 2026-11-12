@@ -31,3 +31,16 @@ export function normalizeIndonesianPhone(rawPhone: string): string {
   return digits;
 }
 
+/**
+ * Truncates text to a maximum number of characters and appends "..." if exceeded.
+ */
+export function truncateText(
+  text: string | null | undefined,
+  maxChars = 20
+): string {
+  if (!text) return "";
+  const clean = text.trim();
+  if (clean.length <= maxChars) return clean;
+  return `${clean.slice(0, maxChars).trimEnd()}...`;
+}
+

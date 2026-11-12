@@ -7,6 +7,7 @@ import {
   DEFAULT_WEDDING_CONFIG,
   type WeddingContentConfig,
 } from "@/lib/config/wedding-config";
+import { truncateText } from "@/lib/utils/format";
 import type { GuestCategory } from "@/types/wedding";
 
 export interface CoverOverlayProps {
@@ -152,8 +153,11 @@ export default function CoverOverlay({
               </p>
 
               <div className="my-3 border-y border-[#C5A059]/25 py-3.5">
-                <p className="font-serif-luxury text-2xl font-semibold tracking-wide text-[#1C2B24] sm:text-3xl">
-                  {guestName}
+                <p
+                  className="mx-auto max-w-full truncate font-serif-luxury text-2xl font-semibold tracking-wide text-[#1C2B24] sm:text-3xl"
+                  title={guestName}
+                >
+                  {truncateText(guestName, 20)}
                 </p>
 
                 {isRegistered && guestCategory && (

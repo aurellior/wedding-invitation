@@ -68,7 +68,7 @@ export default async function InvitationPage({
         name: rawGuestName || "Bapak/Ibu Tamu Kehormatan",
         slug: "bapak-ibu-tamu-kehormatan",
         phone: "",
-        category: "VIP",
+        category: "Keluarga",
         max_pax: 2,
         invitation_sent: false,
         created_at: new Date().toISOString(),

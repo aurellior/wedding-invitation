@@ -11,7 +11,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { formatDateId } from "@/lib/utils/format";
+import { formatDateId, truncateText } from "@/lib/utils/format";
 import type { Guest, WishRecord } from "@/types/wedding";
 
 export interface WishWallProps {
@@ -357,8 +357,11 @@ export default function WishWall({
 
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center justify-between gap-2">
-                            <h4 className="text-sm font-semibold text-[#1C2B24]">
-                              {wish.sender_name}
+                            <h4
+                              className="max-w-[180px] truncate text-sm font-semibold text-[#1C2B24] sm:max-w-[240px]"
+                              title={wish.sender_name}
+                            >
+                              {truncateText(wish.sender_name, 20)}
                             </h4>
                             <div className="flex items-center gap-2">
                               {wish.isOptimistic && (

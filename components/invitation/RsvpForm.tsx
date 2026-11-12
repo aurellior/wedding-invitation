@@ -12,6 +12,7 @@ import {
   AlertCircle,
   RefreshCw,
 } from "lucide-react";
+import { truncateText } from "@/lib/utils/format";
 import type { AttendanceStatus, Guest, RsvpRecord } from "@/types/wedding";
 
 export interface RsvpFormProps {
@@ -282,9 +283,10 @@ export default function RsvpForm({
                   <input
                     id="rsvp-guest-name"
                     type="text"
-                    value={registeredGuest.name}
+                    value={truncateText(registeredGuest.name, 20)}
+                    title={registeredGuest.name}
                     readOnly
-                    className="mt-2 w-full cursor-not-allowed rounded-xl border border-[#C5A059]/35 bg-[#F2ECE1] px-4 py-3 text-sm font-semibold text-[#1C2B24] focus:outline-none"
+                    className="mt-2 w-full truncate cursor-not-allowed rounded-xl border border-[#C5A059]/35 bg-[#F2ECE1] px-4 py-3 text-sm font-semibold text-[#1C2B24] focus:outline-none"
                   />
                 </div>
 
@@ -407,8 +409,10 @@ export default function RsvpForm({
                         <p className="font-semibold">{successMsg}</p>
                         <p className="mt-0.5 text-[11px] text-emerald-800">
                           Konfirmasi tercatat atas nama{" "}
-                          <strong>{registeredGuest.name}</strong>. Sampai
-                          berjumpa di hari bahagia kami!
+                          <strong title={registeredGuest.name}>
+                            {truncateText(registeredGuest.name, 20)}
+                          </strong>
+                          . Sampai berjumpa di hari bahagia kami!
                         </p>
                       </div>
                     </motion.div>

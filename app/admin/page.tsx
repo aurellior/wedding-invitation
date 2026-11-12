@@ -9,7 +9,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { AttendanceStatusBadge } from "@/components/admin/AttendanceStatusBadge";
-import { formatDateId } from "@/lib/utils/format";
+import { formatDateId, truncateText } from "@/lib/utils/format";
 import {
   getGuests,
   getRsvps,
@@ -347,10 +347,10 @@ export default async function AdminDashboardPage() {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p
-                        className="text-sm font-semibold text-[#243830] truncate max-w-[220px] sm:max-w-xs"
+                        className="text-sm font-semibold text-[#243830] truncate max-w-[180px] sm:max-w-[240px]"
                         title={rsvp.guest_name}
                       >
-                        {rsvp.guest_name}
+                        {truncateText(rsvp.guest_name, 20)}
                       </p>
                       <AttendanceStatusBadge status={rsvp.attendance_status} />
                     </div>
@@ -411,10 +411,10 @@ export default async function AdminDashboardPage() {
                   <div className="flex items-start justify-between gap-3 mb-1">
                     <div className="flex items-center gap-2 flex-wrap min-w-0 flex-1">
                       <p
-                        className="text-sm font-semibold text-[#243830] truncate max-w-[220px] sm:max-w-xs"
+                        className="text-sm font-semibold text-[#243830] truncate max-w-[180px] sm:max-w-[240px]"
                         title={wish.sender_name}
                       >
-                        {wish.sender_name}
+                        {truncateText(wish.sender_name, 20)}
                       </p>
                       {wish.attendance_badge && (
                         <AttendanceStatusBadge status={wish.attendance_badge} />

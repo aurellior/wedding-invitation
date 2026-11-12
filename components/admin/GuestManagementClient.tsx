@@ -30,12 +30,14 @@ import {
   renderWhatsAppTemplate,
   type WeddingContentConfig,
 } from "@/lib/config/wedding-config";
-import { normalizeIndonesianPhone } from "@/lib/utils/format";
+import {
+  normalizeIndonesianPhone,
+  truncateText,
+} from "@/lib/utils/format";
 import { AttendanceStatusBadge } from "./AttendanceStatusBadge";
 import { ConfirmModal } from "./ConfirmModal";
 
 const CATEGORIES: GuestCategory[] = [
-  "VIP",
   "Keluarga",
   "Sahabat",
   "Rekan Kerja",
@@ -62,7 +64,6 @@ export function buildWhatsAppMessage(
 
 function CategoryBadge({ category }: { category: GuestCategory }) {
   const styles: Record<GuestCategory, string> = {
-    VIP: "bg-[#C5A059]/20 text-[#243830] border-[#C5A059]/50",
     Keluarga: "bg-emerald-50 text-emerald-800 border-emerald-200",
     Sahabat: "bg-sky-50 text-sky-800 border-sky-200",
     "Rekan Kerja": "bg-purple-50 text-purple-800 border-purple-200",
@@ -71,7 +72,7 @@ function CategoryBadge({ category }: { category: GuestCategory }) {
 
   return (
     <span
-      className={`inline-flex items-center whitespace-nowrap px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${styles[category]}`}
+      className={`inline-flex items-center whitespace-nowrap px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${styles[category] ?? styles.Umum}`}
     >
       {category}
     </span>
@@ -452,18 +453,12 @@ export default function GuestManagementClient({
                     >
                       {/* Nama Tamu */}
                       <td className="py-4 px-5 align-middle">
-                        <div className="max-w-[180px] sm:max-w-[220px] md:max-w-[260px] overflow-hidden">
+                        <div className="max-w-[160px] sm:max-w-[200px] md:max-w-[240px] overflow-hidden">
                           <p
                             className="font-semibold text-[#243830] text-sm truncate"
                             title={guest.name}
                           >
-                            {guest.name}
-                          </p>
-                          <p
-                            className="text-[11px] text-[#4A6358]/80 font-mono mt-0.5 truncate"
-                            title={`/?to=${encodeURIComponent(guest.name)}`}
-                          >
-                            /?to={encodeURIComponent(guest.name)}
+                            {truncateText(guest.name, 20)}
                           </p>
                         </div>
                       </td>
@@ -634,20 +629,33 @@ export default function GuestManagementClient({
               )}
 
               <div className="flex flex-col justify-end">
-                <label className="block text-xs font-semibold uppercase tracking-wider text-[#243830] mb-1.5">
-                  Nama Lengkap Tamu / Keluarga *
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-[#243830]">
+                    Nama Lengkap Tamu / Keluarga *
+                  </label>
+                  <span className="text-[11px] text-[#4A6358]">
+                    {formName.length}/120
+                  </span>
+                </div>
                 <input
                   type="text"
                   required
+                  maxLength={120}
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
                   placeholder="Contoh: Dr. Andi Wijaya & Partner"
                   className="h-11 w-full px-3.5 rounded-xl border border-[#E5D1A7] bg-[#FAF7F2]/60 text-sm text-[#222624] focus:outline-none focus:ring-2 focus:ring-[#C5A059] focus:bg-white"
                 />
                 {formName.trim() && (
-                  <p className="text-[11px] text-[#4A6358] mt-1 font-mono truncate">
-                    Preview URL: /?to={encodeURIComponent(formName.trim())}
+                  <p
+                    className="text-[11px] text-[#4A6358] mt-1 font-mono truncate"
+                    title={`/?to=${encodeURIComponent(formName.trim())}`}
+                  >
+                    Preview URL:{" "}
+                    {truncateText(
+                      `/?to=${encodeURIComponent(formName.trim())}`,
+                      42
+                    )}
                   </p>
                 )}
               </div>
@@ -744,9 +752,14 @@ export default function GuestManagementClient({
         description={
           <span>
             Apakah Anda yakin ingin menghapus data tamu{" "}
-            <strong className="text-[#243830]">{guestToDelete?.name}</strong>?
-            Data konfirmasi RSVP dan riwayat kehadiran terkait juga akan dihapus
-            secara permanen.
+            <strong
+              className="text-[#243830]"
+              title={guestToDelete?.name}
+            >
+              {truncateText(guestToDelete?.name, 20)}
+            </strong>
+            ? Data konfirmasi RSVP dan riwayat kehadiran terkait juga akan
+            dihapus secara permanen.
           </span>
         }
         confirmText="Ya, Hapus Tamu"

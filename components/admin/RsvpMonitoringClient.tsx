@@ -23,7 +23,7 @@ import {
   type WeddingContentConfig,
 } from "@/lib/config/wedding-config";
 import { escapeCsvCell } from "@/lib/security/rate-limit";
-import { formatDateId } from "@/lib/utils/format";
+import { formatDateId, truncateText } from "@/lib/utils/format";
 import { AttendanceStatusBadge } from "./AttendanceStatusBadge";
 
 type FilterStatus =
@@ -372,12 +372,12 @@ export default function RsvpMonitoringClient({
                     className="hover:bg-[#FAF7F2]/60 transition-colors"
                   >
                     <td className="py-4 px-5 align-middle">
-                      <div className="max-w-[180px] sm:max-w-[220px] md:max-w-[260px] overflow-hidden">
+                      <div className="max-w-[160px] sm:max-w-[200px] md:max-w-[240px] overflow-hidden">
                         <p
                           className="font-semibold text-[#243830] text-sm truncate"
                           title={row.guestName}
                         >
-                          {row.guestName}
+                          {truncateText(row.guestName, 20)}
                         </p>
                         {row.phone && (
                           <p className="text-[11px] text-[#4A6358] font-mono mt-0.5 truncate">

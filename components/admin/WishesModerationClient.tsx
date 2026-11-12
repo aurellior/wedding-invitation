@@ -10,7 +10,7 @@ import {
   X,
 } from "lucide-react";
 import type { WishRecord } from "@/types/wedding";
-import { formatDateId } from "@/lib/utils/format";
+import { formatDateId, truncateText } from "@/lib/utils/format";
 import { AttendanceStatusBadge } from "./AttendanceStatusBadge";
 import { ConfirmModal } from "./ConfirmModal";
 
@@ -122,10 +122,10 @@ export default function WishesModerationClient({
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3
-                        className="font-semibold text-[#243830] text-sm truncate max-w-full"
+                        className="font-semibold text-[#243830] text-sm truncate max-w-[180px] sm:max-w-[240px]"
                         title={wish.sender_name}
                       >
-                        {wish.sender_name}
+                        {truncateText(wish.sender_name, 20)}
                       </h3>
                       {wish.attendance_badge && (
                         <AttendanceStatusBadge status={wish.attendance_badge} />
@@ -167,8 +167,11 @@ export default function WishesModerationClient({
         description={
           <span>
             Apakah Anda yakin ingin menghapus ucapan dari{" "}
-            <strong className="text-[#243830]">
-              {wishToDelete?.sender_name}
+            <strong
+              className="text-[#243830]"
+              title={wishToDelete?.sender_name}
+            >
+              {truncateText(wishToDelete?.sender_name, 20)}
             </strong>
             ? Ucapan yang dihapus akan hilang dari WishWall dan tidak dapat
             dikembalikan.

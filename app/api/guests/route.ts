@@ -11,7 +11,6 @@ import {
 import { requireAdminAuth } from "@/lib/supabase/server";
 
 const guestCategoryEnum = z.enum([
-  "VIP",
   "Keluarga",
   "Sahabat",
   "Rekan Kerja",
