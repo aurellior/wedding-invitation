@@ -241,7 +241,7 @@ export default async function InvitationPage({
         registeredGuest={registeredGuest}
       />
 
-      {/* 6. DIGITAL ENVELOPE & QRIS GIFT SECTION */}
+      {/* 6. DIGITAL ENVELOPE GIFT SECTION */}
       <GiftSection config={config} />
 
       {/* 7. CLOSING THANK YOU & FOOTER */}

@@ -30,6 +30,91 @@ import {
 } from "@/lib/config/wedding-config";
 import { ConfirmModal } from "./ConfirmModal";
 
+const INDONESIAN_DAYS = [
+  "Minggu",
+  "Senin",
+  "Selasa",
+  "Rabu",
+  "Kamis",
+  "Jumat",
+  "Sabtu",
+];
+
+const INDONESIAN_MONTHS = [
+  "Januari",
+  "Februari",
+  "Maret",
+  "April",
+  "Mei",
+  "Juni",
+  "Juli",
+  "Agustus",
+  "September",
+  "Oktober",
+  "November",
+  "Desember",
+];
+
+/** Formats "YYYY-MM-DD" into e.g. "Sabtu, 12 Desember 2026". */
+function formatIndonesianDateDisplay(isoDate: string): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate.trim());
+  if (!match) return isoDate;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const dateObj = new Date(year, month - 1, day);
+  if (Number.isNaN(dateObj.getTime())) return isoDate;
+  const dayName = INDONESIAN_DAYS[dateObj.getDay()];
+  const monthName = INDONESIAN_MONTHS[month - 1];
+  if (!dayName || !monthName) return isoDate;
+  return `${dayName}, ${day} ${monthName} ${year}`;
+}
+
+/** Formats "YYYY-MM-DD" into e.g. "12 . 12 . 2026". */
+function formatShortDate(isoDate: string): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate.trim());
+  if (!match) return isoDate;
+  return `${match[3]} . ${match[2]} . ${match[1]}`;
+}
+
+/** Parses e.g. "Sabtu, 12 Desember 2026" back into "YYYY-MM-DD". */
+function parseIndonesianDateToIso(display: string): string {
+  const match = /(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})/.exec(display.trim());
+  if (!match) return "";
+  const day = match[1].padStart(2, "0");
+  const monthIndex = INDONESIAN_MONTHS.findIndex(
+    (m) => m.toLowerCase() === match[2].toLowerCase()
+  );
+  if (monthIndex === -1) return "";
+  const month = String(monthIndex + 1).padStart(2, "0");
+  return `${match[3]}-${month}-${day}`;
+}
+
+function extractDateFromIsoTimestamp(isoTimestamp: string): string {
+  const match = /^(\d{4}-\d{2}-\d{2})/.exec(isoTimestamp.trim());
+  return match ? match[1] : "";
+}
+
+function extractTimeFromIsoTimestamp(isoTimestamp: string): string {
+  const match = /T(\d{2}:\d{2})/.exec(isoTimestamp.trim());
+  return match ? match[1] : "08:00";
+}
+
+/** Parses "08.00 - 10.00 WIB" or "08:00 - 10:00 WIB" into { start, end } in "HH:mm". */
+function parseTimeRange(timeDisplay: string): { start: string; end: string } {
+  const matches = timeDisplay.match(/\d{2}[:.]\d{2}/g);
+  const start = matches?.[0] ? matches[0].replace(".", ":") : "08:00";
+  const end = matches?.[1] ? matches[1].replace(".", ":") : "10:00";
+  return { start, end };
+}
+
+/** Formats { start: "08:00", end: "10:00" } into "08.00 - 10.00 WIB". */
+function formatTimeRange(start: string, end: string): string {
+  const fmt = (val: string, fallback: string) =>
+    (val || fallback).replace(":", ".");
+  return `${fmt(start, "08:00")} - ${fmt(end, "10:00")} WIB`;
+}
+
 type ContentTabId =
   | "couple"
   | "quote"
@@ -64,8 +149,8 @@ const TABS: {
     },
     {
       id: "gifts",
-      label: "4. Rekening, QRIS & Kado",
-      subtitle: "Daftar rekening bank, QRIS & alamat kiriman",
+      label: "4. Rekening Bank",
+      subtitle: "Daftar rekening bank amplop digital",
       icon: CreditCard,
     },
     {
@@ -189,15 +274,14 @@ export default function WeddingContentClient({
         );
       }
 
-      // Derive clean song title if default is still set
+      // Derive clean song title if title is still empty
       const cleanTitleFromFile = file.name.replace(/\.[^/.]+$/, "");
       const nextConfig: WeddingContentConfig = {
         ...config,
         audio: {
           ...config.audio,
           title:
-            config.audio.title === "Clair de Lune, Romantic Piano Suite" &&
-              cleanTitleFromFile
+            !config.audio.title.trim() && cleanTitleFromFile
               ? cleanTitleFromFile
               : config.audio.title,
           src: finalAudioSrc,
@@ -245,8 +329,9 @@ export default function WeddingContentClient({
       const nextConfig: WeddingContentConfig = {
         ...config,
         audio: {
-          ...config.audio,
-          src: "/audio/wedding-theme.mp3",
+          title: "",
+          artist: "",
+          src: "",
         },
       };
       setConfig(nextConfig);
@@ -260,7 +345,7 @@ export default function WeddingContentClient({
 
       setFeedback({
         type: "success",
-        text: "Kembali menggunakan musik instrumen romantis bawaan.",
+        text: "Musik latar berhasil dihapus. Undangan kini tanpa musik latar.",
       });
       router.refresh();
     } catch {
@@ -323,6 +408,39 @@ export default function WeddingContentClient({
         [field]: value,
       },
     }));
+  };
+
+  const updateMainWeddingDate = (isoDate: string) => {
+    if (!isoDate) return;
+    setConfig((prev) => {
+      const currentTime = extractTimeFromIsoTimestamp(
+        prev.couple.weddingDateIso
+      );
+      return {
+        ...prev,
+        couple: {
+          ...prev.couple,
+          weddingDateIso: `${isoDate}T${currentTime}:00+07:00`,
+          weddingDateDisplay: formatIndonesianDateDisplay(isoDate),
+          shortDate: formatShortDate(isoDate),
+        },
+      };
+    });
+  };
+
+  const updateMainWeddingTime = (timeValue: string) => {
+    if (!timeValue) return;
+    setConfig((prev) => {
+      const currentDate =
+        extractDateFromIsoTimestamp(prev.couple.weddingDateIso) || "2026-12-12";
+      return {
+        ...prev,
+        couple: {
+          ...prev.couple,
+          weddingDateIso: `${currentDate}T${timeValue}:00+07:00`,
+        },
+      };
+    });
   };
 
   const updateQuote = (
@@ -409,38 +527,6 @@ export default function WeddingContentClient({
       },
     }));
     setAccountIndexToDelete(null);
-  };
-
-  const updateQris = (
-    field: keyof WeddingContentConfig["gifts"]["qris"],
-    value: string
-  ) => {
-    setConfig((prev) => ({
-      ...prev,
-      gifts: {
-        ...prev.gifts,
-        qris: {
-          ...prev.gifts.qris,
-          [field]: value,
-        },
-      },
-    }));
-  };
-
-  const updateShippingAddress = (
-    field: keyof WeddingContentConfig["gifts"]["shippingAddress"],
-    value: string
-  ) => {
-    setConfig((prev) => ({
-      ...prev,
-      gifts: {
-        ...prev.gifts,
-        shippingAddress: {
-          ...prev.gifts.shippingAddress,
-          [field]: value,
-        },
-      },
-    }));
   };
 
   const updateAudio = (
@@ -810,52 +896,34 @@ export default function WeddingContentClient({
               </h2>
             </div>
 
-            <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div className="flex flex-col justify-end">
                 <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
-                  Tampilan Hari &amp; Tanggal *
+                  Tanggal Pernikahan *
                 </label>
                 <input
-                  type="text"
+                  type="date"
                   required
-                  placeholder="Sabtu, 12 Desember 2026"
-                  value={config.couple.weddingDateDisplay}
-                  onChange={(e) =>
-                    updateCoupleMeta("weddingDateDisplay", e.target.value)
-                  }
-                  className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 text-sm text-[#1C2B24]"
-                />
-              </div>
-
-              <div className="flex flex-col justify-end">
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
-                  Tanggal Angka Singkat *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="12 . 12 . 2026"
-                  value={config.couple.shortDate}
-                  onChange={(e) =>
-                    updateCoupleMeta("shortDate", e.target.value)
-                  }
+                  value={extractDateFromIsoTimestamp(
+                    config.couple.weddingDateIso
+                  )}
+                  onChange={(e) => updateMainWeddingDate(e.target.value)}
                   className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 text-sm text-[#1C2B24] tabular-nums"
                 />
               </div>
 
               <div className="flex flex-col justify-end">
                 <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
-                  Target Countdown (ISO) *
+                  Jam Countdown *
                 </label>
                 <input
-                  type="text"
+                  type="time"
                   required
-                  placeholder="2026-12-12T08:00:00+07:00"
-                  value={config.couple.weddingDateIso}
-                  onChange={(e) =>
-                    updateCoupleMeta("weddingDateIso", e.target.value)
-                  }
-                  className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 font-mono text-xs text-[#1C2B24] tabular-nums"
+                  value={extractTimeFromIsoTimestamp(
+                    config.couple.weddingDateIso
+                  )}
+                  onChange={(e) => updateMainWeddingTime(e.target.value)}
+                  className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 text-sm text-[#1C2B24] tabular-nums"
                 />
               </div>
 
@@ -872,6 +940,29 @@ export default function WeddingContentClient({
                   className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 text-sm text-[#1C2B24]"
                 />
               </div>
+            </div>
+
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl border border-[#C5A059]/25 bg-[#FAF7F2] px-3.5 py-2.5 text-xs text-[#4A6358]">
+              <span>
+                Tampilan:{" "}
+                <strong className="text-[#1C2B24]">
+                  {config.couple.weddingDateDisplay}
+                </strong>
+              </span>
+              <span className="text-[#C5A059]">•</span>
+              <span>
+                Angka Singkat:{" "}
+                <strong className="font-mono text-[#1C2B24] tabular-nums">
+                  {config.couple.shortDate}
+                </strong>
+              </span>
+              <span className="text-[#C5A059]">•</span>
+              <span>
+                Target ISO:{" "}
+                <strong className="font-mono text-[#1C2B24] tabular-nums">
+                  {config.couple.weddingDateIso}
+                </strong>
+              </span>
             </div>
           </div>
         </div>
@@ -935,29 +1026,71 @@ export default function WeddingContentClient({
                       Hari &amp; Tanggal Acara *
                     </label>
                     <input
-                      type="text"
+                      type="date"
                       required
-                      value={event.dateDisplay}
-                      onChange={(e) =>
-                        updateEvent(idx, "dateDisplay", e.target.value)
-                      }
-                      className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 text-sm text-[#1C2B24]"
+                      value={parseIndonesianDateToIso(event.dateDisplay)}
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          updateEvent(
+                            idx,
+                            "dateDisplay",
+                            formatIndonesianDateDisplay(e.target.value)
+                          );
+                        }
+                      }}
+                      className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 text-sm text-[#1C2B24] tabular-nums"
                     />
+                    <p className="mt-1 text-[11px] text-[#4A6358]">
+                      Tampil: {event.dateDisplay}
+                    </p>
                   </div>
                   <div className="flex flex-col justify-end">
                     <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
-                      Jam Pelaksanaan *
+                      Jam Pelaksanaan (WIB) *
                     </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="08.00 - 10.00 WIB"
-                      value={event.timeDisplay}
-                      onChange={(e) =>
-                        updateEvent(idx, "timeDisplay", e.target.value)
-                      }
-                      className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 text-sm text-[#1C2B24] tabular-nums"
-                    />
+                    {(() => {
+                      const { start, end } = parseTimeRange(event.timeDisplay);
+                      return (
+                        <>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="time"
+                              required
+                              aria-label="Jam Mulai"
+                              value={start}
+                              onChange={(e) =>
+                                updateEvent(
+                                  idx,
+                                  "timeDisplay",
+                                  formatTimeRange(e.target.value, end)
+                                )
+                              }
+                              className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3 text-sm text-[#1C2B24] tabular-nums"
+                            />
+                            <span className="shrink-0 text-xs font-medium text-[#4A6358]">
+                              s.d.
+                            </span>
+                            <input
+                              type="time"
+                              required
+                              aria-label="Jam Selesai"
+                              value={end}
+                              onChange={(e) =>
+                                updateEvent(
+                                  idx,
+                                  "timeDisplay",
+                                  formatTimeRange(start, e.target.value)
+                                )
+                              }
+                              className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3 text-sm text-[#1C2B24] tabular-nums"
+                            />
+                          </div>
+                          <p className="mt-1 text-[11px] text-[#4A6358]">
+                            Tampil: {event.timeDisplay}
+                          </p>
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
 
@@ -1089,7 +1222,7 @@ export default function WeddingContentClient({
         </div>
       )}
 
-      {/* TAB 4: REKENING, QRIS & ALAMAT KADO */}
+      {/* TAB 4: REKENING BANK */}
       {activeTab === "gifts" && (
         <div className="space-y-6">
           {/* Bank Accounts */}
@@ -1207,119 +1340,6 @@ export default function WeddingContentClient({
               ))}
             </div>
           </div>
-
-          {/* QRIS & Physical Shipping Address */}
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <div className="rounded-2xl border border-[#C5A059]/40 bg-white p-6 shadow-xs">
-              <div className="border-b border-[#F2ECE1] pb-3.5">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8A6825]">
-                  Pembayaran QRIS
-                </p>
-                <h2 className="mt-1 font-serif-luxury text-2xl font-semibold text-[#1C2B24]">
-                  Identitas Merchant QRIS
-                </h2>
-              </div>
-
-              <div className="mt-5 space-y-4">
-                <div className="flex flex-col justify-end">
-                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
-                    Nama Merchant QRIS *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={config.gifts.qris.merchantName}
-                    onChange={(e) => updateQris("merchantName", e.target.value)}
-                    className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 text-sm text-[#1C2B24]"
-                  />
-                </div>
-
-                <div className="flex flex-col justify-end">
-                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
-                    Nomor NMID *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={config.gifts.qris.nmid}
-                    onChange={(e) => updateQris("nmid", e.target.value)}
-                    className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 font-mono text-sm text-[#1C2B24] tabular-nums"
-                  />
-                </div>
-
-                <div className="flex flex-col justify-end">
-                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
-                    String Payload QRIS *
-                  </label>
-                  <textarea
-                    rows={3}
-                    required
-                    value={config.gifts.qris.codePayload}
-                    onChange={(e) => updateQris("codePayload", e.target.value)}
-                    className="w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2.5 font-mono text-xs text-[#1C2B24] break-all"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-[#C5A059]/40 bg-white p-6 shadow-xs">
-              <div className="border-b border-[#F2ECE1] pb-3.5">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8A6825]">
-                  Kado Pernikahan Fisik
-                </p>
-                <h2 className="mt-1 font-serif-luxury text-2xl font-semibold text-[#1C2B24]">
-                  Alamat Pengiriman Kado
-                </h2>
-              </div>
-
-              <div className="mt-5 space-y-4">
-                <div className="flex flex-col justify-end">
-                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
-                    Nama Penerima Paket *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={config.gifts.shippingAddress.recipient}
-                    onChange={(e) =>
-                      updateShippingAddress("recipient", e.target.value)
-                    }
-                    className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 text-sm text-[#1C2B24]"
-                  />
-                </div>
-
-                <div className="flex flex-col justify-end">
-                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
-                    Nomor Telepon Penerima / Kurir *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={config.gifts.shippingAddress.phone}
-                    onChange={(e) =>
-                      updateShippingAddress("phone", e.target.value)
-                    }
-                    className="h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 font-mono text-sm text-[#1C2B24] tabular-nums"
-                  />
-                </div>
-
-                <div className="flex flex-col justify-end">
-                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
-                    Alamat Lengkap Pengiriman *
-                  </label>
-                  <textarea
-                    rows={3}
-                    required
-                    value={config.gifts.shippingAddress.address}
-                    onChange={(e) =>
-                      updateShippingAddress("address", e.target.value)
-                    }
-                    className="w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2.5 text-sm text-[#1C2B24]"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       )}
 
@@ -1344,7 +1364,7 @@ export default function WeddingContentClient({
                 className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2 text-xs font-semibold text-rose-700 transition-colors hover:bg-rose-100 disabled:opacity-50"
               >
                 <Trash2 className="h-3.5 w-3.5" />
-                <span>Hapus MP3 &amp; Gunakan Musik Bawaan</span>
+                <span>Hapus Musik Latar</span>
               </button>
             )}
           </div>
@@ -1354,11 +1374,11 @@ export default function WeddingContentClient({
             <div className="space-y-4 lg:col-span-5">
               <div>
                 <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
-                  Judul Lagu *
+                  Judul Lagu
                 </label>
                 <input
                   type="text"
-                  required
+                  placeholder="Opsional (otomatis terisi saat upload MP3)"
                   value={config.audio.title}
                   onChange={(e) => updateAudio("title", e.target.value)}
                   className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
@@ -1367,11 +1387,11 @@ export default function WeddingContentClient({
 
               <div>
                 <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#243830]">
-                  Nama Penyanyi / Artis *
+                  Nama Penyanyi / Artis
                 </label>
                 <input
                   type="text"
-                  required
+                  placeholder="Opsional"
                   value={config.audio.artist}
                   onChange={(e) => updateAudio("artist", e.target.value)}
                   className="min-h-11 w-full rounded-xl border border-[#C5A059]/45 bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#1C2B24]"
@@ -1391,7 +1411,7 @@ export default function WeddingContentClient({
                     </span>
                   ) : (
                     <span>
-                      Menggunakan Musik Instrumen Piano Romantis Bawaan
+                      Tidak ada musik latar (kosong)
                     </span>
                   )}
                 </p>
@@ -1670,8 +1690,8 @@ export default function WeddingContentClient({
           setIsDeleteAudioConfirmOpen(false);
           await handleUseDefaultSynthAudio();
         }}
-        title="Hapus Musik MP3 Kustom"
-        description="Apakah Anda yakin ingin menghapus file lagu MP3 yang telah diunggah dan beralih kembali ke musik instrumen romantis bawaan?"
+        title="Hapus Musik Latar"
+        description="Apakah Anda yakin ingin menghapus file lagu MP3? Setelah dihapus, undangan tidak akan memutar musik latar apa pun."
         confirmText="Ya, Hapus Musik"
         cancelText="Batal"
         variant="danger"

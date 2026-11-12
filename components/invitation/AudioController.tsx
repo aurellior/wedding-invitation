@@ -153,7 +153,10 @@ export default function AudioController({
     }, 680);
   }, [playNote, stopSynth]);
 
+  const hasAudioSrc = Boolean(audioConfig?.src?.trim());
+
   const startPlayback = useCallback(async () => {
+    if (!hasAudioSrc) return;
     if (usingSynthFallback) {
       startSynthFallback();
       return;
@@ -173,7 +176,7 @@ export default function AudioController({
       // Fallback to gentle Web Audio API romantic arpeggio synthesizer if MP3 fails or is missing
       startSynthFallback();
     }
-  }, [startSynthFallback, usingSynthFallback]);
+  }, [hasAudioSrc, startSynthFallback, usingSynthFallback]);
 
   const pausePlayback = useCallback(() => {
     if (audioRef.current && !audioRef.current.paused) {
@@ -225,6 +228,10 @@ export default function AudioController({
       }
     };
   }, [stopSynth]);
+
+  if (!hasAudioSrc) {
+    return null;
+  }
 
   return (
     <>

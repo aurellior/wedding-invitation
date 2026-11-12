@@ -123,8 +123,8 @@ export async function DELETE() {
     revalidatePath("/admin/content");
     return NextResponse.json(
       {
-        src: "/audio/wedding-theme.mp3",
-        message: "File MP3 kustom dihapus, kembali ke musik instrumen bawaan.",
+        src: "",
+        message: "File MP3 dihapus. Undangan kini tanpa musik latar.",
       },
       { status: 200 }
     );

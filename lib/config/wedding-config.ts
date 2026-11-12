@@ -46,16 +46,6 @@ export interface WeddingContentConfig {
   events: WeddingEventDetail[];
   gifts: {
     accounts: BankAccount[];
-    qris: {
-      merchantName: string;
-      nmid: string;
-      codePayload: string;
-    };
-    shippingAddress: {
-      recipient: string;
-      phone: string;
-      address: string;
-    };
   };
   audio: {
     title: string;
@@ -172,23 +162,11 @@ export const DEFAULT_WEDDING_CONFIG: WeddingContentConfig = {
         branch: "KCP Kebayoran Baru, Jakarta",
       },
     ],
-    qris: {
-      merchantName: "ARKA & NADIA WEDDING GIFT",
-      nmid: "ID1026098877665",
-      codePayload:
-        "00020101021126610014COM.GO-JEK.WWW01189360091431234567890210G1234567890303UMI51440014ID.CO.QRIS.WWW0215ID10260988776650303UMI5204599953033605802ID5924ARKA NADIA WEDDING GIFT6015JAKARTA SELATAN6105121606304A1B2",
-    },
-    shippingAddress: {
-      recipient: "Arka Wijaya & Nadia Maharani",
-      phone: "0812-8899-0011",
-      address:
-        "Cluster Botanica Residence Blok B7 No. 12, Kebayoran Baru, Jakarta Selatan 12160",
-    },
   },
   audio: {
-    title: "Clair de Lune, Romantic Piano Suite",
-    artist: "Instrumental Chamber Ensemble",
-    src: "/audio/wedding-theme.mp3",
+    title: "",
+    artist: "",
+    src: "",
   },
   whatsappTemplate: DEFAULT_WHATSAPP_TEMPLATE,
 };
@@ -241,14 +219,6 @@ export function mergeWithDefaultConfig(
         partial.gifts.accounts.length > 0
           ? partial.gifts.accounts.map((acc) => ({ ...acc }))
           : structuredClone(DEFAULT_WEDDING_CONFIG.gifts.accounts),
-      qris: {
-        ...DEFAULT_WEDDING_CONFIG.gifts.qris,
-        ...(partial.gifts?.qris ?? {}),
-      },
-      shippingAddress: {
-        ...DEFAULT_WEDDING_CONFIG.gifts.shippingAddress,
-        ...(partial.gifts?.shippingAddress ?? {}),
-      },
     },
     audio: {
       ...DEFAULT_WEDDING_CONFIG.audio,

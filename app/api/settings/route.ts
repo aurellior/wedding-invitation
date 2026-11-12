@@ -61,21 +61,11 @@ const weddingConfigSchema = z.object({
   events: z.array(eventSchema).min(1),
   gifts: z.object({
     accounts: z.array(bankAccountSchema).min(1),
-    qris: z.object({
-      merchantName: z.string().trim().min(1),
-      nmid: z.string().trim().min(1),
-      codePayload: z.string().trim().min(1),
-    }),
-    shippingAddress: z.object({
-      recipient: z.string().trim().min(1),
-      phone: z.string().trim().min(1),
-      address: z.string().trim().min(1),
-    }),
   }),
   audio: z.object({
-    title: z.string().trim().min(1),
-    artist: z.string().trim().min(1),
-    src: z.string().trim().min(1),
+    title: z.string().trim(),
+    artist: z.string().trim(),
+    src: z.string().trim(),
   }),
   whatsappTemplate: z
     .string()
