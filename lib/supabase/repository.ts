@@ -545,27 +545,32 @@ export async function findGuestByName(name: string): Promise<Guest | null> {
     const supabase = await getPrivilegedSupabaseClient();
     if (supabase) {
       // Parameterized separate queries prevent PostgREST filter injection in .or()
-      const { data: bySlug } = await supabase
+      const { data: bySlug, error: slugError } = await supabase
         .from("guests")
         .select("*")
         .eq("slug", normalizedSlug)
         .limit(1)
         .maybeSingle();
 
-      if (bySlug) {
+      if (!slugError && bySlug) {
         return bySlug as Guest;
       }
 
       const escapedLike = trimmed.replace(/[%_\\]/g, "\\$&");
-      const { data: byName } = await supabase
+      const { data: byName, error: nameError } = await supabase
         .from("guests")
         .select("*")
         .ilike("name", escapedLike)
         .limit(1)
         .maybeSingle();
 
-      if (byName && byName.name.trim().toLowerCase() === normalizedName) {
-        return byName as Guest;
+      if (!nameError) {
+        if (byName && byName.name.trim().toLowerCase() === normalizedName) {
+          return byName as Guest;
+        }
+        if (!slugError) {
+          return null;
+        }
       }
     }
   }
@@ -612,8 +617,8 @@ export async function findGuestById(id: string): Promise<Guest | null> {
         .eq("id", validUuid)
         .maybeSingle();
 
-      if (!error && data) {
-        return data as Guest;
+      if (!error) {
+        return (data as Guest | null) ?? null;
       }
     }
   }
@@ -914,8 +919,8 @@ export async function getRsvpByGuestId(
         .eq("guest_id", validUuid)
         .maybeSingle();
 
-      if (!error && data) {
-        return data as RsvpRecord;
+      if (!error) {
+        return (data as RsvpRecord | null) ?? null;
       }
     }
   }
@@ -1264,9 +1269,10 @@ export const getWeddingConfig = cache(
           .eq("id", "default")
           .maybeSingle();
 
-        if (!error && data && data.config) {
+        if (!error) {
           return mergeWithDefaultConfig(
-            data.config as Partial<WeddingContentConfig>
+            (data?.config as Partial<WeddingContentConfig> | undefined) ??
+              undefined
           );
         }
       }
